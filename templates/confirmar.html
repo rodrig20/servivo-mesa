@@ -1,0 +1,19 @@
+<html>
+    <head>
+        <script type=text/javascript src="{{ url_for('static', filename='jquery.js') }}"> </script>
+        <script type=text/javascript src="{{ url_for('static', filename='meu_ajax.js') }}"> </script>
+        <script type=text/javascript>
+            $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+        </script>
+        <meta name="google" content="notranslate">
+    </head>
+    <body>
+        <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+        <h1 style="font-size:100px">Pedido enviado com sucesso!</h1>
+        <br></br><br></br><br></br>
+        <input type="hidden", class="nome" value="{{ nome }}">
+        <input type="submit" id="back" value="Voltar">
+        <br></br>
+        <input type="submit" id="lista" value="Pedidos">
+    </body>
+</html>

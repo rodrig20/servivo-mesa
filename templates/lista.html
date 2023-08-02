@@ -1,0 +1,48 @@
+<html>
+    <head>
+        <script type=text/javascript src="{{ url_for('static', filename='jquery.js') }}"> </script>
+        <script type=text/javascript src="{{ url_for('static', filename='meu_ajax.js') }}"> </script>
+        <script type=text/javascript>
+            $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+        </script>
+        <meta name="google" content="notranslate">
+        <meta http-equiv="refresh" content="5">
+    </head>
+    <body> 
+        <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+        
+        <script>
+            function removeRow(n){
+                var row = document.getElementById(n);
+                row.parentNode.removeChild(row);
+                json_send = {feito:n};
+                nome = $('input[type="hidden"]').val();
+                $.post($SCRIPT_ROOT + '/lista/'+nome, json_send, reload,'json');
+            }
+        </script>       
+        <h1 style="font-size:100px">Pedidos prontos</h1>
+        {% for p in pedidos %}
+            {%  if p[0]== nome %}
+                <table id="{{ p[-1] }}">
+                    <tr>
+                        <td>
+                            <p style="font-size:70px" ><b>{{ p[0] }}</b> <input type="button" name="{{ p[-1] }}" id="Feito" value="Entregue" onclick="removeRow({{ p[-1]}})"></p>
+                        </td>
+                    </tr>
+                {% for i in range(p[1]|length) %}
+                    <tr>
+                        <td>
+                            <p style="font-size:30px">{{p[1][i]}}       {{p[2][i]}}</p>
+                        </td>
+                    </tr>
+                {% endfor %}
+                    <tr><p style="font-size:30px"></p></tr>
+                    <tr><p style="font-size:30px"></p></tr>
+                </table>
+            {% endif %}
+        {% endfor %}  
+        <br>  
+        <input type="hidden" value="{{nome}}">
+        <input type="submit" id="novo" value="Novo Pedido">
+    </body>
+</html>
