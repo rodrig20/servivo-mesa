@@ -6,7 +6,7 @@ def getUsers(file):
     utilizadores=[]
     with open(file,"r") as f:
         for l in f:
-            if l.strip()[0]!='#':
+            if l.strip()!='' and l.strip()[0]!='#':
                 utilizadores.append(l.strip())
     return utilizadores
 
@@ -46,6 +46,8 @@ def servico(nome):
 
 @app.route("/confirmar/<nome>", methods=['GET', 'POST'])
 def confirmar(nome):
+    if not nome in users:
+        return "Acesso negado"
     return render_template("confirmar.html",nome=nome)
 
 
@@ -113,17 +115,21 @@ def lista_pessoa(nome):
                 prontos.pop(i)
                 break
         return jsonify({'suc':'T','redirect':'lista/'+nome,})
+    if not nome in users:
+        return "Acesso negado"
     return render_template("lista.html",nome=nome,pedidos=prontos)
 
 if __name__ == "__main__":
     pedidos = []
     prontos = []
     n_p=0
+    n=0
     file="users.txt"
     try:
         users=getUsers(file)
-    except FileNotFoundError:
+        if users==[]:
+            users[0]=3
+    except:
         print("Não existe nenhum utilizador registado")
         exit()
-    n=0
-    app.run(debug=True,port=80,host='0.0.0.0')
+    app.run(debug=True,port=8080,host='0.0.0.0')

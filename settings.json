@@ -1,0 +1,8 @@
+{
+    "host": {
+        "localNetwork": 1,
+        "ngrok": 0,
+        "ngrok_api": "YOUR_API_KEY",
+        "port": 80
+    }
+}
