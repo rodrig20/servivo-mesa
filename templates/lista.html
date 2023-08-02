@@ -13,8 +13,10 @@
         
         <script>
             function removeRow(n){
-                var row = document.getElementById(n);
-                row.parentNode.removeChild(row);
+                var tbl = document.getElementById(n);
+                console.log(tbl);
+                tbl.remove();
+
                 json_send = {feito:n};
                 nome = $('input[type="hidden"]').val();
                 $.post($SCRIPT_ROOT + '/lista/'+nome, json_send, reload,'json');
@@ -23,21 +25,11 @@
         <h1 style="font-size:100px">Pedidos prontos</h1>
         {% for p in pedidos %}
             {%  if p[0]== nome %}
-                <table id="{{ p[-1] }}">
+                <table id='{{ p[-2] }}''>
                     <tr>
-                        <td>
-                            <p style="font-size:70px" ><b>{{ p[0] }}</b> <input type="button" name="{{ p[-1] }}" id="Feito" value="Entregue" onclick="removeRow({{ p[-1]}})"></p>
-                        </td>
+                        <input type="button" id="Feito" value="Entregue" onclick="removeRow('{{ p[-2]}}')"> <label style="font-size:50px">{{p[1]}}       {{p[2]}}</label>
                     </tr>
-                {% for i in range(p[1]|length) %}
-                    <tr>
-                        <td>
-                            <p style="font-size:30px">{{p[1][i]}}       {{p[2][i]}}</p>
-                        </td>
-                    </tr>
-                {% endfor %}
-                    <tr><p style="font-size:30px"></p></tr>
-                    <tr><p style="font-size:30px"></p></tr>
+                    <tr><p style="font-size:10px"></p></tr>
                 </table>
             {% endif %}
         {% endfor %}  

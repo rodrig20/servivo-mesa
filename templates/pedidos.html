@@ -4,20 +4,43 @@
         <script type=text/javascript src="{{ url_for('static', filename='meu_ajax.js') }}"> </script>
         <script type=text/javascript>
             $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
-        </script>
+        </script>   
         <meta name="google" content="notranslate">
-        <meta http-equiv="refresh" content="5">
     </head>
     <body> 
         <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
         
         <script>
-            function removeRow(n,t){
-                var row = document.getElementById(n);
-                row.parentNode.removeChild(row)
-                json_send = {feito:n};
+            
+            window.onload = function() {
+                localStorage.setItem("checKey", document.querySelectorAll('input[type="checkbox"]:checked'));
+            }
+            
+            document.addEventListener("DOMContentLoaded", function(event) { 
+                var scrollpos = localStorage.getItem('scrollpos');
+                if (scrollpos) window.scrollTo(0, scrollpos);
+                });
+
+                window.onbeforeunload = function(e) {
+                    localStorage.setItem('scrollpos', window.scrollY);
+                };
+            //var check = localStorage.getItem("checKey");;
+
+            window.setTimeout( function() {
+                window.location.reload(true);
+            }, 5000);
+
+
+            
+            function removeRow(n,v,t){
+                //var row = document.getElementById(n);
+                //row.parentNode.removeChild(row)
+                $('table#test tr#3').remove();
+                json_send = {feito:n, ped:v};
                 $.post($SCRIPT_ROOT + '/'+t, json_send, reload,'json');
             }
+            
+
 
         </script>       
         <h1 style="font-size:100px">Lista de pedidos</h1>
@@ -25,13 +48,14 @@
             <table id="{{ p[-1] }}">
                 <tr>
                     <td>
-                        <p style="font-size:70px" ><b>{{ p[0] }}</b> <input type="button" name="{{ p[-1] }}" id="feito" value="Feito" onclick="removeRow({{ p[-1] }},'{{ tip }}')"></p>
+                        <p style="font-size:70px" ><b>{{ p[0] }}</b></p>
                     </td>
-                </tr>
+                </tr>               
             {% for i in range(p[1]|length) %}
-                <tr>
+                <tr id={{ i }}>
                     <td>    
-                        <p style="font-size:30px">{{p[1][i]}}       {{p[2][i]}}</p>
+                        <input type="button" name="{{ p[-1] }}" id="feito" value="Feito" onclick="removeRow({{ p[-1] }}, {{ i }}, '{{ tip }}')">
+                        <label style="font-size:30px">{{p[1][i]}}       {{p[2][i]}}</label>
                     </td>
                 </tr>
             {% endfor %}
@@ -40,5 +64,6 @@
             <br></br>
             <br></br>
         {% endfor %}
+        <br></br>
     </body>
 </html>

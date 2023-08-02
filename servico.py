@@ -2,9 +2,18 @@ from flask import Flask, request, render_template, jsonify, url_for
 
 app = Flask(__name__)
 
+def getUsers(file):
+    utilizadores=[]
+    with open(file,"r") as f:
+        for l in f:
+            if l.strip()[0]!='#':
+                utilizadores.append(l.strip())
+    return utilizadores
+
+
 @app.route("/servico/<nome>", methods=['GET', 'POST'])
 def servico(nome):
-    global pedidos,n
+    global pedidos,n,n_p
     if request.method == 'POST':
         try:
             quant = (request.form.getlist('quant[]'))
@@ -21,7 +30,11 @@ def servico(nome):
                 ped.pop(i)
             if len(quant) != 0:
                 n+=1
-                pedidos.append([nome,quant,ped,tipo,n])
+                list_n=[]
+                for j in range(len(quant)):
+                    list_n.append(n_p+1+j)
+                n_p+= len(quant)
+                pedidos.append([nome,quant,ped,tipo,list_n,n])
                 return jsonify({'suc':'T','redirect':url_for('confirmar',nome=nome)})
             else:
                 return jsonify({'suc':'F',})
@@ -42,7 +55,7 @@ def listaC():
     comidas=[]
     j=0
     for p in pedidos:
-        ped=[p[0],[],[],[],p[4]]
+        ped=[p[0],[],[],[],p[4],p[5]]
         i=0
         vp=0
         if p[3]==[]:
@@ -61,28 +74,34 @@ def listaC():
         j+=1
     if request.method == 'POST':
         f = request.form["feito"]
+        p = int(request.form["ped"])
         c=0
         for i in range(len(pedidos)):
             if c==0:
                 if comidas[i][-1]==int(f):
                     c=1
-                    prontos.append(comidas[i])
-                    comidas.pop(i)
-            if pedidos[i][-1]==int(f):  
-                j=0
-                apagar=[]
-                for t in pedidos[i][3]:
-                    if t=='Comida':
-                        apagar.append(j)
-                    j+=1
-                apagar.reverse()
-                print(pedidos)
-                pedidos.pop(i)
-                print(pedidos)
+                    print(comidas)
+                    prontos.append([comidas[i][0],comidas[i][1][p],comidas[i][2][p],comidas[i][-2][p],comidas[i][-1]])
+                    print(prontos)
+                    #comidas.pop(i)
+                    comidas[i][1].pop(p)
+                    comidas[i][2].pop(p)
+                    comidas[i][3].pop(p)
+                    comidas[i][-2].pop(p)
+                    print(comidas)
+                    
+                    
+            if pedidos[i][-1]==int(f):
+                pedidos[i][1].pop(p)
+                pedidos[i][2].pop(p)
+                pedidos[i][3].pop(p)
+                
+                if pedidos [i][1]==[]:
+                    pedidos.pop(i)
+                    
                 break
         return jsonify({'suc':'T','redirect':'listaC','nome':0})
     return render_template("pedidos.html",tip='listaC',pedidos=comidas)
-
 
 @app.route("/lista/<nome>", methods=['GET', 'POST'])
 def lista_pessoa(nome):
@@ -90,7 +109,7 @@ def lista_pessoa(nome):
     if request.method == 'POST':
         f = request.form["feito"]
         for i in range(len(prontos)):
-            if prontos[i][-1]==int(f):
+            if prontos[i][-2]==int(f):
                 prontos.pop(i)
                 break
         return jsonify({'suc':'T','redirect':'lista/'+nome,})
@@ -99,6 +118,12 @@ def lista_pessoa(nome):
 if __name__ == "__main__":
     pedidos = []
     prontos = []
-    users=['ourico','condor','pavao','cuco','gazela','pregui','orix','pavao','chita',]
+    n_p=0
+    file="users.txt"
+    try:
+        users=getUsers(file)
+    except FileNotFoundError:
+        print("Não existe nenhum utilizador registado")
+        exit()
     n=0
     app.run(debug=True,port=80,host='0.0.0.0')
