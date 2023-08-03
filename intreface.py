@@ -1,6 +1,13 @@
+from bs4 import BeautifulSoup
 from tkinter import *
 import unicodedata
 import json
+import requests
+import pyperclip
+import pyqrcode
+import webbrowser
+import subprocess
+
 
 def removerAcentos(input_str):
     nfkd_form = unicodedata.normalize('NFKD', input_str)
@@ -46,6 +53,17 @@ def getHost(file):
     
     return data
 
+
+
+def getTiny(original):
+    try:
+        c = subprocess.Popen(f'curl -s --ssl-no-revoke "https://is.gd/create.php" --data-raw "url={original}', shell=False, stdout=subprocess.PIPE).stdout.read().decode()
+        html = BeautifulSoup(c, 'html.parser')
+        html_line = str(html.find('input', {'id': 'short_url'}))
+        link=html_line.split('value="',1)[1].rsplit('"',1)[0]
+    except:
+        link = subprocess.Popen("curl -s http://tinyurl.com/api-create.php?url=192.168.1.3:8081", shell=True, stdout=subprocess.PIPE).stdout.read().decode()
+    return link
 
 
 def addUser():
@@ -274,7 +292,147 @@ def Files(uFile,sFile):
     global usersFile,settingsFile
     usersFile=uFile
     settingsFile=sFile
+
+
+def copyUrl(url,win,yCord,xCord,j):
+    pyperclip.copy(url)
+    if j==1:
+        xCord+=0.1
+    suc = Label(win,font=("Trebuche MS", 14),text="Copiado",fg="#27e85e")
+    suc.place(relx=xCord,rely=yCord)
+    root.after(5000,lambda: labelRemover(suc))
+
+def open_QR(url):
+    global qr_win
+    try:
+        qr_win.destroy()
+    except:
+        pass
+    qr_win = Toplevel()
+    qr_win.title("")
+
+    img_lbl = Label(qr_win,image=generate_QR(url))
+    img_lbl.pack()
+    sair = Button(qr_win,text="Fechar",font=("Trebuche MS", 18), bg='#f53b3b',width=12,command=qr_win.destroy)
+    sair.pack()
+
     
+    qr_win.mainloop()
+
+def generate_QR(url):
+    global qr_img
+    qr = pyqrcode.create(url)
+    qr_img = BitmapImage(data=qr.xbm(scale=7))
+    return qr_img
+
+
+def redirectUrl(url):
+    webbrowser.open(url)
+
+def labelRemover(label):
+    label.destroy()
+
+
+def finalizar(win):
+    win.destroy()
+
+
+def menu(url,localIP,p,default):
+
+    win = Tk()
+    if url!='' and localIP!='':
+        b_url = f"https://{url}"
+        localIP = f"{localIP}:{p}"
+        b_localIP = f"https://{localIP}"
+        width=900
+        janela = 2
+        tiny2_url = getTiny(localIP)
+    else:
+        janela = 1
+        width = 600
+        if url=='' and localIP!='':
+            url = (f"{localIP}:{p}")
+            b_url = f"http://{url}"
+        elif  url=='' and localIP=='':
+            url = default
+            b_url = f"http://{url}"
+        else:
+            b_url = f"https://{url}"
+
+    tiny1_url = getTiny(url)
+    
+    height = 700
+    screen_width = win.winfo_screenwidth()  # Width of the screen
+    screen_height = win.winfo_screenheight() # Height of the screen
+    x = int((screen_width/2) - (width/2))
+    y = int((screen_height/2) - (height/2))
+
+    # win window title and dimension
+    win.title("Serviço de mesa")
+    # Set geometry(widthxheight)
+    win.geometry(f'{width}x{height}+{x}+{y}')
+    win.resizable(False, False)
+
+    link1 = Label(win,font=("Trebuche MS", 17),text=url)
+
+    link1_cop = Button(win,font=("Trebuche MS", 17),bg="#856ff8",text="Copiar Link",width=12,command=lambda: copyUrl(url,win,0.12,0.29,janela))
+
+    link1_red = Button(win,font=("Trebuche MS", 17),bg="#27e85e",text="Abrir Link",width=12,command= lambda: redirectUrl(url))
+
+    link1_QR = Button(win,font=("Trebuche MS", 17),bg="#8c8c8c",text="QR Code",width=12,command=lambda: open_QR(b_url))
+
+    tiny1 = Label(win,font=("Trebuche MS", 17),text=tiny1_url)
+
+    tn1_cop = Button(win,font=("Trebuche MS", 17),bg="#856ff8",text="Copiar Link",width=12,command= lambda: copyUrl(tiny1_url,win,0.567,0.29,janela))
+
+    tn1_red = Button(win,font=("Trebuche MS", 17),bg="#27e85e",text="Abrir Link",width=12,command= lambda: redirectUrl(tiny1_url))
+
+    link1.place(relx=0.05,rely=0.03)
+    link1_cop.place(relx=0.05,rely=0.1)
+    link1_red.place(relx=0.05,rely=0.2)
+    link1_QR.place(relx=0.05,rely=0.3)
+    tiny1.place(relx=0.05,rely=0.48)
+    tn1_cop.place(relx=0.05,rely=0.55)
+    tn1_red.place(relx=0.05,rely=0.65)
+    
+    if janela == 2:
+
+        link2 = Label(win,font=("Trebuche MS", 17),text=localIP)
+
+        link2_cop = Button(win,font=("Trebuche MS", 17),bg="#856ff8",text="Copiar Link",width=12,command=lambda: copyUrl(localIP,win,0.12,0.85,0))
+
+        link2_red = Button(win,font=("Trebuche MS", 17),bg="#27e85e",text="Abrir Link",width=12,command= lambda: redirectUrl(localIP))
+
+        link2_QR = Button(win,font=("Trebuche MS", 17),bg="#8c8c8c",text="QR Code",width=12,command=lambda: open_QR(b_localIP))
+
+        tiny2 = Label(win,font=("Trebuche MS", 17),text=tiny2_url)
+
+        tn2_cop = Button(win,font=("Trebuche MS", 17),bg="#856ff8",text="Copiar Link",width=12,command= lambda: copyUrl(tiny2_url,win,0.565,0.85,0))
+
+        tn2_red = Button(win,font=("Trebuche MS", 17),bg="#27e85e",text="Abrir Link",width=12,command= lambda: redirectUrl(tiny2_url))
+
+        link2.place(relx=0.6,rely=0.03)
+        link2_cop.place(relx=0.6,rely=0.1)
+        link2_red.place(relx=0.6,rely=0.2)
+        link2_QR.place(relx=0.6,rely=0.3)
+        tiny2.place(relx=0.6,rely=0.48)
+        tn2_cop.place(relx=0.6,rely=0.55)
+        tn2_red.place(relx=0.6,rely=0.65)
+
+    quit = Button(win,font=("Trebuche MS", 17),text="Terminar",bg="#f53b3b",command=lambda: finalizar(win))
+    quit.place(relx=0.5,rely=0.91,anchor=CENTER)
+
+
+
+
+    # Execute Tkinter
+    root.mainloop()
+
+
+
+
+
+
 # create root window
 def main():
     global root, defe, ver,add,nome,suc,apg,scrollbar,host,avan,quit,start
@@ -333,9 +491,9 @@ def main():
     root.mainloop()
 
 if __name__ == "__main__":
-    main()
     usersFile = "users.txt"
     settingsFile = "settings.json"
+    main()
 
     print("Utilizadores: ")
     for u in getUsers(usersFile):
@@ -345,4 +503,11 @@ if __name__ == "__main__":
     data = getHost(settingsFile)
     for info in data:
         print(f"{info:<13}: {data[info]}")
+
+
+    datajson = requests.get(f"http://localhost:{data['port']}/api/tunnels").json()
+    url = datajson['tunnels'][0]['public_url']
+
+    menu(url)
+    
         
