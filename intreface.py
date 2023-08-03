@@ -1,12 +1,13 @@
 from bs4 import BeautifulSoup
+from threading import Thread
 from tkinter import *
 import unicodedata
 import json
-import requests
 import pyperclip
 import pyqrcode
 import webbrowser
 import subprocess
+import sys
 
 
 def removerAcentos(input_str):
@@ -41,10 +42,16 @@ def desverTodos(wi):
 
 def getUsers(file):
     utilizadores=[]
-    with open(file,"r") as f:
-        for l in f:
-            if l.strip()!='':
-                utilizadores.append(l.strip())
+    try:
+        with open(file,"r") as f:
+            for l in f:
+                if l.strip()!='':
+                    utilizadores.append(l.strip())
+
+    except FileNotFoundError:
+        with open(file,"a+") as f:
+            pass
+        
     return utilizadores
 
 def getHost(file):
@@ -55,15 +62,16 @@ def getHost(file):
 
 
 
-def getTiny(original):
-    try:
+def getTiny(original,tipo,urls,modo):
+    if modo == 'n':
         c = subprocess.Popen(f'curl -s --ssl-no-revoke "https://is.gd/create.php" --data-raw "url={original}', shell=False, stdout=subprocess.PIPE).stdout.read().decode()
         html = BeautifulSoup(c, 'html.parser')
         html_line = str(html.find('input', {'id': 'short_url'}))
         link=html_line.split('value="',1)[1].rsplit('"',1)[0]
-    except:
-        link = subprocess.Popen("curl -s http://tinyurl.com/api-create.php?url=192.168.1.3:8081", shell=True, stdout=subprocess.PIPE).stdout.read().decode()
-    return link
+    elif modo == "h":
+        link = subprocess.Popen(f"curl -s http://tinyurl.com/api-create.php?url={original}", shell=True, stdout=subprocess.PIPE).stdout.read().decode()
+
+    urls[tipo-1] = link
 
 
 def addUser():
@@ -132,6 +140,18 @@ def apgOne(apg):
         for u in users:
             f.write(f"{u}\n")
 
+def padraoSettings(file):
+    json = '''{
+    "host": {
+        "localNetwork": 0,
+        "ngrok": 0,
+        "ngrok_api": "YOUR_API_KEY",
+        "port": 8080
+    }
+}'''
+    with open(file,"a+") as f:
+        f.write(json)
+
 def mudarHost():
     global localVAR, ngrokVAR,porta,ngrokApi,errorp
     #global w_users
@@ -146,10 +166,16 @@ def mudarHost():
     start.place_forget()
 
     ver.configure(text="Voltar", bg='#f53b3b', command= lambda: sairHost([ngrokApi,ngrokApiL,lporta,porta,check1,check2,lcheck1,lcheck2,save,errorp]))
-
-    #ttk.Style.configure('custom.TCheckbutton', style="TCheckbutton", font=("Trebuche MS", 16))
-    with open(settingsFile,"r") as j:
-        rede=json.load(j)["host"]
+    try:
+        with open(settingsFile,"r+") as j:
+            #try:
+            rede=json.load(j)["host"]
+            #except:
+                
+    except:
+        padraoSettings(settingsFile)
+        with open(settingsFile,"r+") as j:
+            rede=json.load(j)["host"]
     
     if rede["localNetwork"]:
         localC = "#27e85e"
@@ -286,7 +312,7 @@ def erroP(e):
     errorp.place_forget()
     
 def close():
-    exit()
+    sys.exit()
 
 def Files(uFile,sFile):
     global usersFile,settingsFile
@@ -309,6 +335,7 @@ def open_QR(url):
     except:
         pass
     qr_win = Toplevel()
+    
     qr_win.title("")
 
     img_lbl = Label(qr_win,image=generate_QR(url))
@@ -316,6 +343,11 @@ def open_QR(url):
     sair = Button(qr_win,text="Fechar",font=("Trebuche MS", 18), bg='#f53b3b',width=12,command=qr_win.destroy)
     sair.pack()
 
+    qr_win.update_idletasks()  # Update "requested size" from geometry manager
+
+    x = (qr_win.winfo_screenwidth() - qr_win.winfo_reqwidth()) / 2
+    y = (qr_win.winfo_screenheight() - qr_win.winfo_reqheight()) / 2
+    qr_win.geometry("+%d+%d" % (x, y))
     
     qr_win.mainloop()
 
@@ -337,16 +369,18 @@ def finalizar(win):
     win.destroy()
 
 
-def menu(url,localIP,p,default):
 
+def menu(url,localIP,p,default):
     win = Tk()
+    tiny_urls = [None]*2
     if url!='' and localIP!='':
+        janela = 2
+        width=900
         b_url = f"https://{url}"
         localIP = f"{localIP}:{p}"
-        b_localIP = f"https://{localIP}"
-        width=900
-        janela = 2
-        tiny2_url = getTiny(localIP)
+        b_localIP = f"http://{localIP}"
+        tn2_url = Thread(target=getTiny,args=(b_localIP,2,tiny_urls,'h',),daemon=True)
+        tn2_url.start()
     else:
         janela = 1
         width = 600
@@ -359,8 +393,11 @@ def menu(url,localIP,p,default):
         else:
             b_url = f"https://{url}"
 
-    tiny1_url = getTiny(url)
-    
+    #tiny1_url = getTiny(b_url)
+    tn1_url = Thread(target=getTiny,args=(b_url,1,tiny_urls,'n',),daemon=True)
+    tn1_url.start()
+
+
     height = 700
     screen_width = win.winfo_screenwidth()  # Width of the screen
     screen_height = win.winfo_screenheight() # Height of the screen
@@ -373,19 +410,21 @@ def menu(url,localIP,p,default):
     win.geometry(f'{width}x{height}+{x}+{y}')
     win.resizable(False, False)
 
+    win.protocol("WM_DELETE_WINDOW", lambda: finalizar(win))
+
     link1 = Label(win,font=("Trebuche MS", 17),text=url)
 
-    link1_cop = Button(win,font=("Trebuche MS", 17),bg="#856ff8",text="Copiar Link",width=12,command=lambda: copyUrl(url,win,0.12,0.29,janela))
+    link1_cop = Button(win,font=("Trebuche MS", 17),bg="#856ff8",text="Copiar Link",width=12,command=lambda: copyUrl(b_url,win,0.12,0.29,janela))
 
-    link1_red = Button(win,font=("Trebuche MS", 17),bg="#27e85e",text="Abrir Link",width=12,command= lambda: redirectUrl(url))
+    link1_red = Button(win,font=("Trebuche MS", 17),bg="#27e85e",text="Abrir Link",width=12,command= lambda: redirectUrl(b_url))
 
     link1_QR = Button(win,font=("Trebuche MS", 17),bg="#8c8c8c",text="QR Code",width=12,command=lambda: open_QR(b_url))
 
-    tiny1 = Label(win,font=("Trebuche MS", 17),text=tiny1_url)
+    tiny1 = Label(win,font=("Trebuche MS", 17))
 
-    tn1_cop = Button(win,font=("Trebuche MS", 17),bg="#856ff8",text="Copiar Link",width=12,command= lambda: copyUrl(tiny1_url,win,0.567,0.29,janela))
+    tn1_cop = Button(win,font=("Trebuche MS", 17),bg="#856ff8",text="Copiar Link",width=12,command= lambda: copyUrl(tiny_urls[0],win,0.567,0.29,janela))
 
-    tn1_red = Button(win,font=("Trebuche MS", 17),bg="#27e85e",text="Abrir Link",width=12,command= lambda: redirectUrl(tiny1_url))
+    tn1_red = Button(win,font=("Trebuche MS", 17),bg="#27e85e",text="Abrir Link",width=12,command= lambda: redirectUrl(tiny_urls[0]))
 
     link1.place(relx=0.05,rely=0.03)
     link1_cop.place(relx=0.05,rely=0.1)
@@ -399,38 +438,38 @@ def menu(url,localIP,p,default):
 
         link2 = Label(win,font=("Trebuche MS", 17),text=localIP)
 
-        link2_cop = Button(win,font=("Trebuche MS", 17),bg="#856ff8",text="Copiar Link",width=12,command=lambda: copyUrl(localIP,win,0.12,0.85,0))
+        link2_cop = Button(win,font=("Trebuche MS", 17),bg="#856ff8",text="Copiar Link",width=12,command=lambda: copyUrl(b_localIP,win,0.12,0.85,0))
 
-        link2_red = Button(win,font=("Trebuche MS", 17),bg="#27e85e",text="Abrir Link",width=12,command= lambda: redirectUrl(localIP))
+        link2_red = Button(win,font=("Trebuche MS", 17),bg="#27e85e",text="Abrir Link",width=12,command= lambda: redirectUrl(b_localIP))
 
         link2_QR = Button(win,font=("Trebuche MS", 17),bg="#8c8c8c",text="QR Code",width=12,command=lambda: open_QR(b_localIP))
+        
+        tiny2 = Label(win,font=("Trebuche MS", 17))
 
-        tiny2 = Label(win,font=("Trebuche MS", 17),text=tiny2_url)
+        tn2_cop = Button(win,font=("Trebuche MS", 17),bg="#856ff8",text="Copiar Link",width=12,command= lambda: copyUrl(tiny_urls[1],win,0.565,0.85,0))
 
-        tn2_cop = Button(win,font=("Trebuche MS", 17),bg="#856ff8",text="Copiar Link",width=12,command= lambda: copyUrl(tiny2_url,win,0.565,0.85,0))
+        tn2_red = Button(win,font=("Trebuche MS", 17),bg="#27e85e",text="Abrir Link",width=12,command= lambda: redirectUrl(tiny_urls[1]))
 
-        tn2_red = Button(win,font=("Trebuche MS", 17),bg="#27e85e",text="Abrir Link",width=12,command= lambda: redirectUrl(tiny2_url))
-
-        link2.place(relx=0.6,rely=0.03)
-        link2_cop.place(relx=0.6,rely=0.1)
-        link2_red.place(relx=0.6,rely=0.2)
-        link2_QR.place(relx=0.6,rely=0.3)
-        tiny2.place(relx=0.6,rely=0.48)
-        tn2_cop.place(relx=0.6,rely=0.55)
-        tn2_red.place(relx=0.6,rely=0.65)
+        link2.place(relx=0.55,rely=0.03)
+        link2_cop.place(relx=0.55,rely=0.1)
+        link2_red.place(relx=0.55,rely=0.2)
+        link2_QR.place(relx=0.55,rely=0.3)
+        tiny2.place(relx=0.55,rely=0.48)
+        tn2_cop.place(relx=0.55,rely=0.55)
+        tn2_red.place(relx=0.55,rely=0.65)
+        
+            
 
     quit = Button(win,font=("Trebuche MS", 17),text="Terminar",bg="#f53b3b",command=lambda: finalizar(win))
     quit.place(relx=0.5,rely=0.91,anchor=CENTER)
 
-
-
+    tn1_url.join()
+    tiny1.configure(text=tiny_urls[0])
+    tn2_url.join()
+    tiny2.configure(text=tiny_urls[1])
 
     # Execute Tkinter
     root.mainloop()
-
-
-
-
 
 
 # create root window
@@ -503,11 +542,6 @@ if __name__ == "__main__":
     data = getHost(settingsFile)
     for info in data:
         print(f"{info:<13}: {data[info]}")
-
-
-    datajson = requests.get(f"http://localhost:{data['port']}/api/tunnels").json()
-    url = datajson['tunnels'][0]['public_url']
-
-    menu(url)
-    
         
+    print()
+    print()
