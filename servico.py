@@ -1,16 +1,15 @@
 from flask import Flask, request, render_template, jsonify, url_for
 import intreface as inter
-import requests
+from pyngrok import ngrok, conf
 import socket
 from threading import Thread
-import subprocess
 
 app = Flask(__name__)
 
-def getUrl(p=4040):
-    datajson = requests.get(f"http://localhost:{p}/api/tunnels").json()
-    link = datajson['tunnels'][0]['public_url']
-    return link
+def startNgrok(port,key,url):
+    ngrok.set_auth_token(key)
+    conf.get_default().region = "eu"
+    url[0] = ngrok.connect(port).public_url
 
 
 @app.route("/servico/<nome>", methods=['GET', 'POST'])
@@ -84,15 +83,13 @@ def listaC():
             if c==0:
                 if comidas[i][-1]==int(f):
                     c=1
-                    print(comidas)
+                    
                     prontos.append([comidas[i][0],comidas[i][1][p],comidas[i][2][p],comidas[i][-2][p],comidas[i][-1]])
-                    print(prontos)
                     #comidas.pop(i)
                     comidas[i][1].pop(p)
                     comidas[i][2].pop(p)
                     comidas[i][3].pop(p)
                     comidas[i][-2].pop(p)
-                    print(comidas)
                     
                     
             if pedidos[i][-1]==int(f):
@@ -132,21 +129,19 @@ if __name__ == "__main__":
     users = inter.getUsers(usersFile)
     data = inter.getHost(settingsFile)
     
-    if data["localNetwork"]:
-        host = '0.0.0.0'
-    else:
-        host = ''
-    
-    public_ip = ''
+    public_ip = ['']*1
+    host = ''
     localhost = ''
     if data["ngrok"]:
-        command = subprocess.Popen(['ngrok', 'http', f'{data["port"]}'],creationflags=subprocess.CREATE_NEW_CONSOLE)
-        public_ip = getUrl()
+        ngrok_tunnel = Thread(target=startNgrok,args=(data["port"],data["ngrok_api"],public_ip,),daemon=True,)
+        ngrok_tunnel.start()
+
     if data["localNetwork"]:
+        host = '0.0.0.0'
         localhost = socket.gethostbyname(socket.gethostname())
     th = Thread(target=app.run, args=(host,data["port"],),daemon=True)
     th.start()
-    public_ip=public_ip.replace("https://",'')
-    inter.menu(public_ip,localhost,data["port"],"127.0.0.1")
+    ngrok_tunnel.join()
 
-    
+    public_ip=public_ip[0].replace("http://",'')
+    inter.menu(public_ip,localhost,data["port"],"127.0.0.1",)
