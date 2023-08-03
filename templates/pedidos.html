@@ -30,8 +30,6 @@
                 window.location.reload(true);
             }, 5000);
 
-
-            
             function removeRow(n,v,t){
                 //var row = document.getElementById(n);
                 //row.parentNode.removeChild(row)
@@ -39,9 +37,6 @@
                 json_send = {feito:n, ped:v};
                 $.post($SCRIPT_ROOT + '/'+t, json_send, reload,'json');
             }
-            
-
-
         </script>       
         <h1 style="font-size:100px">Lista de pedidos</h1>
         {% for p in pedidos %}

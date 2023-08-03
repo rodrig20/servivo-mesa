@@ -13,6 +13,7 @@ function reload(data){
             //location.reload();
     }
 } 
+
 function enviar(){
     var l1 = $('.quantity').length;
     var quant = [];
@@ -46,8 +47,6 @@ function lista(){
     nome = $('.nome').val();
     $(location).prop('href', $SCRIPT_ROOT + '/lista/'+ nome);
 }
-
-
 
 // Início do jQuery:
 $(function() {
