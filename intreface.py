@@ -17,6 +17,7 @@ def removerAcentos(input_str):
 
 #hide_widget
 def verTodos():
+    root.focus()
     defe.place_forget()
     add.place_forget() 
 
@@ -33,6 +34,7 @@ def verTodos():
         
 #show_widget
 def desverTodos(wi):
+    root.focus()
     defe.place(relx=0.02,rely=0.02)
     add.place(relx=0.05,rely=0.16)
     scrollbar.pack_forget()
@@ -64,7 +66,7 @@ def getHost(file):
 
 def getTiny(original,tipo,urls,modo):
     if modo == 'n':
-        c = subprocess.Popen(f'curl -s --ssl-no-revoke "https://is.gd/create.php" --data-raw "url={original}', shell=False, stdout=subprocess.PIPE).stdout.read().decode()
+        c = subprocess.Popen(f'curl -s --ssl-no-revoke "https://is.gd/create.php" --data-raw "url={original}', shell=True, stdout=subprocess.PIPE).stdout.read().decode()
         html = BeautifulSoup(c, 'html.parser')
         html_line = str(html.find('input', {'id': 'short_url'}))
         link=html_line.split('value="',1)[1].rsplit('"',1)[0]
@@ -73,8 +75,7 @@ def getTiny(original,tipo,urls,modo):
 
     urls[tipo-1] = link
 
-
-def addUser():
+def addUser(_=None):
     novo = removerAcentos(str(nome.get()).strip()).decode()
     users = getUsers(usersFile)
 
@@ -102,6 +103,7 @@ def addUser():
 
 def apagarUser():
     global w_users
+    root.focus()
     defe.place_forget()
     add.place_forget()
 
@@ -111,6 +113,7 @@ def apagarUser():
 
     todos = Button(root, text="Apagar Tudo", font=("Trebuche MS", 12),width=18,bg="#856ff8", command=lambda: apgOne(w_users.size()))
     todos.place(relx=0.69,rely=0.09)
+
     users= getUsers(usersFile)
     scrollbar.pack( side = RIGHT, fill =Y)
     w_users = Listbox(root, width=47,selectmode=MULTIPLE, height=20, font=("Trebuche MS", 17), yscrollcommand = scrollbar.set )
@@ -139,6 +142,7 @@ def apgOne(apg):
     with open(usersFile,"w") as f:
         for u in users:
             f.write(f"{u}\n")
+    root.focus()
 
 def padraoSettings(file):
     json = '''{
@@ -155,6 +159,7 @@ def padraoSettings(file):
 def mudarHost():
     global localVAR, ngrokVAR,porta,ngrokApi,errorp
     #global w_users
+    root.focus()
     defe.place_forget()
     add.place_forget()
     nome.place_forget()
@@ -291,6 +296,7 @@ def guardarHost(erro):
         root.focus()
 
 def sairHost(w_list):
+    root.focus()
     for w in w_list:
         w.destroy()
     ver.configure(text="Ver utilizadores",bg="#856ff8",command=verTodos,)
@@ -312,7 +318,8 @@ def erroP(e):
     errorp.place_forget()
     
 def close():
-    sys.exit()
+    #subprocess.Popen("taskkill /f /im ngrok.exe",stdout=subprocess.PIPE,shell=True)
+    sys.exit(1) 
 
 def Files(uFile,sFile):
     global usersFile,settingsFile
@@ -323,7 +330,7 @@ def Files(uFile,sFile):
 def copyUrl(url,win,yCord,xCord,j):
     pyperclip.copy(url)
     if j==1:
-        xCord+=0.1
+        xCord+=0.13
     suc = Label(win,font=("Trebuche MS", 14),text="Copiado",fg="#27e85e")
     suc.place(relx=xCord,rely=yCord)
     root.after(5000,lambda: labelRemover(suc))
@@ -366,6 +373,7 @@ def labelRemover(label):
 
 
 def finalizar(win):
+    #subprocess.Popen("taskkill /f /im ngrok.exe",stdout=subprocess.PIPE,shell=True)
     win.destroy()
 
 
@@ -373,6 +381,7 @@ def finalizar(win):
 def menu(url,localIP,p,default):
     win = Tk()
     tiny_urls = [None]*2
+    
     if url!='' and localIP!='':
         janela = 2
         width=900
@@ -381,20 +390,24 @@ def menu(url,localIP,p,default):
         b_localIP = f"http://{localIP}"
         tn2_url = Thread(target=getTiny,args=(b_localIP,2,tiny_urls,'h',),daemon=True)
         tn2_url.start()
+        m = 'n'
     else:
         janela = 1
         width = 600
         if url=='' and localIP!='':
             url = (f"{localIP}:{p}")
             b_url = f"http://{url}"
+            m = 'h' 
         elif  url=='' and localIP=='':
-            url = default
+            url = f"{default}:{p}"
             b_url = f"http://{url}"
+            m = 'h' 
         else:
             b_url = f"https://{url}"
+            m = 'n' 
 
     #tiny1_url = getTiny(b_url)
-    tn1_url = Thread(target=getTiny,args=(b_url,1,tiny_urls,'n',),daemon=True)
+    tn1_url = Thread(target=getTiny,args=(b_url,1,tiny_urls,m,),daemon=True)
     tn1_url.start()
 
 
@@ -410,7 +423,7 @@ def menu(url,localIP,p,default):
     win.geometry(f'{width}x{height}+{x}+{y}')
     win.resizable(False, False)
 
-    win.protocol("WM_DELETE_WINDOW", lambda: finalizar(win))
+    win.protocol("WM_DELETE_WINDOW", close)
 
     link1 = Label(win,font=("Trebuche MS", 17),text=url)
 
@@ -438,7 +451,7 @@ def menu(url,localIP,p,default):
 
         link2 = Label(win,font=("Trebuche MS", 17),text=localIP)
 
-        link2_cop = Button(win,font=("Trebuche MS", 17),bg="#856ff8",text="Copiar Link",width=12,command=lambda: copyUrl(b_localIP,win,0.12,0.85,0))
+        link2_cop = Button(win,font=("Trebuche MS", 17),bg="#856ff8",text="Copiar Link",width=12,command=lambda: copyUrl(b_localIP,win,0.12,0.79,0))
 
         link2_red = Button(win,font=("Trebuche MS", 17),bg="#27e85e",text="Abrir Link",width=12,command= lambda: redirectUrl(b_localIP))
 
@@ -446,7 +459,7 @@ def menu(url,localIP,p,default):
         
         tiny2 = Label(win,font=("Trebuche MS", 17))
 
-        tn2_cop = Button(win,font=("Trebuche MS", 17),bg="#856ff8",text="Copiar Link",width=12,command= lambda: copyUrl(tiny_urls[1],win,0.565,0.85,0))
+        tn2_cop = Button(win,font=("Trebuche MS", 17),bg="#856ff8",text="Copiar Link",width=12,command= lambda: copyUrl(tiny_urls[1],win,0.565,0.79,0))
 
         tn2_red = Button(win,font=("Trebuche MS", 17),bg="#27e85e",text="Abrir Link",width=12,command= lambda: redirectUrl(tiny_urls[1]))
 
@@ -465,8 +478,9 @@ def menu(url,localIP,p,default):
 
     tn1_url.join()
     tiny1.configure(text=tiny_urls[0])
-    tn2_url.join()
-    tiny2.configure(text=tiny_urls[1])
+    if janela == 2:
+        tn2_url.join()
+        tiny2.configure(text=tiny_urls[1])
 
     # Execute Tkinter
     root.mainloop()
@@ -508,6 +522,7 @@ def main():
     nome = Entry(root, font=("Trebuche MS", 20),width=20,highlightthickness=2)
     nome.place(relx=0.35,rely=0.155)
 
+    nome.bind('<Return>',addUser)
     suc = Label(root, text="Nome adicionado com sucesso!",font=("Trebuche MS", 6),fg="green")
     nome.bind("<FocusIn>", sucesso)
 
