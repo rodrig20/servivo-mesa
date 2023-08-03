@@ -1,14 +1,14 @@
 from flask import Flask, request, render_template, jsonify, url_for
+import intreface as inter
+import requests
+import subprocess
 
 app = Flask(__name__)
 
-def getUsers(file):
-    utilizadores=[]
-    with open(file,"r") as f:
-        for l in f:
-            if l.strip()!='' and l.strip()[0]!='#':
-                utilizadores.append(l.strip())
-    return utilizadores
+def getUrl(p=4040):
+    datajson = requests.get(f"http://localhost:{p}/api/tunnels").json()
+    link = datajson['tunnels'][0]['public_url']
+    return link
 
 
 @app.route("/servico/<nome>", methods=['GET', 'POST'])
@@ -107,7 +107,6 @@ def listaC():
 
 @app.route("/lista/<nome>", methods=['GET', 'POST'])
 def lista_pessoa(nome):
-    global prontos  
     if request.method == 'POST':
         f = request.form["feito"]
         for i in range(len(prontos)):
@@ -124,12 +123,21 @@ if __name__ == "__main__":
     prontos = []
     n_p=0
     n=0
-    file="users.txt"
-    try:
-        users=getUsers(file)
-        if users==[]:
-            users[0]=3
-    except:
-        print("Não existe nenhum utilizador registado")
-        exit()
-    app.run(debug=True,port=8080,host='0.0.0.0')
+    usersFile="users.txt"
+    settingsFile = "settings.json"
+    inter.Files(usersFile,settingsFile)
+    inter.main()
+    users = inter.getUsers(usersFile)
+    data = inter.getHost(settingsFile)
+    
+    if data["localNetwork"]:
+        host = '0.0.0.0'
+    else:
+        host = ''
+    
+    if data["ngrok"]:
+        command = subprocess.Popen(['ngrok', 'http', f'{data["port"]}'],creationflags=subprocess.CREATE_NEW_CONSOLE    )
+        url = getUrl()
+
+
+    app.run(port=data["port"],host=host)
