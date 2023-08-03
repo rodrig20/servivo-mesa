@@ -1,6 +1,8 @@
 from flask import Flask, request, render_template, jsonify, url_for
 import intreface as inter
 import requests
+import socket
+from threading import Thread
 import subprocess
 
 app = Flask(__name__)
@@ -135,9 +137,16 @@ if __name__ == "__main__":
     else:
         host = ''
     
+    public_ip = ''
+    localhost = ''
     if data["ngrok"]:
-        command = subprocess.Popen(['ngrok', 'http', f'{data["port"]}'],creationflags=subprocess.CREATE_NEW_CONSOLE    )
-        url = getUrl()
+        command = subprocess.Popen(['ngrok', 'http', f'{data["port"]}'],creationflags=subprocess.CREATE_NEW_CONSOLE)
+        public_ip = getUrl()
+    if data["localNetwork"]:
+        localhost = socket.gethostbyname(socket.gethostname())
+    th = Thread(target=app.run, args=(host,data["port"],),daemon=True)
+    th.start()
+    public_ip=public_ip.replace("https://",'')
+    inter.menu(public_ip,localhost,data["port"],"127.0.0.1")
 
-
-    app.run(port=data["port"],host=host)
+    
