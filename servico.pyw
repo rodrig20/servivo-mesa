@@ -1,15 +1,31 @@
 from flask import Flask, request, render_template, jsonify, url_for
-import intreface as inter
 from pyngrok import ngrok, conf
-import socket
 from threading import Thread
+import intreface as inter
+import socket
+import sys
+import os
+
+try:
+    from ctypes import windll
+
+    windll.shcore.SetProcessDpiAwareness(1)
+except: 
+    pass
+
 
 app = Flask(__name__)
 
 def startNgrok(port,key,url):
-    ngrok.set_auth_token(key)
-    conf.get_default().region = "eu"
+    pathname = os.path.dirname(sys.argv[0]).replace("\\","/")     
+
+    fullname = f'{pathname}/pyngrok/bin/ngrok.exe'
+    #conf.set_default(conf.PyngrokConfig(region="eu", ngrok_path="pyngrok/bin/ngrok"))
+    #ngrok.set_auth_token(key)
+    #conf.get_default().region = "eu"
+    conf.set_default(conf.PyngrokConfig(region="eu", ngrok_path=fullname,auth_token=key,log_event_callback=None))
     url[0] = ngrok.connect(port).public_url
+    #url[0] = 'http://ngrok.com'
 
 
 @app.route("/servico/<nome>", methods=['GET', 'POST'])
@@ -117,21 +133,30 @@ def lista_pessoa(nome):
         return "Acesso negado"
     return render_template("lista.html",nome=nome,pedidos=prontos)
 
+@app.route("/", methods=['GET', 'POST'])
+def home():
+    return "Inserir Nome"
+
 if __name__ == "__main__":
     pedidos = []
     prontos = []
     n_p=0
     n=0
+
     usersFile="users.txt"
     settingsFile = "settings.json"
+    
     inter.Files(usersFile,settingsFile)
+    
     inter.main()
+    
     users = inter.getUsers(usersFile)
     data = inter.getHost(settingsFile)
     
     public_ip = ['']*1
     host = ''
     localhost = ''
+
     if data["ngrok"]:
         ngrok_tunnel = Thread(target=startNgrok,args=(data["port"],data["ngrok_api"],public_ip,),daemon=True,)
         ngrok_tunnel.start()
@@ -139,9 +164,13 @@ if __name__ == "__main__":
     if data["localNetwork"]:
         host = '0.0.0.0'
         localhost = socket.gethostbyname(socket.gethostname())
-    th = Thread(target=app.run, args=(host,data["port"],),daemon=True)
-    th.start()
-    ngrok_tunnel.join()
+
+    from waitress import serve
+    #th = Thread(target=app.run, args=(host,data["port"],),daemon=True)
+    th = Thread(target=serve, args=(app,),kwargs={'host':host,'port':data["port"]},daemon=True)
+    th.start() 
+    if data["ngrok"]:
+        ngrok_tunnel.join()
 
     public_ip=public_ip[0].replace("http://",'')
     inter.menu(public_ip,localhost,data["port"],"127.0.0.1",)
