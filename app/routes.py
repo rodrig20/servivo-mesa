@@ -3,7 +3,7 @@ from flask_socketio import Namespace, emit
 from datetime import datetime, timedelta
 from functools import wraps
 
-from app import app, socketio, users, urls_info, password
+from app import app, socketio, password
 
 class AtualizarPagina(Namespace):
     def on_connect(self):
@@ -158,7 +158,7 @@ def login_required(required):
     def decorator(original_function):
         @wraps(original_function)
         def wrapper_function(*args, **kwargs):
-            if bool('username' in session and session['username'] in users) == required:
+            if bool('username' in session and session['username'] in app.config["USERS"]) == required:
                 return original_function(*args, **kwargs)
             elif required:
                 return redirect(url_for('login'))
@@ -193,7 +193,6 @@ def createUserNamespace(basic_namespace,user_list):
 def createListNamespace(basic_namespace):
     if app.config["Comida"]:
         socketio.on_namespace(AtualizarPagina(basic_namespace+"/Comida"))
-        print(basic_namespace+"/Comida")
     if app.config["Bebida"]:
         socketio.on_namespace(AtualizarPagina(basic_namespace+"/Bebida"))
         
@@ -206,12 +205,10 @@ Problemas:
 
 @socketio.on('updateProntos')
 def handle_updateProntos(nome):
-    print("/atualizarProntos/"+nome)
     emit('reloadPedidos', {"pedidos":pedidos_prontos.getPedidoNome(nome)}, broadcast=True, namespace="/atualizarProntos/"+nome)
     
 @socketio.on('updateEspera')
 def handle_updateEspera(tipo):
-    print(tipo)
     emit('reloadPedidos', {"pedidos":createList(tipo)}, broadcast=True, namespace="/atualizarEspera/"+tipo)
  
 @app.route('/static/<file_type>/<path:filename>')
@@ -235,7 +232,7 @@ def serve_static(file_type, filename):
 def servico():
     nome = session["username"]
     if request.method == "GET":
-        return render_template("fazerPedido.html",nome=nome,urls_ativos=[urls_info["cozinha"],urls_info["bar"],urls_info["QrCode"]],opcoes_validas=todas_opcoes,preco_opcoes=preco_opcoes,pre_def=[[],[],[]])
+        return render_template("fazerPedido.html",nome=nome,urls_ativos=[app.config["URLS"]["cozinha"],app.config["URLS"]["bar"],app.config["URLS"]["QrCode"]],opcoes_validas=app.config["MENU_NAME"],preco_opcoes=app.config["MENU_PRICE"],pre_def=[[],[],[]])
     elif request.method == "POST":
         guardado = guardarPedido(nome)
         if guardado:
@@ -280,7 +277,7 @@ def QrCode():
 @route_activated_factory("QrCode")
 def pedidoAutomatico():
     if request.method == 'GET':
-        return render_template("fazerPedido.html",urls_ativos=[urls_info["cozinha"],urls_info["bar"],urls_info["QrCode"]],opcoes_validas=todas_opcoes,preco_opcoes=preco_opcoes,pre_def=[[],[],[]])
+        return render_template("fazerPedido.html",urls_ativos=[app.config["URLS"]["cozinha"],app.config["URLS"]["bar"],app.config["URLS"]["QrCode"]],opcoes_validas=app.config["MENU_NAME"],preco_opcoes=app.config["MENU_PRICE"],pre_def=[[],[],[]])
 
 @app.route('/lista/Comida', methods=['GET', 'PUT'])
 @app.route('/lista/Bebida', methods=['GET', 'PUT'])
@@ -307,7 +304,7 @@ def login():
     elif request.method == 'POST':    
         username = request.form['user']
         user_password = request.form['pass']
-        if username in users and user_password == password:
+        if username in app.config["USERS"] and user_password == password:
             session["username"] = username
             session.permanent = True
             
@@ -325,14 +322,10 @@ def logout():
 pedidos_espera = ListaTodosPedidos_Espera()
 pedidos_prontos = ListaTodosPedidos_Prontos()
 
-atualizarRotas(urls_info)
+atualizarRotas(app.config["URLS"])
 
-createUserNamespace("/atualizarProntos",users)
+createUserNamespace("/atualizarProntos",app.config["USERS"])
 createListNamespace("/atualizarEspera")
-
-
-todas_opcoes = [['Cachorro sem Nada','Cachorro com Ketc. Most. Maio.', 'Cachorro com Ketc.', 'Cachorro com Maio.', 'Cachorro com Most.', 'Batata frita', 'Amendoins', 'Tremoços'], ['Água Fresca', 'Coca Cola', 'Limonada', 'Sumol']]
-preco_opcoes = [[2.0, 2.0,2.0, 2.0, 2.0, 0.5, 0.5, 0.5], [0.35, 1.2, 0.5, 1.2]]
 
 
 if __name__ == "__main__":
