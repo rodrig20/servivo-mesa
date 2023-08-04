@@ -1,22 +1,14 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'endWidgetWJNeUn.ui'
+## Form generated from reading UI file 'endWidgetsLiMLn.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.5.1
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
 
-from PySide6.QtCore import (QCoreApplication, QDate, QDateTime, QLocale,
-    QMetaObject, QObject, QPoint, QRect,
-    QSize, QTime, QUrl, Qt)
-from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
-    QFont, QFontDatabase, QGradient, QIcon,
-    QImage, QKeySequence, QLinearGradient, QPainter,
-    QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QFrame, QLabel, QPushButton,
-    QSizePolicy, QVBoxLayout, QWidget)
+from ..qt_core import *
 
 class Ui_EndWindow(object):
     def setupUi(self, EndWindow):
@@ -34,7 +26,7 @@ class Ui_EndWindow(object):
         self.verticalLayout_2 = QVBoxLayout(self.mainFrame)
         self.verticalLayout_2.setSpacing(0)
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
-        self.verticalLayout_2.setContentsMargins(0, 0, 0, 0)
+        self.verticalLayout_2.setContentsMargins(0, -1, 0, 0)
         self.url = QLabel(self.mainFrame)
         self.url.setObjectName(u"url")
         self.url.setAlignment(Qt.AlignCenter)

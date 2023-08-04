@@ -723,7 +723,7 @@ class Ui_StartWidget(object):
         self.version_label.setMinimumSize(QSize(54, 0))
         self.version_label.setMaximumSize(QSize(54, 16777215))
         self.version_label.setStyleSheet(u"")
-        self.version_label.setText(u"v2.4")
+        self.version_label.setText(u"v2.5")
         self.version_label.setAlignment(Qt.AlignCenter)
 
         self.verticalLayout_14.addWidget(self.version_label)
