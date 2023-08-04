@@ -1,31 +1,28 @@
-from .Ui.ui_mainWidget import *
+from .Ui.ui_startWidget import *
+from .Ui.ui_loadWidget import *
+from .Ui.ui_endWidget import *
 from .Ui.ui_list_ped import *
 from .Ui.ui_switch import *
 from .qt_core import *
-from multiprocessing import Process
 import sys, os
 import json
 
-class MainWindow(QMainWindow):
-    def __init__(self,start_function):
+class StartWindow(QWidget):
+    def __init__(self,style_sheet):
         super().__init__()
-        self.setGeometry(200,200,1000,500)
-        self.setMinimumSize(910,450)
-        self.ui = Ui_MainWidget()
-        self.function = start_function
+        self.ui = Ui_StartWidget()
         self.ui.setupUi(self)
-        self.setWindowTitle("Serviço")
-        self.setCentralWidget(self.ui.mainFrame)
+        #self.setCentralWidget(self.ui.mainFrame)
         self.atual_page = None
         self.sideBar_compressed = 1
         self.btn_list = (self.ui.Home_sideBar,self.ui.Users_sideBar,self.ui.Menu_sideBar,self.ui.Access_sideBar,self.ui.Network_sideBar,self.ui.Settings_sideBar)
         self.config_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))+"\\config\\"
+        self.style_sheet =  style_sheet
         self.setupCustomUI()
         self.load_style()
         self.setupCommands()
         self.load_all()
         self.changed = False
-        self.show()
         
     def setupCustomUI(self):
         #Add Access toggle Button 
@@ -104,11 +101,9 @@ class MainWindow(QMainWindow):
         #Action Buttons:
         self.ui.close_btn.clicked.connect(QCoreApplication.instance().quit)
         self.ui.save_all.clicked.connect(self.save_all)
-        self.ui.start_btn.clicked.connect(lambda: self.start_function(self.function))
     
     def load_style(self):
-        with open("interface/Ui/styles.qss", "r") as f:
-            default_style = f.read()   
+          
         try:
             with open("interface/Ui/app.color", 'r+',encoding="utf-8") as c:
                 info = c.read().split("; ")
@@ -137,7 +132,7 @@ class MainWindow(QMainWindow):
             self.sidebarHouver_color = other_theme_options["sidebarHouver"]
         except FileNotFoundError:
             with open("interface/themes.json", 'w',encoding="utf-8"): pass
-        style = default_style.replace("var(primary)", self.primary_color).replace("var(primary_variant)",self.primary_variant_color).replace("var(background)",self.background_color).replace("var(text)",self.text_color).replace("var(widget)",self.widget_color).replace("var(sidebar)",self.sidebar_color).replace("var(subwidget)",self.subwidget_color).replace("var(backgroundWidget)",self.backgroundWidget_color).replace("var(sidebarHouver)",self.sidebarHouver_color)
+        style = self.style_sheet.replace("var(primary)", self.primary_color).replace("var(primary_variant)",self.primary_variant_color).replace("var(background)",self.background_color).replace("var(text)",self.text_color).replace("var(widget)",self.widget_color).replace("var(sidebar)",self.sidebar_color).replace("var(subwidget)",self.subwidget_color).replace("var(backgroundWidget)",self.backgroundWidget_color).replace("var(sidebarHouver)",self.sidebarHouver_color)
         self.ui.mainFrame.setStyleSheet(style)
         self.change_page(self.atual_page)
         self.enable_cozinha.update_style(self.text_color,self.primary_color)
@@ -489,12 +484,187 @@ class MainWindow(QMainWindow):
         for item in children:
             self.changed = True
             item.deleteLater()
-            
-    def start_function(self,func):
-        self.save_all()
-        function_thread = Process(target=func)
-        function_thread.start()
+
+class ServerConfig:
+    def __init__(self):
+        self.links = []
     
-  
+class Worker(QThread):
+    progressChanged = Signal(int)
+
+    def __init__(self, function, string, parent=None):
+        self.function = function
+        self.string = string
+        super().__init__(parent)
+
+    def run(self):
+        progress_callback = self.progressChanged.emit
+        self.function(self.string,progress_callback)
+
+class ProgressBarManager(QObject):
+    animationFinished = Signal()
+
+    def __init__(self, parent, progressbar):
+        super().__init__()
+        self.progressbar = progressbar
+        self._parent = parent
+        self.animation = None
+
+    @Slot(int)
+    def update_progress_bar(self, value):
+        if self.animation and self.animation.state() == QPropertyAnimation.Running:
+            # Ainda há uma animação em andamento, aguarda o término
+            self.animationFinished.connect(lambda: self.update_progress_bar(value))
+        else:
+            self.animation = QPropertyAnimation(self.progressbar, b"value")
+            self.animation.setDuration(50)  # Duração da animação em milissegundos
+            self.animation.setEasingCurve(QEasingCurve.InOutCirc)
+            self.animation.setStartValue(self.progressbar.value())
+            self.animation.setEndValue(self.progressbar.value() + value)
+            self.animation.finished.connect(self.animationFinished.emit)
+            self.animation.start()
+
+            if self.progressbar.value() >= 100:
+                self._parent.end_window.load_all(self._parent.server_config)
+                self._parent.janelas.setCurrentIndex(2)
+    
+class LoadWindow(QWidget):
+    def __init__(self,style_sheet):
+        super().__init__()
+        self.ui = Ui_LoadWidget()
+        self.ui.setupUi(self)
+        self.ui.progressBar.setValue(0) 
+        self.style_sheet = style_sheet
+        self.load_style()
+        
+    def resizeEvent(self,_):
+        ###TITLES
+        title_font_size = 35  # Tamanho base da fonte
+        # Calcula o novo tamanho da fonte com base na largura atual da janela
+        new_title_font_size = int(self.width() / 100) + title_font_size
+        # Configura a nova fonte
+        title_font = QFont()
+        title_font.setPointSize(new_title_font_size)
+        self.ui.loading_label.setFont(title_font)
+        
+        progressBar_height = round(40+self.width()*0.05/3)
+        self.ui.progressBar.setStyleSheet(f"height:{progressBar_height};margin:{progressBar_height};margin-bottom:{round(1.5*progressBar_height)};margin-top:{round(1.5*progressBar_height)}")  # Defina a altura desejada aqui
+        title_font = QFont()
+        title_font.setPointSize(progressBar_height-10)
+        self.ui.progressBar.setFont(title_font)
+        
+    def load_style(self):
+          
+        try:
+            with open("interface/Ui/app.color", 'r+',encoding="utf-8") as c:
+                info = c.read().split("; ")
+            
+        except FileNotFoundError:
+            with open("interface/Ui/app.color", 'w',encoding="utf-8"): pass   
+        try:
+            with open("interface/themes.json", 'r+',encoding="utf-8") as c:
+                theme = json.load(c)
+            main_theme_color = theme["colors"][info[0].lower()][info[1].lower()]
+            other_theme_options = theme["theme"][info[1].lower()]
+            self.primary_color = main_theme_color["primary"]
+            self.primary_variant_color = main_theme_color["primary_variant"]
+            self.background_color = other_theme_options["background"]
+            self.text_color = other_theme_options["text"]
+            self.widget_color = other_theme_options["widget"]
+            self.sidebar_color = other_theme_options["sidebar"]
+            self.subwidget_color = other_theme_options["subwidget"]
+            self.backgroundWidget_color = other_theme_options["backgroundWidget"]
+            self.sidebarHouver_color = other_theme_options["sidebarHouver"]
+        except FileNotFoundError:
+            with open("interface/themes.json", 'w',encoding="utf-8"): pass
+            
+        style = self.style_sheet.replace("var(primary)", self.primary_color).replace("var(primary_variant)",self.primary_variant_color).replace("var(background)",self.background_color).replace("var(text)",self.text_color).replace("var(widget)",self.widget_color).replace("var(sidebar)",self.sidebar_color).replace("var(subwidget)",self.subwidget_color).replace("var(backgroundWidget)",self.backgroundWidget_color).replace("var(sidebarHouver)",self.sidebarHouver_color)
+        self.ui.mainFrame.setStyleSheet(style)
+        self.ui.mainFrame.update()
+        
+
+class EndWindow(QWidget):
+    def __init__(self,style_sheet):
+        super().__init__()
+        self.style_sheet = style_sheet
+        self.load_style()
+        
+    def load_all(self,config):
+        self.uis = []
+        for url in config.links[::-1]:
+            ui = Ui_EndWindow()
+            ui.setupUi(self)
+            ui.url.setText(url)
+            self.setupCommands(ui,url)
+            
+    def load_style(self):
+          
+        try:
+            with open("interface/Ui/app.color", 'r+',encoding="utf-8") as c:
+                info = c.read().split("; ")
+            
+        except FileNotFoundError:
+            with open("interface/Ui/app.color", 'w',encoding="utf-8"): pass   
+        try:
+            with open("interface/themes.json", 'r+',encoding="utf-8") as c:
+                theme = json.load(c)
+            main_theme_color = theme["colors"][info[0].lower()][info[1].lower()]
+            other_theme_options = theme["theme"][info[1].lower()]
+            self.primary_color = main_theme_color["primary"]
+            self.primary_variant_color = main_theme_color["primary_variant"]
+            self.background_color = other_theme_options["background"]
+            self.text_color = other_theme_options["text"]
+            self.widget_color = other_theme_options["widget"]
+            self.sidebar_color = other_theme_options["sidebar"]
+            self.subwidget_color = other_theme_options["subwidget"]
+            self.backgroundWidget_color = other_theme_options["backgroundWidget"]
+            self.sidebarHouver_color = other_theme_options["sidebarHouver"]
+        except FileNotFoundError:
+            with open("interface/themes.json", 'w',encoding="utf-8"): pass
+            
+        style = self.style_sheet.replace("var(primary)", self.primary_color).replace("var(primary_variant)",self.primary_variant_color).replace("var(background)",self.background_color).replace("var(text)",self.text_color).replace("var(widget)",self.widget_color).replace("var(sidebar)",self.sidebar_color).replace("var(subwidget)",self.subwidget_color).replace("var(backgroundWidget)",self.backgroundWidget_color).replace("var(sidebarHouver)",self.sidebarHouver_color)
+        self.setStyleSheet(style)
+        self.update()
+            
+    def setupCommands(self,ui,link):
+        ...
+            
+            
+
+class MainWindow(QMainWindow):
+    def __init__(self,start_function):
+        super().__init__()
+        self.setGeometry(200,200,1000,500)
+        self.setMinimumSize(910,450)
+        self.setWindowTitle("Serviço")
+        self.style_sheet = self.getStyleSheet()
+        self.server_config = ServerConfig()
+        self.worker = Worker(start_function,self.server_config)
+        self.janelas = QStackedWidget(self)
+        self.start_window = StartWindow(self.style_sheet)
+        self.end_window = EndWindow(self.style_sheet)
+        self.load_window = LoadWindow(self.style_sheet)
+        self.janelas.addWidget(self.start_window)
+        self.janelas.addWidget(self.load_window)
+        self.janelas.addWidget(self.end_window)
+        self.setupCommands()
+        self.setCentralWidget(self.janelas)
+        self.show()
+    
+    def getStyleSheet(self):
+        with open("interface/Ui/styles.qss", "r") as f:
+            default_style = f.read() 
+        return default_style
+    
+    def start_function(self):
+        self.janelas.setCurrentIndex(1)
+        self.worker.start()
+    
+    def setupCommands(self):
+        self.start_window.ui.start_btn.clicked.connect(lambda: self.start_function())
+        manager = ProgressBarManager(self,self.load_window.ui.progressBar)
+        self.worker.progressChanged.connect(lambda v: manager.update_progress_bar(v))
+
+        
 
 app = QApplication(sys.argv)

@@ -2,6 +2,14 @@
 <ui version="4.0">
  <class>MainWidget</class>
  <widget class="QWidget" name="MainWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>620</width>
+    <height>352</height>
+   </rect>
+  </property>
   <property name="windowTitle">
    <string notr="true"/>
   </property>
@@ -299,7 +307,7 @@
             <string notr="true"/>
            </property>
            <property name="currentIndex">
-            <number>0</number>
+            <number>5</number>
            </property>
            <widget class="QWidget" name="home_page">
             <property name="styleSheet">
@@ -799,8 +807,8 @@ li.checked::marker { content: &quot;\2612&quot;; }
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>98</width>
-                      <height>28</height>
+                      <width>516</width>
+                      <height>97</height>
                      </rect>
                     </property>
                    </widget>
@@ -952,8 +960,8 @@ li.checked::marker { content: &quot;\2612&quot;; }
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>98</width>
-                      <height>28</height>
+                      <width>63</width>
+                      <height>16</height>
                      </rect>
                     </property>
                    </widget>
@@ -1136,7 +1144,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
              </item>
             </layout>
            </widget>
-           <widget class="QWidget" name="page">
+           <widget class="QWidget" name="settings_page">
             <layout class="QVBoxLayout" name="verticalLayout_8">
              <item>
               <widget class="QLabel" name="settings_title">
@@ -1150,7 +1158,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
                 <string notr="true"/>
                </property>
                <property name="text">
-                <string notr="true">Rede da Aplicação</string>
+                <string notr="true">Definições</string>
                </property>
                <property name="alignment">
                 <set>Qt::AlignCenter</set>

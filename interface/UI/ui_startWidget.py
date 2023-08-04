@@ -1,6 +1,6 @@
 from ..qt_core import *
 
-class Ui_MainWidget(object):
+class Ui_StartWidget(object):
     def setupUi(self, MainWidget):
         if not MainWidget.objectName():
             MainWidget.setObjectName(u"MainWidget")
@@ -723,7 +723,7 @@ class Ui_MainWidget(object):
         self.version_label.setMinimumSize(QSize(54, 0))
         self.version_label.setMaximumSize(QSize(54, 16777215))
         self.version_label.setStyleSheet(u"")
-        self.version_label.setText(u"v2.3")
+        self.version_label.setText(u"v2.4")
         self.version_label.setAlignment(Qt.AlignCenter)
 
         self.verticalLayout_14.addWidget(self.version_label)

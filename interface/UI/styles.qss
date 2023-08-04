@@ -86,7 +86,7 @@ QPushButton::pressed {
 }
 QLabel {color:var(text);}
 
-#pages {
+#pages, #mainFrame {
 	background-color: var(background);
 }
 
@@ -227,4 +227,15 @@ background-color: var(sidebar);
 }
 #bottom_bar {
 	border:none;
+}
+
+QProgressBar {
+    border: 2px solid grey;
+    border-radius: 5px;
+	text-align: center;
+}
+
+QProgressBar::chunk {
+    background-color: var(primary);
+    width: 20px;
 }
