@@ -1,9 +1,12 @@
 from flask import Flask, request, render_template, jsonify, url_for,abort
+from flask_socketio import SocketIO, emit
 from pyngrok import ngrok, conf
 from threading import Thread
 #script da interface grafica
 import intreface as inter
+import hashlib
 import socket
+import ast
 import os
 # remover blur do ecrã
 try:
@@ -13,6 +16,8 @@ except: pass
 
 # Iniciar Falsk app
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'R6D2M5'
+socketio = SocketIO(app)
 
 #função responsavel por iniciar o ngrok
 def startNgrok(port,key,url):
@@ -25,6 +30,37 @@ def startNgrok(port,key,url):
     #obter url http do ngrok
     url[0] = ngrok.connect(port).public_url
 
+def createList(tipo):
+    global pedidos
+    #criar uma lista com apenas os pedidos para o bar 
+    tipoLista=[]
+    j=0
+    for p in pedidos:
+        #copiar alguns dados para a nova lista
+        ped=[p[0],[],[],[],[],p[5]]
+        i=0
+        existe=0
+        #verificar cada sub-pedido para ver se pertence à bar
+        for t in p[3]:
+            if t==tipo:
+                existe=1
+                #se houver esse sub-pedido é adicionado à nova lista para o bar
+                ped[1].append(p[1][i])
+                ped[2].append(p[2][i])
+                ped[3].append(p[3][i])
+                ped[4].append(p[-2][i])
+                
+            i+=1
+        if existe:
+            #essa lista é adiconada à lista de todas as tipoLista
+            tipoLista.append(ped)
+        j+=1
+        
+    return tipoLista
+
+def createHash(string):
+    hashObj = hashlib.sha256(string.encode("utf-8"))
+    return hashObj.hexdigest()
 
 #pagina responsavel por receber os varios pedidos
 @app.route("/servico/<nome>", methods=['GET', 'POST'])
@@ -86,31 +122,7 @@ def confirmar(nome):
 def listaC():
     #verificar se os pedidos para a cozinha foi ativado atraves da interface gráfica
     if validUrls["cozinha"]:
-        global pedidos
-        #criar uma lista com apenas os pedidos para a cozinha 
-        comidas=[]
-        j=0
-        for p in pedidos:
-            #copiar alguns dados para a nova lista
-            ped=[p[0],[],[],[],[],p[5]]
-            i=0
-            existe=0
-            #verificar cada sub-pedido para ver se pertence à cozinha
-            for t in p[3]:
-                if t=='Comida':
-                    existe=1
-                    #se houver esse sub-pedido é adicionado à nova lista para a cozinha
-                    ped[1].append(p[1][i])
-                    ped[2].append(p[2][i])
-                    ped[3].append(p[3][i])
-                    ped[4].append(p[-2][i])
-                    
-                i+=1
-            if existe:
-                #essa lista é adiconada à lista de todas as comidas
-                comidas.append(ped)
-            j+=1
-            
+        comidas = createList("Comida")
         if request.method == 'POST':
             f = request.form["feito"] #numero do pedido global
             p = int(request.form["ped"]) #numero do sub-pedido 
@@ -155,7 +167,9 @@ def listaC():
                         
                     break
             #enviar sucesso
-            return jsonify({'suc':'T','redirect':'listaC','nome':0})
+            #return jsonify({'suc':'T','redirect':'listaC','nome':0})
+            loop = render_template('pedLoop.html', pedidos=comidas,tip="listaC")
+            return jsonify(body=loop,change=True) 
         #mostrar a os pedidos
         return render_template("pedidos.html",tip='listaC',pedidos=comidas)
 
@@ -169,30 +183,7 @@ def listaC():
 def listaB():
     #verificar se os pedidos para o bar foi ativado atraves da interface gráfica
     if validUrls["bar"]:
-        global pedidos
-        #criar uma lista com apenas os pedidos para o bar 
-        bebidas=[]
-        j=0
-        for p in pedidos:
-            #copiar alguns dados para a nova lista
-            ped=[p[0],[],[],[],[],p[5]]
-            i=0
-            existe=0
-            #verificar cada sub-pedido para ver se pertence à bar
-            for t in p[3]:
-                if t=='Bebida':
-                    existe=1
-                    #se houver esse sub-pedido é adicionado à nova lista para o bar
-                    ped[1].append(p[1][i])
-                    ped[2].append(p[2][i])
-                    ped[3].append(p[3][i])
-                    ped[4].append(p[-2][i])
-                    
-                i+=1
-            if existe:
-                #essa lista é adiconada à lista de todas as bebidas
-                bebidas.append(ped)
-            j+=1
+        bebidas = createList("Bebida")
             
         if request.method == 'POST':
             f = request.form["feito"] #numero do pedido global
@@ -260,7 +251,9 @@ def lista_pessoa(nome):
                 prontos.pop(i)
                 break
         #returnar sucesso
-        return jsonify({'suc':'T','redirect':'lista/'+nome,})
+        #return jsonify({'suc':'T','redirect':'lista/'+nome,})
+        loop = render_template('lisLoop.html', pedidos=prontos,nome=nome)
+        return jsonify(body=loop,change=True)
     #se o utilizador não for permitido será indicado
     if not nome in users:
         return "Acesso negado"
@@ -268,6 +261,31 @@ def lista_pessoa(nome):
     return render_template("lista.html",nome=nome,pedidos=prontos)
 
 
+@app.route('/reload', methods=['GET'])
+def reload():
+    #try:
+    #    hash = str(request.args.get('hash', '', type=str))
+    looPage = str(request.args.get('page', '', type=str))
+    tipoUrl = str(request.args.get('tipo', '', type=str))
+    if tipoUrl == "listaC":
+        tipo = "Comida"
+    elif tipoUrl == "listaB":
+        tipo = "Bebida"
+    elif tipoUrl == '':
+        nome = str(request.args.get('nome', '', type=str))  
+        loop = render_template(looPage, pedidos=prontos,nome=nome)
+        return jsonify(body=loop,)
+    #        
+    #    else:
+    #        print("Algo errado aconteceu")
+    comidasBebidas = createList(tipo)
+    #except Exception as i:
+    #    print("Erro:",i)
+    #    return jsonify(change=False)
+#
+    #return jsonify(change=not(comidasHash==hash))
+    loop = render_template(looPage, pedidos=comidasBebidas,tip=tipoUrl)
+    return jsonify(body=loop,)
 #pagina temporaria
 @app.route("/", methods=['GET', 'POST'])
 def home():
@@ -276,9 +294,9 @@ def home():
 
 #INICIO DO SCRIPT
 if __name__ == "__main__":
-    #############
-    DEBUG = True
-    #############
+    ##############
+    DEBUG = True#
+    ##############
     #inicilaizar variaveis imporatntes
     pedidos = []        #Lista com todos os pedidos por fazer
     prontos = []        #Lista com todos os pedidos prontos
