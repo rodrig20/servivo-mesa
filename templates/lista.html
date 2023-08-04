@@ -7,19 +7,14 @@
         <meta name="google" content="notranslate">
         <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
         <link rel="shortcut icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
-
+    </head>
+    <body>     
         <script>
-            //window.setInterval(function() {
-            //    verificaReload("{{ pedidos }}","","lisLoop.html","{{nome}}")}, 5000);
-            var socket = io.connect('http://' + document.domain + ':' + location.port + '/pess/'+"{{ nome }}");
-            console.log('/pess/'+"{{ nome }}")
+            var socket = io.connect(location.protocol+'//' + document.domain + ':' + location.port + '/pess/'+"{{ nome }}");
             socket.on('reloadPedidos', function() {
-                console.log("d")
                 location.reload();
             });
-        </script>
-    </head>
-    <body>      
+        </script> 
         <h1>Pedidos prontos</h1>
         <div id="main">
             {% for p in pedidos %}

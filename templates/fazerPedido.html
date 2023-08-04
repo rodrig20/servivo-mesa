@@ -15,6 +15,11 @@
         <h1>Pedidos de {{ nome }}</h1>
         <div style="overflow-x:auto;">
             <table id="tabela">
+                {% for p in range(pre_def[0]|length) %}
+                    <script>
+                        addPreSetRow(opcoes_Comida_Bebida,"{{pre_def[0][p]}}","{{pre_def[1][p]}}","{{pre_def[2][p]}}")
+                    </script>
+                {% endfor %}
 
             </table>
         </div>
@@ -29,6 +34,8 @@
         <br><br>
         <input class="button" type="submit" id="send" value="Enviar">
         <input class="button" type="submit" id="prontos" value="Ver Pedidos">
-        <input class="button" type="submit" id="qrbotao" value="QRCODE"
+        {%if validos[2]%}
+        <input class="button" type="submit" id="qrbotao" value="QRCODE">
+        {% endif %}
     </body>
 </html>

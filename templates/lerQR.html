@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script type=text/javascript src="{{ url_for('static', filename='jquery.js') }}"> </script>
+    <script type=text/javascript src="{{ url_for('static', filename='meu_ajax.js') }}"> </script>
+    <script type=text/javascript> $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};</script>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+    <link rel="shortcut icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <style>
+      #qr-video {
+        width: 100%;
+        max-width: 640px;
+        height: auto;
+        display: block;
+        margin: 1% auto 0;
+      }
+      #qr-canvas {
+        display: block;
+        margin: auto;
+      }
+      #qr-result {
+        margin-top: 10px;
+        font-size: 24px;
+        text-align: center;
+      }
+      #back{
+        width:500px;
+        
+      }
+      div {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding:20px;
+      }
+
+      @media (min-height: 500px) and (orientation: portrait) {
+        #back {
+          font-size: 70px;
+        }
+        div {
+          padding: 70px
+        }
+        #qr-video {
+          margin: 10% auto 0;
+        }
+      }
+    </style>
+
+  </head>
+  <body>
+    <input type="hidden", class="nome" value="{{ nome }}">
+
+    <video id="qr-video" width="320" height="240" autoplay></video>
+    <canvas id="qr-canvas" width="320" height="240" style="display:none;"></canvas>
+    <div>
+      <button class="button" id="back" type="button">Voltar</button>
+    </div>
+    <script>
+      // Obter o elemento de vídeo e o canvas
+      var video = document.getElementById('qr-video');
+      var canvas = document.getElementById('qr-canvas');
+      var context = canvas.getContext('2d');
+
+      // Definir as restrições de acesso à câmera
+      var constraints = {
+        video: {
+          facingMode: { exact: 'environment' }
+        }
+      };
+
+      // Verificar se o navegador suporta getUserMedia
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        // Tentar acessar a câmera traseira
+        navigator.mediaDevices.getUserMedia(constraints).then(function(stream) {
+          // Exibir o fluxo de vídeo no elemento de vídeo
+          video.srcObject = stream;
+          video.play();
+
+          // Iniciar a decodificação do QR quando o vídeo começa a ser reproduzido
+          video.addEventListener('play', function() {
+            requestAnimationFrame(decodeQR);
+          });
+        }).catch(function(error) {
+          // Se a tentativa anterior falhar, tentar acessar a câmera frontal
+          constraints.video.facingMode = { exact: 'user' };
+          navigator.mediaDevices.getUserMedia(constraints).then(function(stream) {
+            // Exibir o fluxo de vídeo no elemento de vídeo
+            video.srcObject = stream;
+            video.play();
+
+            // Iniciar a decodificação do QR quando o vídeo começa a ser reproduzido
+            video.addEventListener('play', function() {
+              requestAnimationFrame(decodeQR);
+            });
+          }).catch(function(error) {
+            // Se nenhuma das tentativas anteriores funcionar, exibir uma mensagem de erro
+            console.error('Erro ao acessar a câmera:', error);
+          });
+        });
+      }
+    </script>
+  </body>
+</html>
+
