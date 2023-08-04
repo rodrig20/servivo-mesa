@@ -204,7 +204,7 @@ background-color: var(sidebar);
     margin-bottom:0px;
 }
 #side_bar QPushButton:hover {
-	background-color: var(sidebarHouver);
+	background-color: var(sidebarHover);
     margin-top:0px;
     margin-bottom:0px;
  }
@@ -239,3 +239,40 @@ QProgressBar::chunk {
     background-color: var(primary);
     width: 20px;
 }
+#copy_url, #open_Link, #open_QrCode{
+    background-color: var(primary);
+    width: 20px;
+    border: 3px solid var(primary);
+    border-radius: 10px;
+    margin: 20px;
+}
+
+#copy_url, #open_Link, #open_QrCode{
+    background-color: var(primary);
+    width: 20px;
+    border: 3px solid var(primary);
+    border-radius: 10px;
+    margin: 20px;
+}
+#copy_url:pressed, #open_Link:pressed, #open_QrCode:pressed{
+    margin-bottom:14px;
+    margin-top:24px;
+}
+#fim {
+    margin:0px;
+    margin-left:10px;
+    margin-bottom:4px;
+    background-color: #ff1616
+}
+#fim:pressed {
+    margin-top:2px;
+    margin-bottom:2px;
+    background-color: #ff1616
+}
+#password {
+    margin-bottom:5px;
+}
+#container {
+    background-color: var(background)
+}
+

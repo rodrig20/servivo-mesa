@@ -59,7 +59,7 @@
             "text":"#f1f1f1",
             "sidebar": "#1b1d1c",
             "backgroundWidget": "#1d1d1d",
-            "sidebarHouver":"#3b3d3c"
+            "sidebarHover":"#3b3d3c"
         },
         "claro": {
             "background":"#cbcbcb",
@@ -68,7 +68,7 @@
             "text":"#121212",
             "sidebar": "#eeeeee",
             "backgroundWidget": "#c0c0c0",
-            "sidebarHouver":"#c1c1c1"
+            "sidebarHover":"#c1c1c1"
 
         }
     }
