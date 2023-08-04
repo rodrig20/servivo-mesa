@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Fazer Pedidos</title>
+        <meta name="google" content="notranslate">
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="/static/style/main.css">
+        <style>
+
+            .align-label {
+                text-align: left;
+            }
+
+            #mesa {
+                outline:0px;
+                width:90%;
+                font-size:50px;
+                padding: 12px 20px;
+                border: 1px solid #ccc;
+                border-radius: 10px;
+            }
+
+        </style>
+        <script type=text/javascript src="/static/js/jquery.js"> </script>
+        <script type=text/javascript src="/static/js/meu_ajax.js"> </script>
+        <script type=text/javascript> $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};</script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js"></script>
+        <script>var opcoes_Comida_Bebida = JSON.parse('{{ opcoes_validas|tojson|safe }}');var preco_Comida_Bebida = JSON.parse('{{ preco_opcoes|tojson|safe }}');</script>
+        {% if nome is defined %}
+            <script>
+                var nome = true
+                var urlParams = new URLSearchParams(window.location.search);
+                var set_pedido = urlParams.get('pedido')
+                if (set_pedido){
+                    window.onload = function(){
+                        try{
+                            var decompressedString = LZString.decompressFromBase64(set_pedido.replace(/_/g, "/").replace(/-/g, "+"));
+                            var objeto = JSON.parse(decompressedString);
+                            if (Object.keys(objeto).length === 3 && objeto.quant && objeto.ped && objeto.tip && objeto.quant.length === objeto.ped.length && objeto.ped.length === objeto.tip.length){
+                                for(let i=0;i<objeto.quant.length;i++){
+                                    addPreSetRow(opcoes_Comida_Bebida,preco_Comida_Bebida,objeto.quant[i],objeto.ped[i],objeto.tip[i]);
+                                }
+                                calcular_preco()
+                            }
+                        } catch(error){
+                            console.error(error)
+                        }
+                    }
+                }
+            </script>
+        {% else %}
+            <script>
+                var nome = false;
+            </script>
+        {% endif %}
+        <link rel="icon" type="image/x-icon" href="/static/images/favicon.ico">
+
+    </head>
+    <body>
+        {% if nome is defined %}
+            <h1>Pedidos de {{ nome }}: <span id="preco">0.00</span>€</h1>
+             <button class="button" id="logout">Logout</button>
+        {% else %}
+            <h1>Pedidos: <span id="preco">0.00</span>€</h1>
+        {% endif %}
+        
+
+        <table id="titulo" style="width:100%;display:none;">
+            <tr>
+                <th style="width:5ch;color: #374e4f; font-size: 50px; padding-left: 20px;">
+                    <div class="align-label">
+                        <label>Qtd.</label>
+                    </div>
+                </th>
+                <th style="width:45%;color: #374e4f; font-size: 50px; padding-left: 50px;">
+                    <div class="align-label">
+                        <label>Pedidos</label>
+                    </div>
+                </th>
+                    <th style="color: #374e4f; font-size: 40px; padding: 12px 20px;">
+                        <div class="align-label">
+                            {% if nome is defined%}
+                                <input id="mesa" type="text" placeholder="Mesa">
+                            {% endif %}
+                        </div>
+                    </th>
+            </tr>
+        </table>
+
+        <div style="overflow-x:auto;">
+            <table id="tabela">
+            </table>
+        </div>
+        <br>
+        {%if urls_ativos[0]%}
+            <input class="button" type="button" style='background: #1ea831;' id="add" onclick="addRow('c',opcoes_Comida_Bebida,preco_Comida_Bebida)" value="Adicionar Comida">
+        {%endif%}
+        {%if urls_ativos[1]%}
+            <input class="button" type="button" style='background: #2d2091;' id="add" onclick="addRow('b',opcoes_Comida_Bebida,preco_Comida_Bebida)" value="Adicionar Bebida">
+        {%endif%}
+        <br><br>
+        {% if nome is defined%}
+            <input class="button" type="submit" id="send" value="Enviar">
+            <input class="button" type="submit" id="verPedidos" value="Ver Pedidos">
+            {%if urls_ativos[2]%}
+                <input class="button" type="submit" id="scanQR" value="QRCODE">
+            {% endif %}
+        {% else %}
+            <input class="button" type="submit" id="send" value="Criar QrCode">
+        {% endif %}
+    </body>
+</html>

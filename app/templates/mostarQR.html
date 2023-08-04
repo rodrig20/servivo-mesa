@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Código Qr</title>
+    <meta name="google" content="notranslate">
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="/static/style/main.css">
+    <style>
+        .image-container {
+            display: flex;
+            justify-content: center;
+            padding-top: 30px;
+        }
+        
+        .button-container {
+            position: absolute;
+            bottom: 25px;
+            left: 10px;
+            right: 10px;
+            display: flex;
+            justify-content: center;
+        }
+        
+        .button-container button {
+            background-color: #e2051f;  
+            font-size: 70px;
+        }
+        
+        @media only screen and (orientation: landscape) {
+            .button-container button {
+                font-size: 35px;
+            }
+        }
+    </style>
+    <script type=text/javascript src="/static/js/jquery.js"> </script>
+    <script type=text/javascript src="/static/js/meu_ajax.js"> </script>
+    <script type=text/javascript> $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};</script>
+    <script type="text/javascript" src="https://unpkg.com/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
+    <script>
+        window.onload = function() {
+            var larguraJanela = window.innerWidth;
+            var alturaJanela = window.innerHeight;
+            if (alturaJanela>larguraJanela) var percent = 80
+            else var percent = 70
+            var largura = (larguraJanela*percent)/100;
+            var altura = (alturaJanela*percent)/100;
+            var urlParams = new URLSearchParams(window.location.search);
+            var qrCode = new QRCodeStyling({
+                width: largura,
+                height: altura,
+                data: urlParams.get('pedido'),
+                dotsOptions: {
+                    color: "#000000",
+                    type: "square",//"rounded"
+                },
+                backgroundOptions: {
+                    color: "#F2F2F2"
+                }
+            });
+
+            // Renderize o QR Code no elemento HTML
+            qrCode.append(document.getElementById("qrcode"));
+        }
+    </script>
+    <link rel="icon" type="image/x-icon" href="/static/images/favicon.ico">
+  </head> 
+  <body>    
+    <div class="image-container">
+        <div id="qrcode"></div>
+    </div>
+    <div class="button-container">
+        <button class="button" style="width:60%" type="button" id="voltar_cliente">Voltar</button>
+    </div>
+  </body>
+</html>

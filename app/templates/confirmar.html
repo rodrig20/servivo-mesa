@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Pedido Enviado</title>
+        <meta name="google" content="notranslate">
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="/static/style/main.css">
+        <style>
+            /* Define o estilo para o corpo da página */
+            body {
+                display: flex;
+                justify-content: center;
+                overflow: hidden;
+            }
+            div {
+                position: absolute;
+                bottom: 5%;
+            }
+            #verPedidos {
+                background-color: green;
+                color:white;
+                width: 100%;
+                font-size: 100px;
+            }
+            @media only screen and (max-width: 600px) {
+                h1 {
+                    font-size: 36px;
+                }
+            }
+            @media screen and (min-width: 601px) {
+                input[type="submit"] {
+                    margin: 4px 2px;
+                }
+            }
+        
+        </style>
+        <script type=text/javascript src="/static/js/jquery.js"> </script>
+        <script type=text/javascript src="/static/js/meu_ajax.js"> </script>
+        <script type=text/javascript>$SCRIPT_ROOT = {{ request.script_root|tojson|safe }};</script>
+        <link rel="icon" type="image/x-icon" href="/static/images/favicon.ico">
+    </head>
+    <body>
+        <h1 style="font-size:100px">Pedido enviado com sucesso!</h1>
+        <div>
+            <input class="button"  type="submit" id="voltar_servico" value="Voltar">
+            <br></br>
+            <input class="button" type="submit" id="verPedidos" value="Pedidos">
+        </div>
+    </body>
+</html>

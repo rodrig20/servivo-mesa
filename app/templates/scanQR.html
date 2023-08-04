@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Scanner Qr</title>
+    <meta name="google" content="notranslate">
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="/static/style/main.css">
+    <style>
+      #qr-video {
+        width: 100%;
+        max-width: 640px;
+        height: auto;
+        display: block;
+        margin: 1% auto 0;
+      }
+      div {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding:20px;
+      }
+
+      @media (min-height: 500px) and (orientation: portrait) {
+        #voltar_servico {
+          font-size: 70px;
+        }
+        div {
+          padding: 70px
+        }
+        #qr-video {
+          margin: 10% auto 0;
+        }
+        
+      }
+    </style>
+    <script type=text/javascript src="/static/js/jquery.js"> </script>
+    <script type=text/javascript src="/static/js/meu_ajax.js"> </script>
+    <script type=text/javascript> $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};</script>
+    <script type=text/javascript src="/static/js/jsQr.js"> </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js"></script>
+    <script>
+      window.onload = function() {
+       // Verifica se o navegador suporta a API de câmera
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+          // Obtem a referência para o elemento de vídeo e canvas no HTML
+          var videoElement = document.getElementById('qr-video');
+          var canvasElement = document.getElementById('canvas');
+          var canvasContext = canvasElement.getContext('2d', { willReadFrequently: true });
+
+          // Opções de restrição para a mídia (vídeo)
+          var constraints = { video: { facingMode: 'environment' } };
+
+          // Solicita permissão para acessar a câmera
+          navigator.mediaDevices.getUserMedia(constraints)
+            .then(function(stream) {
+              // Define o stream da câmera como a origem de vídeo
+              videoElement.srcObject = stream;
+              videoElement.play();
+
+              // Evento "loadedmetadata" é disparado quando as dimensões do vídeo estão disponíveis
+              videoElement.addEventListener('loadedmetadata', function() {
+                // Função para tratar a leitura do código QR
+                function scanQRCode() {
+                  // Define as dimensões do canvas como as dimensões do vídeo
+                  canvasElement.width = videoElement.videoWidth;
+                  canvasElement.height = videoElement.videoHeight;
+
+                  // Desenha o quadro atual do vídeo no canvas
+                  canvasContext.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
+
+                  // Obtém os dados da imagem do canvas
+                  var imageData = canvasContext.getImageData(0, 0, canvasElement.width, canvasElement.height);
+
+                  // Faz a leitura do código QR usando a biblioteca jsQR
+                  var code = jsQR(imageData.data, imageData.width, imageData.height);
+
+                  if (code) {
+                    try {
+                          var decompressedString = LZString.decompressFromBase64(code["data"].replace(/_/g, "/").replace(/-/g, "+"));
+                          var objeto = JSON.parse(decompressedString);
+                          if (Object.keys(objeto).length === 3 && objeto.quant && objeto.ped && objeto.tip && objeto.quant.length === objeto.ped.length && objeto.ped.length === objeto.tip.length) {
+                              window.location.href = $SCRIPT_ROOT + '/servico?pedido=' + code["data"];
+                          } else {
+                              console.error('QrCode inválido');
+                          }
+                      } catch (error) {
+                          console.error('QrCode inválido:',error);
+                      }
+                  }
+
+                  // Aguarda 200 milissegundos e faz uma nova leitura
+                  setTimeout(scanQRCode, 200);
+                }
+
+                // Inicia a leitura do código QR
+                scanQRCode();
+              });
+            })
+            .catch(function(error) {
+              // Trate qualquer erro ocorrido durante o acesso à câmera
+              console.error(error);
+            });
+        } else {
+          console.error('A API de câmera não é suportada neste navegador.');
+        }
+      }
+    </script>
+    <link rel="icon" type="image/x-icon" href="/static/images/favicon.ico">
+  </head>
+  <body>
+    <video id="qr-video"></video>
+    <canvas id="canvas" style="display: none;"></canvas>
+    <div>
+        <button class="button" id="voltar_servico" type="button">Voltar</button>
+    </div>
+  </body>
+</html>
+

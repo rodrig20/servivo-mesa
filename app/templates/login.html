@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Login</title>
+        <meta name="google" content="notranslate">
+		<meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=0.4, maximum-scale=0.4, user-scalable=0">
+        <link rel="stylesheet" href="/static/style/main.css">
+        <script type=text/javascript src="/static/js/jquery.js"> </script>
+        <script type=text/javascript src="/static/js/meu_ajax.js"> </script>
+        <script type=text/javascript> $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};</script>
+        <link rel="icon" type="image/x-icon" href="/static/images/favicon.ico">
+	</head>
+	<body>
+		<div id="login-form-wrap">
+			<h1>Login</h1>
+			<form id="login-form">
+				<p>
+					<input type="text" id="username" name="username" placeholder="Nome" autocomplete="off" required="" autocapitalize="none">
+				</p>
+				<p>
+					<input type="password" id="password" name="password" autocomplete="new-password" placeholder="Password" required="">
+				</p>
+				<p>
+				<p id="error-message">*nome de utilizador ou password incorreta</p>
+					<input type="button" id="login" value="Login">
+				</p>
+			</form>
+		</div>
+	</body>
+</html>

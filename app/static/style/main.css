@@ -1,0 +1,267 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f2f2f2;
+}
+h1 { 
+    font-size:100px; 
+    text-align: center;
+}
+
+#bigdiv {
+    display: flex;
+    justify-content: space-between;
+}
+
+.button {
+    border: none;
+    color: white;
+    padding: 15px;      
+    margin: 15px;
+    cursor: pointer;
+    border-radius: 7px;
+}
+
+
+#estaPronto {
+    background-color: #4CAF50;
+    font-size: 27px;
+    width: 40px;
+    height: 40px
+    
+}
+
+#estaPronto:hover {
+    background-color: #3e8e41;
+}
+
+.check {
+    color: white;
+    border: none;
+    padding: 0px 0px;
+    margin: 3px 1px;
+    cursor: pointer;
+    border-radius: 40%;
+}
+#linhaPed:hover {
+    background-color: #e0e0e0;
+}
+
+#removerPronto {
+    background-color: #445cd5;
+    font-size: 35px;
+    width: 58px;
+    height: 58px
+}
+#removerPronto:hover {
+    background-color: #2a43bb;
+    transition: background-color 0.3s ease-in-out;
+}
+
+/*
+
+#avisarPronto {
+    background-color: #4CAF50;
+    font-size: 27px;
+    width: 40px;
+    height: 40px
+    
+}
+
+#avisarPronto:hover {
+    background-color: #3e8e41;
+}
+
+#bigdiv {
+    display: flex;
+    justify-content: space-between;
+}
+
+#removerPronto {
+    background-color: #445cd5;
+    font-size: 35px;
+    width: 58px;
+    height: 58px
+}
+#removerPronto:hover {
+    background-color: #2a43bb;
+    transition: background-color 0.3s ease-in-out;
+}
+#novo {
+    background-color: #4CAF50;
+    font-size: 70px;
+}
+
+#back, #back-non-user{
+    background-color: rgb(255, 0, 60);
+    color:white;
+    width: 100%;
+    font-size: 100px;
+}
+
+#lista {
+    background-color: green;
+    color:white;
+    width: 100%;
+    font-size: 100px;
+}
+*/
+#quantity,#pedido{
+    outline:0px;
+    display: block;
+}
+#quantity{
+    border-radius: 15px 0 0 15px;
+    width: 2.7ch;
+    font-size:81px;
+    padding-left: 20px;
+}
+#pedido{
+    width: 100%;
+    font-size:84px;
+    padding-left: 1px;
+}
+
+#logout {
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    z-index: 9999;
+    background-color: red;
+    font-size: 30px;
+}
+
+/*
+.quantiTable {
+    width: 15%;
+}*/
+
+.pedidoTable {
+    padding-left: 1px;
+    width:100%;
+}
+/*
+#cancelar {
+    border-radius: 4px;
+    border: none;
+    background-color: red;
+    width: 100%;
+    height: 120px;
+    color:white;
+    font-size: 80px;
+} 
+*/
+#removerPedido {
+    border-radius: 0 15px 15px 0;
+    border: none;
+    background-color: red;
+    text-align: center;
+    width: 100%;
+    color:white;
+    font-size: 130px;
+    align-items: center;
+    padding-top: 5px;
+    line-height: 93px; /* Defina o line-height igual à altura do botão */
+    
+}
+/*
+#verPedidos {
+    background-color: green;
+    color:white;
+    width: 100%;
+    font-size: 100px;
+}*/
+
+#voltar_cliente, #voltar_servico{
+    background-color: rgb(255, 0, 60);
+    color:white;
+    width: 100%;
+    font-size: 100px;
+}
+
+#add {
+    background-color: blue;
+    font-size: 79px;
+    color:white;
+}
+#send {
+    background-color: green;
+    font-size: 65px;
+}
+
+#verPedidos {
+    background-color: rgb(255, 0, 60);
+    font-size: 65px;
+}
+#scanQR {
+    background-color: rgb(25, 145, 214);
+    color:white;
+    font-size: 65px;
+}
+
+/*
+
+#menu {
+    background-color: blue;
+    font-size: 65pfx;
+}
+*/
+.coluna {
+    flex: 1;
+    order: -1;
+}
+
+#login-form-wrap {
+    position: absolute;
+    justify-content: center;
+    align-items: center;
+    top: 36%;
+    left: 50%;
+    width: 90%;
+    transform: translate(-50%, -50%);
+    text-align: center; 
+}
+
+
+#login-form input[type="text"],
+#login-form input[type="password"]{
+    width: 90%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    resize: vertical;
+    font-size: 50px;
+    font-family: Arial, sans-serif;
+}
+
+#login-form input[type="button"] {
+    background-color: #4CAF50;
+    color: #fff;
+    display: block;
+    margin: 0 auto;
+    cursor: pointer;
+    width: 50%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    resize: vertical;
+    font-size: 50px;
+    font-family: Arial, sans-serif;
+}
+
+#login-form input[type="button"]:hover {
+    background-color: #45a049;
+}
+
+#password {
+    display: inline-block;
+}
+
+#error-message {
+    display:none;
+    margin-top: 1px;
+    color: red;
+    font-size: 15px;
+    text-align: left;
+    padding-left: 5%;
+
+}

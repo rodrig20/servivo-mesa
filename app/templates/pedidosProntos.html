@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Pedidos Prontos</title>
+        <meta name="google" content="notranslate">
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="/static/style/main.css">
+        <style>
+            #voltar_servico {
+                background-color: #4CAF50;
+                font-size: 70px;
+                width: auto
+            }
+        </style>
+        <script type=text/javascript src="/static/js/jquery.js"> </script>
+        <script type=text/javascript src="/static/js/meu_ajax.js"> </script>
+        <script type=text/javascript>$SCRIPT_ROOT = {{ request.script_root|tojson|safe }};</script> 
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.1/socket.io.js" integrity="sha512-xbQU0+iHqhVt7VIXi6vBJKPh3IQBF5B84sSHdjKiSccyX/1ZI7Vnkt2/8y8uruj63/DVmCxfUNohPNruthTEQA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script>
+            var pedidos = JSON.parse('{{ pedidos|tojson|safe }}');
+            var socket = io.connect('/atualizarProntos/{{nome}}');
+            socket.on('reloadPedidos', function(data) {
+                    var pedidos = data["pedidos"];
+                    recriarDivProntos(pedidos)
+            });
+            socket.on('connect', function() {
+                recriarDivProntos(pedidos)
+            });
+            window.onload = function () {
+                recriarDivProntos(pedidos)
+            }
+        </script> 
+        <link rel="icon" type="image/x-icon" href="/static/images/favicon.ico">
+    </head>
+    <body id="corpo">     
+        <h1>Pedidos prontos</h1>
+        <div id="main">
+        </div>
+        <input class="button" type="submit" id="voltar_servico" value="Novo Pedido">
+    </body>
+</html>
