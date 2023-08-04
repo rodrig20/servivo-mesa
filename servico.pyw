@@ -1,70 +1,45 @@
 from flask import Flask, request, render_template, jsonify, url_for,abort
 from flask_socketio import SocketIO, emit, Namespace
 from engineio.async_drivers import gevent
-from pyngrok.exception import PyngrokNgrokError
-from pyngrok import ngrok, conf
+from login_tunnel import login  #script com o login do loophole
 from threading import Thread
-from flask_settings import * #script com de defenições basicas
-import intreface as inter    #script da interface grafica
+from flask_settings import *    #script com de defenições basicas
+import intreface as inter       #script da interface grafica
 from io import BytesIO
+import subprocess
 import requests
-import psutil
 import base64
 import socket
 import qrcode
-import os
-
-""" 
-pyinstaller --noconfirm --onedir --console --add-data "C:/Users/Rodrigo/Desktop/Rodrigo/Python/Servico/Serv_12/flask_settings.py;." --add-data "C:/Users/Rodrigo/Desktop/Rodrigo/Python/Servico/Serv_12/intreface.py;." --add-data "C:/Users/Rodrigo/Desktop/Rodrigo/Python/Servico/Serv_12/settings.json;." --add-data "C:/Users/Rodrigo/Desktop/Rodrigo/Python/Servico/Serv_12/users.txt;." --add-data "C:/Users/Rodrigo/Desktop/Rodrigo/Python/Servico/Serv_12/pyngrok;pyngrok/" --add-data "C:/Users/Rodrigo/Desktop/Rodrigo/Python/Servico/Serv_12/static;static/" --add-data "C:/Users/Rodrigo/Desktop/Rodrigo/Python/Servico/Serv_12/templates;templates/" --hidden-import "engineio.async_eventlet"  "C:/Users/Rodrigo/Desktop/Rodrigo/Python/Servico/Serv_12/servico.pyw"
-"""
-
+import ast
 # remover blur do ecrã
 try:
     from ctypes import windll
     windll.shcore.SetProcessDpiAwareness(1)
 except: pass
+""" 
+pyinstaller --noconfirm --onedir --console --add-data "C:/Users/Rodrigo/Desktop/Rodrigo/Python/Servico/Serv_12/flask_settings.py;." --add-data "C:/Users/Rodrigo/Desktop/Rodrigo/Python/Servico/Serv_12/intreface.py;." --add-data "C:/Users/Rodrigo/Desktop/Rodrigo/Python/Servico/Serv_12/settings.json;." --add-data "C:/Users/Rodrigo/Desktop/Rodrigo/Python/Servico/Serv_12/users.txt;." --add-data "C:/Users/Rodrigo/Desktop/Rodrigo/Python/Servico/Serv_12/static;static/" --add-data "C:/Users/Rodrigo/Desktop/Rodrigo/Python/Servico/Serv_12/templates;templates/" --hidden-import "engineio.async_eventlet"  "C:/Users/Rodrigo/Desktop/Rodrigo/Python/Servico/Serv_12/servico.pyw"
+"""
 
 # Iniciar Falsk app
 app = Flask(__name__)
 app.config['SECRET_KEY'] = SECRET_KEY
 app.config['ASYNC_MODE'] = 'threading'
-socketio= SocketIO(app, async_mode='gevent')
+socketio= SocketIO(app, async_mode='gevent', cors_allowed_origins="*")
 
 class ListasNamespace(Namespace):
     def on_reload(self):
         pass
 
-#função responsavel por iniciar o ngrok
-def startNgrok(port,key,url,repet=0):
-    
-    #obter a pasta atual do script
-    pathname = os.getcwd().replace("\\","/")     
-    #defenir sitio de instalação do ngrok
-    fullname = f'{pathname}/pyngrok/bin/ngrok.exe'
-    #defenir algumas configurações do ngrok
-    conf.set_default(conf.PyngrokConfig(region="eu", ngrok_path=fullname,auth_token=key,log_event_callback=None))
-    #obter url http do ngrok
-    try:
-        url[0] = ngrok.connect(port).public_url
-    except PyngrokNgrokError:
-        if repet == 0:
-            stopNgrok()
-            startNgrok(port,key,url,1)
-    
-def stopNgrok():
-    for process in psutil.process_iter():
-        try:
-            # Verifica se o nome do processo contém "ngrok"
-            if process.name().startswith("ngrok"):
-                # Encerra o processo
-                process.kill()
-                
-                # Encerra todos os processos filhos
-                for child in process.children(recursive=True):
-                    child.kill()
-        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
-            # Ignora exceções relacionadas a processos que já foram encerrados ou a permissões de acesso
-            pass
+#função responsavel por iniciar o loophole
+def startExternalAccess(port,subdomain=''):
+    login("tunnel","log.txt")
+    if subdomain == '':
+        sub = ''
+    else:
+        sub = f"--hostname {subdomain}"
+    command = f'tunnel\\loophole.exe http {port} {sub}'.split()
+    return subprocess.Popen(command,stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 def createList(tipo):
     global pedidos
@@ -126,6 +101,7 @@ def processarPedidos(nome,request):
                 pedidos.append([nome,quant,ped,tipo,list_n,n])
                 
                 #indicar sucesso e redirecionar para a confirmação
+                handle_update_page("/listaPedidos")
                 return jsonify({'suc':'T','redirect':url_for('confirmar',nome=nome)})
             else:
                 return [[quant,ped,tipo],1]
@@ -155,22 +131,19 @@ def startInterface(vars):
 def encodeQR(string):
     encoded_string = str(string).encode("utf8")
     return base64.b64encode(encoded_string).decode()
+
 def decodeQR(string):
     encoded_string = str(string).encode("utf8")
     return base64.b64decode(encoded_string).decode()
-
 
 @socketio.on('update_page')
 def handle_update_page(namspc):
     emit('reloadPedidos', broadcast=True,namespace=namspc)
 
-@app.before_first_request
-def before_first_request():
-    th = Thread(target=startInterface, args=([request.form]),daemon=True)
-    th.start()
-    
 @app.route("/start", methods=['GET', 'POST'])
 def start():
+    th = Thread(target=startInterface, args=([request.form]),daemon=True)
+    th.start()
     return ''
 
 @app.route("/stop", methods=['GET', 'POST'])
@@ -193,7 +166,7 @@ def servico(nome):
     #se o utilizador não for permitido será indicado
     if not nome in users:
         return "Acesso negado"
-    return render_template("fazerPedido.html",nome=nome,validos=[validUrls["cozinha"],validUrls["bar"]],opcoes_validas=todas_opcoes)
+    return render_template("fazerPedido.html",nome=nome,validos=[validUrls["cozinha"],validUrls["bar"]],opcoes_validas=todas_opcoes,pre_def=[[],[],[]])
 
 #pagina responsavel por indicar que os dados foram enviados com sucesso
 @app.route("/confirmar/<nome>", methods=['GET', 'POST'])
@@ -205,37 +178,60 @@ def confirmar(nome):
 
 @app.route("/pedido-automatico", methods=['GET', 'POST'])
 def pedidoAutomatico():
-    if request.method == "POST":
-        pedidoQr, flag = processarPedidos('',request)
-        if not flag:
-            return jsonify({'suc':'F',})
-        
-        pedido_encode = encodeQR(str(pedidoQr)) 
-        qr = qrcode.QRCode(version=1, error_correction=qrcode.constants.ERROR_CORRECT_L, box_size=10, border=1)
-        qr.add_data(pedido_encode)
-        qr.make(fit=True)
-        img = qr.make_image(back_color="#f2f2f2")
-        
-        buffered = BytesIO()
-        img.save(buffered, format="PNG")
-        img_str = base64.b64encode(buffered.getvalue()).decode('utf-8').replace("/", "-")
-        return jsonify({'suc':'T','redirect':f"QRCode/{img_str}"})
+    if validUrls["QRCode"]:
+        if request.method == "POST":
+            pedidoQr, flag = processarPedidos('',request)
+            if not flag:
+                return jsonify({'suc':'F',})
+            
+            pedido_encode = encodeQR(str(pedidoQr)) 
+            qr = qrcode.QRCode(version=1, error_correction=qrcode.constants.ERROR_CORRECT_L, box_size=10, border=1)
+            qr.add_data(pedido_encode)
+            qr.make(fit=True)
+            img = qr.make_image(back_color="#f2f2f2")
+            
+            buffered = BytesIO()
+            img.save(buffered, format="PNG")
+            img_str = base64.b64encode(buffered.getvalue()).decode('utf-8').replace("/", "-")
+            return jsonify({'suc':'T','redirect':f"QRCode/{img_str}"})
 
-    return render_template("pedidoAutomatico.html",validos=[validUrls["cozinha"],validUrls["bar"]],opcoes_validas=todas_opcoes)   
-
+        return render_template("pedidoAutomatico.html",validos=[validUrls["cozinha"],validUrls["bar"]],opcoes_validas=todas_opcoes)   
 
 @app.route("/QRCode/<string:QRbase64>", methods=['GET', 'POST'])
 def QRCodeGenerate(QRbase64):
-    correctB64 = QRbase64.replace("-", "/")
-    return render_template("mostarQR.html",correctB64=correctB64)
-
+    if validUrls["QRCode"]:
+        correctB64 = QRbase64.replace("-", "/")
+        return render_template("mostarQR.html",correctB64=correctB64)
 
 @app.route('/QRScanner/<nome>', methods=['GET', 'POST'])
 def QRScaner(nome):
+    if validUrls["QRCode"]:
+        if request.method == "POST":
+            try:
+                pedB64 = request.form["pedB64"]
+                str_pedido = decodeQR(pedB64)
+                lista_pedido = ast.literal_eval(str_pedido)
+                if isinstance(lista_pedido,list) and len(lista_pedido) == 3:
+                    return jsonify({'suc':'T','redirect':url_for('servicoQR',nome=nome,opcoes=lista_pedido)})
+                else:
+                    return jsonify({'suc':'F',})
+            except:
+                return jsonify({'suc':'F',})
+            
+        if not nome in users:
+            return "Acesso negado"
+        return render_template("lerQR.html",nome=nome)
+
+#pagina responsavel por receber os varios pedidos
+@app.route("/servicoQR/<nome>/<opcoes>", methods=['GET', 'POST'])
+def servicoQR(nome,opcoes):
+    global pedidos,n,n_p
+    if request.method == 'POST':
+        return processarPedidos(nome,request)
+    #se o utilizador não for permitido será indicado
     if not nome in users:
         return "Acesso negado"
-    return render_template("qrcode.html",nome=nome)
-
+    return render_template("fazerPedido.html",nome=nome,validos=[validUrls["cozinha"],validUrls["bar"]],opcoes_validas=todas_opcoes,pre_def=ast.literal_eval(opcoes))
 
 @app.route('/listaC', methods=['GET', 'POST'])
 @app.route('/listaB', methods=['GET', 'POST'])
@@ -244,7 +240,7 @@ def listaCeB():
     #se os link foi ativado na GUI é criado uma lista com todos os pedidos daquela area
     if request.path == "/listaC" and validUrls["cozinha"]:
         pedidos_area = createList("Comida")
-    elif request.path == "/listaB" and validUrls["cozinha"]:
+    elif request.path == "/listaB" and validUrls["bar"]:
         pedidos_area = createList("Bebida")
     #se não for permitido status code 404(Not Found)
     else:
@@ -292,7 +288,7 @@ def listaCeB():
                 #podemos remover o mesmo
                 if pedidos [i][1]==[]:
                     pedidos.pop(i)
-                break    
+                break  
         # avisar o utilizador que fez o pedido 
         handle_update_page("/pess/"+nome)
         #enviar sucesso
@@ -324,7 +320,7 @@ def lista_pessoa(nome):
 @app.route("/", methods=['GET', 'POST'])
 def home():
     return "Inserir Nome"
-   
+
 #INICIO DO SCRIPT
 if __name__ == "__main__":
     #inicilaizar variaveis imporatntes
@@ -358,33 +354,24 @@ if __name__ == "__main__":
         socketio.on_namespace(ListasNamespace('/pess/'+user))
         
     #inicializar outras variaveis importantes
-    public_ip = ['']*1
     host = 'localhost'
     localhost = ''
 
-    #ler dos dados de host se o ngrok foi ativado
-    if data["ngrok"]:
-        #iniciar o ngrok por uma Thread
-        ngrok_tunnel = Thread(target=startNgrok,args=(data["port"],data["ngrok_api"],public_ip,),daemon=True,)
-        ngrok_tunnel.start()
-        
-    else: ngrok_tunnel=''
+    #ler dos dados de host se o loophole foi ativado
+    if data["loophole"]:
+        loophole_tunnel = startExternalAccess(data["port"],data["subdomain"])
+        public_ip=data["subdomain"]+".loophole.site"
+    else: public_ip = ''
 
     #ler dos dados de host se o localhost foi ativado
     if data["localNetwork"]:
         #defenir host e obter o ip da máquina
         host = '0.0.0.0'
-        localhost = socket.gethostbyname(socket.gethostname())
-        
-    #caso o ngrok esteja ativo esperar pelo resultado da Thread
-    if ngrok_tunnel != '':
-        ngrok_tunnel.join()
-        
-    #remover o http do ngrok
-    public_ip=public_ip[0].replace("http://",'')
+        localhost = socket.gethostbyname(socket.gethostname())   
     
-    Thread(target=requests.post,args=(f"http://127.0.0.1:{(data['port'])}/start",),kwargs=({"data":{'public_ip': public_ip,"localhost":localhost,"porta":data["port"],"ngrok_tunnel":ngrok_tunnel}}),).start()
+    Thread(target=requests.post,args=(f"http://127.0.0.1:{(data['port'])}/start",),kwargs=({"data":{'public_ip': public_ip,"localhost":localhost,"porta":data["port"]}}),).start()
     
     socketio.run(app, host=host,port=data["port"],use_reloader=False, debug=DEBUG)
-    stopNgrok()
+    if data["loophole"]:
+        loophole_tunnel.terminate()
 #FIM DO SCRIPT

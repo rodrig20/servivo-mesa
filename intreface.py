@@ -1,6 +1,7 @@
-from tkinter import Tk, Label, Button, Listbox, Entry, BitmapImage, Toplevel, Scrollbar, LabelFrame
+from tkinter import Tk, Label, Button, Listbox, Entry, BitmapImage, Toplevel, Scrollbar
 from bs4 import BeautifulSoup
 from threading import Thread
+from flask_settings import *
 import unicodedata
 import webbrowser
 import subprocess
@@ -9,6 +10,31 @@ import pyqrcode
 import tkinter
 import json
 import sys
+
+class checkButton():
+    def __init__(self,start_value,posx,posy,text,com='',k=''):
+        self.value = bool(start_value)
+        self.Botao = Button(root, text=' ',width=4,pady=4,bg=self.color(),command=lambda: self.changeValue(com,k))
+        self.Botao.place(relx=posx,rely=posy)
+        self.Botao_Label = Label(root,text=text, font=("Trebuche MS", 17),)
+        self.Botao_Label.place(relx=posx+0.07,rely=posy)
+        
+    def color(self):
+        if self.value == 1:    
+            cor = "#27e85e"
+        else: 
+            cor = "#eb4034"
+        return cor
+
+    def changeValue(self,com='',k=''):
+        self.value = not(self.value)
+        self.Botao.config(bg=self.color())
+        if com != '':
+            com(self.value,**k)
+        
+    def destroy(self):
+        self.Botao_Label.destroy()
+        self.Botao.destroy()
 
 #funcao responsavel por returnar uma string sem acentos
 def removerAcentos(input_str):
@@ -96,10 +122,8 @@ def getUrls(file):
     
     return data
 
-
-
 def getTiny(original,tipo,urls,modo):
-    #se for para encurtar link ngrok
+    #se for para encurtar link loophole
     if modo == 'n':
         #criar um request, que returnará um html
         c = subprocess.Popen(f'curl -s --ssl-no-revoke "https://is.gd/create.php" --data-raw "url={original}', shell=True, stdout=subprocess.PIPE).stdout.read().decode()
@@ -218,55 +242,18 @@ def apgOne(apg):
 
 #função responsavel por definiro padrao das definiçóes
 def padraoSettings(file):
-    #json padrao
-    json = '''{
-        "host": {
-            "localNetwork": 1,
-            "ngrok": 0,
-            "ngrok_api": "28IsPxR4UPF5SzXRBs7sW4zK6QN_3tYDqpXnTF17uyd4TNT4m",
-            "port": 8080
-        },
-
-        "urls":{
-            "cozinha":1,
-            "bar":0
-        }
-    }'''
     #escrever o json no ficheiro
     with open(file,"w+") as f:
-        f.write(json)
-
-#função responsavel por ativar/desativar o url da cozinha
-def enbl_coz(bt):
-    global coz_var
-    #se estiver ativado, destativa
-    if coz_var:
-        bt.configure(bg='#eb4034')
-        coz_var = 0
-    #se estiver desativado, ativa
-    else:
-        bt.configure(bg='#27e85e')
-        coz_var = 1 
-
-#função responsavel por ativar/desativar o url do bar
-def enbl_bar(bt):
-    global bar_var
-    #se estiver ativado, destativa
-    if bar_var:
-        bt.configure(bg='#eb4034')
-        bar_var = 0
-    #se estiver desativado, ativa
-    else:
-        bt.configure(bg='#27e85e')
-        bar_var = 1 
+        f.write(DEFAUT_SETTINGS)
 
 #função responsavel por apresentar os urls válidos
 def url_validos():
-    global coz_var,bar_var
     #remover todos os widgets
     root.focus()
     url_atv.place_forget()
     site.place_forget()
+    menuTitle.place_forget()
+    menuOpc.place_forget()
     defi.place_forget()
     add.place_forget()
     nome.place_forget()
@@ -277,7 +264,7 @@ def url_validos():
     quit.place_forget()
     start.place_forget()
     #alterar as configurações do botao
-    ver.configure(text="Voltar", bg='#f53b3b', command= lambda: volt([coz,cozL,bar,barL,save]))
+    ver.configure(text="Voltar", bg='#f53b3b', command= lambda: volt([coz,bar,qr,save]))
 
     #tentar extrair as configurações atuais dos urls
     try:
@@ -289,58 +276,39 @@ def url_validos():
         with open(settingsFile,"r+") as j:
             urls=json.load(j)["urls"]
 
-    #colocar as cores e variaveis de acordo com a informação extraida 
-    if urls["cozinha"]:
-        coz_color = "#27e85e"
-        coz_var = 1
-    else:
-        coz_color = "#eb4034"
-        coz_var = 0
-    
-    #colocar as cores e variaveis de acordo com a informação extraida 
-    if urls["bar"]:
-        bar_color = "#27e85e"
-        bar_var = 1
-    else:
-        bar_color = "#eb4034"
-        bar_var = 0
-
-    #btao de guardar
-    save = Button(root,text="Guardar",bg='#27e85e', font=("Trebuche MS", 12),width=18,command=lambda: guardarUrls())
-    save.place(relx=0.69,rely=0.09)
-
     #linha da cozinha
-    coz = Button(root, text=' ',width=4,pady=4,bg=coz_color,command=lambda: enbl_coz(coz))
-    coz.place(relx=0.05,rely=0.17)
-    cozL = Label(root,text="Ativar envio para a cozinha", font=("Trebuche MS", 17),)
-    cozL.place(relx=0.12,rely=0.17)
-
+    coz = checkButton(urls["cozinha"],0.05,0.17,"Ativar envio para a cozinha")
     #linha do bar
-    bar = Button(root, text=' ',width=4,pady=4,bg=bar_color,command=lambda: enbl_bar(bar))
-    bar.place(relx=0.05,rely=0.24)
-    barL = Label(root,text="Ativar envio para o bar", font=("Trebuche MS", 17),)
-    barL.place(relx=0.12,rely=0.24)
+    bar = checkButton(urls["bar"],0.05,0.24,"Ativar envio para o bar")
+    #linha do qrcode
+    qr = checkButton(urls["QRCode"],0.05,0.31,"Ativar pedidos por QRCode")
 
+    #botao de guardar
+    save = Button(root,text="Guardar",bg='#27e85e', font=("Trebuche MS", 12),width=18,command=lambda: guardarUrls(coz,bar,qr))
+    save.place(relx=0.69,rely=0.09)
+    
 #função resposavel por guardar os urls válidos nos ficheiros
-def guardarUrls():
-    global coz_var,bar_var
+def guardarUrls(coz,bar,qr):
     #abrir o ficheiro e ler o ficheiro
     with open(settingsFile,"r+") as j:
         data = json.load(j)
     #alterar as configurações
-    data["urls"]["cozinha"] = int(coz_var)
-    data["urls"]["bar"] = int(bar_var)
+    data["urls"]["cozinha"] = int(coz.value)
+    data["urls"]["bar"] = int(bar.value)
+    data["urls"]["QRCode"] = int(qr.value)
     #atualizar o ficheiro
     with open(settingsFile, 'w') as j:
         json.dump(data, j, indent=4)
 
 #função responsavel por mostar as alterações possiveis aos host
 def mudarHost():
-    global localVAR, ngrokVAR,porta,ngrokApi,errorp
+    global loopholeVAR,porta,subdomain,errorp
     #esconder todos os widgets
     root.focus()
     url_atv.place_forget()
     site.place_forget()
+    menuTitle.place_forget()
+    menuOpc.place_forget()
     defi.place_forget()
     add.place_forget()
     nome.place_forget()
@@ -351,7 +319,7 @@ def mudarHost():
     quit.place_forget()
     start.place_forget()
     #alterar as configurações para permitir a volta
-    ver.configure(text="Voltar", bg='#f53b3b', command= lambda: volt([ngrokApi,ngrokApiL,lporta,porta,check1,check2,lcheck1,lcheck2,save,errorp]))
+    ver.configure(text="Voltar", bg='#f53b3b', command= lambda: volt([subdomain,subdomainL,lporta,porta,local_access,loophole,save,errorp]))
     #tentar ler as configurações já definidas
     try:
         with open(settingsFile,"r+") as j:
@@ -363,27 +331,19 @@ def mudarHost():
         #volatar a ler
         with open(settingsFile,"r+") as j:
             rede=json.load(j)["host"]
-    
-    #colocar as cores e variaveis de acordo com a informação extraida 
-    if rede["localNetwork"]:
-        localC = "#27e85e"
-        localVAR = 1
-    else: 
-        localC = "#eb4034"
-        localVAR = 0
 
     #colocar as variaveis de acordo com a informação extraida 
-    if rede["ngrok_api"].strip() != "":
-        apiKey = rede["ngrok_api"]
+    if rede["subdomain"].strip() != "":
+        sub = rede["subdomain"]
     else: 
-        apiKey= ''
+        sub= ''
 
     #caixa de entrada responsavel por ler a Api Key
-    ngrokApi = Entry(root, font=("Trebuche MS", 13),width=54,highlightthickness=2)
-    ngrokApi.insert(0,apiKey)
+    subdomain = Entry(root, font=("Trebuche MS", 13),width=30,highlightthickness=2)
+    subdomain.insert(0,sub)
 
     #label da Key
-    ngrokApiL = Label(root,text="Api\nKey", font=("Trebuche MS", 17))
+    subdomainL = Label(root,text="Link", font=("Trebuche MS", 17))
 
     #caixa de entrada responsavel por ler a a porta do servidor
     porta = Entry(root, font=("Trebuche MS", 17),width=6,highlightthickness=2)
@@ -392,19 +352,15 @@ def mudarHost():
 
     #caso haja um erro na porta
     errorp = Label(root,font=("Trebuche MS", 7))
-
+    
     #colocar as cores e variaveis de acordo com a informação extraida 
-    if rede["ngrok"]:
-        ngrokC = "#27e85e"
-        ngrokVAR=1
-        ngrokApiL.place(relx=0.05,rely=0.31)
-        ngrokApi.place(relx=0.165,rely=0.34)
+    if rede["loophole"]:
+        subdomainL.place(relx=0.05,rely=0.34)
+        subdomain.place(relx=0.165,rely=0.34)
         lporta.place(relx=0.05,rely=0.41)
         porta.place(relx=0.165,rely=0.41)
     
     else: 
-        ngrokC = "#eb4034"
-        ngrokVAR=0
         porta.place(relx=0.165,rely=0.31)
         lporta.place(relx=0.05,rely=0.31)
     
@@ -414,67 +370,39 @@ def mudarHost():
         porta.insert(0,portaH)
     else: 
         portaH= ''
-        
+    
+    local_access = checkButton(rede["localNetwork"],0.05,0.17,"Acesso na rede local")
 
-    #botao indicardor de ativação
-    check1 = Button(root, text=' ',width=4,pady=4,bg=localC, command=lambda: localAcess(check1))
-    check1.place(relx=0.05,rely=0.17)
-    #label do indicador
-    lcheck1 = Label(root,text="Acesso na rede local", font=("Trebuche MS", 17),)
-    lcheck1.place(relx=0.12,rely=0.17)
-
-    #botao indicardor de ativação
-    check2 = Button(root, text=' ',width=4,pady=4,bg=ngrokC,command=lambda: ngrokAcess(check2,lporta,porta,ngrokApiL,ngrokApi,errorp))
-    check2.place(relx=0.05,rely=0.24)
-    #label do indicador
-    lcheck2 = Label(root,text="Acesso fora da rede (Ngrok)", font=("Trebuche MS", 17))
-    lcheck2.place(relx=0.12,rely=0.24)
-
+    
+    loophole = checkButton(rede["loophole"],0.05,0.24,"Acesso fora da rede (loophole)",loopholeAcess,{"pl":lporta,"p":porta,"subdomainl":subdomainL,"subdomain":subdomain,"erro":errorp})
+    
     #botao de guardar configurações atuais
-    save = Button(root,text="Guardar",bg='#27e85e', font=("Trebuche MS", 12),width=18,command=lambda: guardarHost(errorp))
+    save = Button(root,text="Guardar",bg='#27e85e', font=("Trebuche MS", 12),width=18,command=lambda: guardarHost(loophole,local_access,errorp))
     save.place(relx=0.69,rely=0.09)
 
     #remover a mesnagem de erro
     porta.bind("<FocusIn>", erroP)
 
-    
-#função responsavel por ativar/desativar o acesso na rede local
-def localAcess(bt):
-    global localVAR
-    #troca dos valores das varivaeis
-    if localVAR:
-        bt.configure(bg='#eb4034')
-        localVAR = 0
-    else:
-        bt.configure(bg='#27e85e')
-        localVAR = 1
-
 #função responsavel por ativar/desativar o acesso fora da rede
-def ngrokAcess(bt,pl,p,apil,api,erro):
-    global ngrokVAR
+def loopholeAcess(value,pl,p,subdomainl,subdomain,erro):
     #troca dos valores das varivaeis
-    if ngrokVAR:
-        bt.configure(bg='#eb4034')
-        ngrokVAR = 0
+    if value:
+        p.place(relx=0.165,rely=0.41)
+        pl.place(relx=0.05,rely=0.41)
+        subdomainl.place(relx=0.05,rely=0.34)
+        subdomain.place(relx=0.165,rely=0.34)
+        erro.place(relx=0.165,rely=0.465)
+        
+    else:
         p.place(relx=0.165,rely=0.31)
         pl.place(relx=0.05,rely=0.31)
         erro.place(relx=0.165,rely=0.36)
-        apil.place_forget()
-        api.place_forget()
-        
-
-    else:
-        bt.configure(bg='#27e85e')
-        ngrokVAR = 1
-        p.place(relx=0.165,rely=0.41)
-        pl.place(relx=0.05,rely=0.41)
-        apil.place(relx=0.05,rely=0.31)
-        api.place(relx=0.165,rely=0.34)
-        erro.place(relx=0.165,rely=0.465)
+        subdomainl.place_forget()
+        subdomain.place_forget()
 
 #guardar configurações de hist no ficehirp
-def guardarHost(erro):
-    global localVAR, ngrokVAR,porta,ngrokApi
+def guardarHost(loophole,local_access,erro):
+    global porta,subdomain
     #verificar se a porta é um numeor válido
     if int(porta.get()) >= 1 and int(porta.get()) <= 65535:
         #remover mensagem de erro
@@ -484,9 +412,9 @@ def guardarHost(erro):
             data = json.load(j)
 
         #alaterar as definições de acordo com o selecionado
-        data["host"]["localNetwork"] = int(localVAR)
-        data["host"]["ngrok"] = int(ngrokVAR)
-        data["host"]["ngrok_api"] = ngrokApi.get().strip()
+        data["host"]["localNetwork"] = int(local_access.value)
+        data["host"]["loophole"] = int(loophole.value)
+        data["host"]["subdomain"] = subdomain.get().strip()
         data["host"]["port"] = int(porta.get())
         
         #carregar as novas definições 
@@ -496,7 +424,7 @@ def guardarHost(erro):
     else:
         #mostrar erro
         erro.configure(text="Porta tem de estar entre 1-65535",fg="#eb4034")
-        if int(ngrokVAR):
+        if int(loopholeVAR):
             erro.place(relx=0.165,rely=0.465)
         else:
             erro.place(relx=0.165,rely=0.36)
@@ -516,10 +444,12 @@ def volt(w_list):
     add.place(relx=0.05,rely=0.16)
     nome.place(relx=0.35,rely=0.155)
     apg.place(relx=0.05,rely=0.23)
-    site.place(relx=0.02,rely=0.34) 
-    url_atv.place(relx=0.05,rely=0.41)
-    avan.place(relx=0.02,rely=0.52)
-    host.place(relx=0.05,rely=0.59)
+    menuTitle.place(relx=0.05,rely=0.32)
+    menuOpc.place(relx=0.05,rely=0.39)
+    site.place(relx=0.05,rely=0.48) 
+    url_atv.place(relx=0.05,rely=0.55)
+    avan.place(relx=0.02,rely=0.64)
+    host.place(relx=0.05,rely=0.71)
     quit.place(relx=0.05,rely=0.87)
     start.place(relx=0.7,rely=0.87)
 
@@ -571,7 +501,6 @@ def centralizaWin(win,width=0,height=0):
     #definir tamho e posição da jeanela
     win.geometry(f'{width}x{height}+{x}+{y}')
         
-
 #função resposavel por criar uma janela com um QrCode de um link
 def open_QR(url):
     global qr_win
@@ -629,7 +558,7 @@ def menu(url,localIP,p,default):
     #lista com os 2 urls encortados
     tiny_urls = [None]*2
 
-    #se as definições de acesso local e ngrok estiverem ativas
+    #se as definições de acesso local e loophole estiverem ativas
     if url!='' and localIP!='':
         janela = 2
         width=900
@@ -660,7 +589,7 @@ def menu(url,localIP,p,default):
             width = 400
             height = 500
             add = 0.05
-        #apenas acesso fora da rede via ngrok
+        #apenas acesso fora da rede via loophole
         else:
             b_url = f"https://{url}"
             m = 'n' 
@@ -683,7 +612,7 @@ def menu(url,localIP,p,default):
     #label do primeiro url
     link1 = Label(win,font=("Trebuche MS", 17),text=url)
     #boato de copia do primeiro url
-    link1_cop = Button(win,font=("Trebuche MS", 17),bg="#856ff8",text="Copiar Link",width=12,command=lambda: copyUrl(b_url,win,0.12,0.29,janela))
+    link1_cop = Button(win,font=("Trebuche MS", 17),bg="#856ff8",text="Copiar Link",width=12,command=lambda: copyUrl(b_url,win,0.12+(small/10),0.29+(small/5),janela))
     #botao de redirecionamento do primeiro url
     link1_red = Button(win,font=("Trebuche MS", 17),bg="#27e85e",text="Abrir Link",width=12,command= lambda: redirectUrl(b_url))
     #botao de QrCode do primeiro url
@@ -744,7 +673,7 @@ def menu(url,localIP,p,default):
 
 # create root window
 def main():
-    global root, defi, ver,add,nome,suc,apg,scrollbar,url_atv,site,host,avan,quit,start
+    global root, defi, ver,add,nome,suc,apg,menuTitle,menuOpc,scrollbar,url_atv,site,host,avan,quit,start
     root = Tk()
     #definir tamanho da janela
     width = 800
@@ -785,22 +714,28 @@ def main():
     #colocar botao para remover utilizadores
     apg = Button(root, text="Apagar Utilizador", font=("Trebuche MS", 12),width=18,bg="#856ff8", command=apagarUser)
     apg.place(relx=0.05,rely=0.23)
+    
+    menuTitle = Label(root, text="Definições do Menu", font=("Trebuche MS", 17))
+    menuTitle.place(relx=0.02,rely=0.32)
+    
+    menuOpc = Button(root, text="Esolher Menu", font=("Trebuche MS", 12),width=18,bg="#856ff8", )#command=)
+    menuOpc.place(relx=0.05,rely=0.39)
 
     #colocar titulo das definiçoes de site
     site = Label(root, text="Definições do site", font=("Trebuche MS", 17))
-    site.place(relx=0.02,rely=0.34)
-
+    site.place(relx=0.02,rely=0.48)
+    
     #colocar botao para alterar urls permitidos
     url_atv = Button(root, text="Urls Permitidos", font=("Trebuche MS", 12),width=18,bg="#856ff8", command=url_validos)
-    url_atv.place(relx=0.05,rely=0.41)
+    url_atv.place(relx=0.05,rely=0.55)
 
     #colocar titulo para definições avançadas
     avan = Label(root, text="Definições Avançadas", font=("Trebuche MS", 17))
-    avan.place(relx=0.02,rely=0.52)
+    avan.place(relx=0.02,rely=0.64)
 
     #colocar botao para alterar configurações de host
     host = Button(root, text="Mudar Host", font=("Trebuche MS", 12),width=18,bg="#856ff8", command=mudarHost)
-    host.place(relx=0.05,rely=0.59)
+    host.place(relx=0.05,rely=0.71)
 
     #colocar botao para cancelar operação
     quit = Button(root, text="SAIR", font=("Trebuche MS", 18),width=10,pady=5,bg="#eb4034", command=close)
