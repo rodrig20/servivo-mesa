@@ -237,7 +237,7 @@ function pedidoPronto(botao,pedidos){
     }else{
         apagarRow(tabelaExistente,0);
     }
-    const json_send = {numero_pedido:numero_pedido,numero_sub_pedido:numero_sub_pedido};
+    const json_send = {numero_pedido:numero_pedido,numero_sub_pedido:numero_sub_pedido-1};
 
     const options = {
         method: 'PUT',
@@ -446,7 +446,7 @@ function removerPronto(botao,pedidos){
                 pedidos[0].splice(i,1)
                 pedidos[1].splice(i,1)
                 pedidos[2].splice(i,1)
-                const json_send = {localizacao:i};
+                const json_send = {sub_idx:i};
 
                 const options = {
                     method: 'DELETE',
@@ -492,7 +492,8 @@ function recriarDivProntos(pedidos){
     if (pedidos && pedidos.length!==0 && pedidos[0].length!==0){
         for (let m=0;m<pedidos[2].length;m++){
             idx = pedidos_mesa.indexOf(pedidos[2][m])
-            if (idx !== -1){
+
+            if (idx != -1){
                 pedidos_organizados[idx].push([pedidos[0][m],pedidos[1][m]])
             } else {
                 pedidos_mesa.push(pedidos[2][m])
@@ -576,7 +577,10 @@ function makeLogin(){
         json_send = {user:user,pass:password};
         $.post($SCRIPT_ROOT, json_send, loginValidation,'json');
     } else {
-        document.getElementById('error-message').style.display = "block";
+        erro = document.getElementById('error-message');
+        if (erro.innerText == "");
+            erro.innerText = "*nome de utilizador ou password incorreta";
+        erro.style.display = "block";
     }
 }
 
@@ -586,7 +590,9 @@ function loginValidation(data){
     else{
         var campo = document.querySelector('input[name="password"]');
         campo.select();
-        document.getElementById('error-message').style.display = "block";
+        erro = document.getElementById('error-message');
+        erro.style.display = "block";
+        erro.innerText = "*"+data["erro"]
     }
 }
 
