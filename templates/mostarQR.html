@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script type=text/javascript src="{{ url_for('static', filename='jquery.js') }}"> </script>
+    <script type=text/javascript src="{{ url_for('static', filename='meu_ajax.js') }}"> </script>
+    <script type=text/javascript> $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=0.4, maximum-scale=0.4, user-scalable=0">
+    <meta name="google" content="notranslate">
+    <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+    <link rel="shortcut icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <style>
+        .image-container {
+            display: flex;
+            justify-content: center;
+            padding-top: 30px;
+        }
+        
+        .button-container {
+            position: absolute;
+            bottom: 25px;
+            left: 10px;
+            right: 10px;
+            display: flex;
+            justify-content: center;
+        }
+        
+        .button-container button {
+            background-color: #e2051f;
+            color: white;
+            font-size: 70px;
+            border: none;
+            border-radius: 4px;
+            padding: 12px 24px;
+            cursor: pointer;
+            max-width: 80%;
+        }
+    #qr {
+        width: 80%;
+    }
+    @media only screen and (orientation: landscape) {
+        #qr {
+            width: auto;
+        }
+        .button-container button {
+            font-size: 35px;
+        }
+    }
+      
+    </style>
+  </head>
+  <body>
+    <div class="image-container">
+        <img id="qr" src='data:image/png;base64,{{correctB64}}' />
+    </div>
+    <div class="button-container">
+        <button type="button" id="voltarDoQR">Voltar</button>
+    </div>
+  </body>
+</html>

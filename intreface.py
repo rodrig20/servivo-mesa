@@ -1,11 +1,12 @@
+from tkinter import Tk, Label, Button, Listbox, Entry, BitmapImage, Toplevel, Scrollbar, LabelFrame
 from bs4 import BeautifulSoup
 from threading import Thread
-from tkinter import *
 import unicodedata
 import webbrowser
 import subprocess
 import pyperclip
 import pyqrcode
+import tkinter
 import json
 import sys
 
@@ -19,17 +20,17 @@ def removerAcentos(input_str):
 def verTodos():
     root.focus()
     #esconder widgets
-    defe.place_forget()
+    defi.place_forget()
     add.place_forget() 
 
     #alterar configurações
     ver.configure(text="Voltar", bg='#f53b3b', command= lambda: desverTodos([w_users]))
     users= getUsers(usersFile)
-    scrollbar.pack( side = RIGHT, fill =Y)
+    scrollbar.pack( side = tkinter.RIGHT, fill =tkinter.Y)
     # mostrar lista com todos os utilizadores permitidos
     w_users = Listbox(root, width=47, height=20, font=("Trebuche MS", 17), yscrollcommand = scrollbar.set )
     for u in users:
-        w_users.insert(END, str(u))
+        w_users.insert(tkinter.END, str(u))
     w_users.place(relx=0.02,rely=0.15)
     scrollbar.config(command = w_users.yview )
     #remover scrollbar caso não seja necessario
@@ -40,7 +41,7 @@ def verTodos():
 def desverTodos(wi):
     root.focus()
     #mostar todos os widgets principais
-    defe.place(relx=0.02,rely=0.02)
+    defi.place(relx=0.02,rely=0.02)
     add.place(relx=0.05,rely=0.16)
     scrollbar.pack_forget()
     #destruir os que já não são mais uteis
@@ -137,7 +138,7 @@ def addUser(_=None):
                     with open(usersFile, 'a+') as f:
                         f.write(f"\n{novo}")
                     #apaga a caixa de entrada
-                    nome.delete(0, END)
+                    nome.delete(0, tkinter.END)
                     #coloca o foco na janela
                     root.focus()
                     #indica ao utilizador que o nome foi adicionado com sucesso
@@ -159,7 +160,7 @@ def apagarUser():
     #colocar o foco na janela
     root.focus()
     #apagar alguns widgets
-    defe.place_forget()
+    defi.place_forget()
     add.place_forget()
     #altearar as configurações para poder usar com outra funcionalidade
     ver.configure(text="Voltar", bg='#f53b3b', command= lambda: desverTodos([w_users,atual,todos,]))
@@ -175,11 +176,11 @@ def apagarUser():
     #obter todos os utilizadores registados
     users= getUsers(usersFile)
     #colocar scrollbar
-    scrollbar.pack( side = RIGHT, fill =Y)
+    scrollbar.pack( side = tkinter.RIGHT, fill =tkinter.Y)
     #mostar rodos os utilizadores
-    w_users = Listbox(root, width=47,selectmode=MULTIPLE, height=20, font=("Trebuche MS", 17), yscrollcommand = scrollbar.set )
+    w_users = Listbox(root, width=47,selectmode=tkinter.MULTIPLE, height=20, font=("Trebuche MS", 17), yscrollcommand = scrollbar.set )
     for u in users:
-        w_users.insert(END, str(u))
+        w_users.insert(tkinter.END, str(u))
     w_users.place(relx=0.02,rely=0.15)
     scrollbar.config(command = w_users.yview )
     #remover scroolbar caso não seja necessaria
@@ -215,7 +216,7 @@ def apgOne(apg):
             f.write(f"{u}\n")
     root.focus()
 
-#função responsavel por defeniro padrao das defeniçóes
+#função responsavel por definiro padrao das definiçóes
 def padraoSettings(file):
     #json padrao
     json = '''{
@@ -266,7 +267,7 @@ def url_validos():
     root.focus()
     url_atv.place_forget()
     site.place_forget()
-    defe.place_forget()
+    defi.place_forget()
     add.place_forget()
     nome.place_forget()
     suc.place_forget()
@@ -282,7 +283,7 @@ def url_validos():
     try:
         with open(settingsFile,"r+") as j:
             urls=json.load(j)["urls"]
-    #caso haja algum erro as defenições são defenidas para padrão     
+    #caso haja algum erro as definições são definidas para padrão     
     except:
         padraoSettings(settingsFile)
         with open(settingsFile,"r+") as j:
@@ -340,7 +341,7 @@ def mudarHost():
     root.focus()
     url_atv.place_forget()
     site.place_forget()
-    defe.place_forget()
+    defi.place_forget()
     add.place_forget()
     nome.place_forget()
     suc.place_forget()
@@ -351,12 +352,12 @@ def mudarHost():
     start.place_forget()
     #alterar as configurações para permitir a volta
     ver.configure(text="Voltar", bg='#f53b3b', command= lambda: volt([ngrokApi,ngrokApiL,lporta,porta,check1,check2,lcheck1,lcheck2,save,errorp]))
-    #tentar ler as configurações já defenidas
+    #tentar ler as configurações já definidas
     try:
         with open(settingsFile,"r+") as j:
             rede=json.load(j)["host"]
 
-    #caso não seja possivel, é colocado nas defenições padrão       
+    #caso não seja possivel, é colocado nas definições padrão       
     except:
         padraoSettings(settingsFile)
         #volatar a ler
@@ -478,17 +479,17 @@ def guardarHost(erro):
     if int(porta.get()) >= 1 and int(porta.get()) <= 65535:
         #remover mensagem de erro
         erro.place_forget()
-        #ler arquivo de defenições
+        #ler arquivo de definições
         with open(settingsFile,"r+") as j:
             data = json.load(j)
 
-        #alaterar as defenições de acordo com o selecionado
+        #alaterar as definições de acordo com o selecionado
         data["host"]["localNetwork"] = int(localVAR)
         data["host"]["ngrok"] = int(ngrokVAR)
         data["host"]["ngrok_api"] = ngrokApi.get().strip()
         data["host"]["port"] = int(porta.get())
         
-        #carregar as novas defenições 
+        #carregar as novas definições 
         with open(settingsFile, 'w') as j:
             json.dump(data, j, indent=4)
     
@@ -510,8 +511,8 @@ def volt(w_list):
         w.destroy()
     #repor os widgets do menu principal
     ver.configure(text="Ver utilizadores",bg="#856ff8",command=verTodos,)
-    defe = Label(root, text="Defenições de Utilizadores", font=("Trebuche MS", 17))
-    defe.place(relx=0.02,rely=0.02)
+    defi = Label(root, text="Definições de Utilizadores", font=("Trebuche MS", 17))
+    defi.place(relx=0.02,rely=0.02)
     add.place(relx=0.05,rely=0.16)
     nome.place(relx=0.35,rely=0.155)
     apg.place(relx=0.05,rely=0.23)
@@ -535,7 +536,7 @@ def erroP(e):
 def close():
     sys.exit(1) 
 
-#defenir o nome dos ficehiros padrao de utilizadores e de defenições
+#definir o nome dos ficehiros padrao de utilizadores e de definições
 def Files(uFile,sFile):
     global usersFile,settingsFile
     usersFile=uFile
@@ -552,7 +553,7 @@ def copyUrl(url,win,yCord,xCord,j):
     suc = Label(win,font=("Trebuche MS", 14),text="Copiado",fg="#27e85e")
     suc.place(relx=xCord,rely=yCord)
     #remover aviso apos 5000 ms
-    root.after(5000,lambda: destruir(suc))
+    win.after(5000,lambda: destruir(suc))
 
 #função responsavel por centralizar janela
 def centralizaWin(win,width=0,height=0):
@@ -567,7 +568,7 @@ def centralizaWin(win,width=0,height=0):
     #calcular a posição do canto superior direito
     x = int((screen_width/2) - (width/2))
     y = int((screen_height/2) - (height/2))
-    #defenir tamho e posição da jeanela
+    #definir tamho e posição da jeanela
     win.geometry(f'{width}x{height}+{x}+{y}')
         
 
@@ -624,11 +625,11 @@ def menu(url,localIP,p,default):
 
     add = 0
     height=700
-    
+
     #lista com os 2 urls encortados
     tiny_urls = [None]*2
-    
-    #se as defenições de acesso local e ngrok estiverem ativas
+
+    #se as definições de acesso local e ngrok estiverem ativas
     if url!='' and localIP!='':
         janela = 2
         width=900
@@ -671,7 +672,7 @@ def menu(url,localIP,p,default):
         tn1_url.start()
 
     win.title("Serviço de mesa")
-    #defenir tamanho e
+    #definir tamanho e
     #centralizar janela
     centralizaWin(win,width,height)
     win.resizable(False, False)
@@ -700,26 +701,20 @@ def menu(url,localIP,p,default):
     link1_cop.place(relx=0.05,rely=0.1+add*2)
     link1_red.place(relx=0.05,rely=0.2+add*3)
     link1_QR.place(relx=0.05,rely=0.3+add*4)
-    
+
     if not small:
         tiny1.place(relx=0.05,rely=0.48)
         tn1_cop.place(relx=0.05,rely=0.55)
         tn1_red.place(relx=0.05,rely=0.65)
-    
+
     if janela == 2:
         #repetir os wisgets acima, mas com o segundo url
         link2 = Label(win,font=("Trebuche MS", 17),text=localIP)
-
         link2_cop = Button(win,font=("Trebuche MS", 17),bg="#856ff8",text="Copiar Link",width=12,command=lambda: copyUrl(b_localIP,win,0.12,0.79,0))
-
         link2_red = Button(win,font=("Trebuche MS", 17),bg="#27e85e",text="Abrir Link",width=12,command= lambda: redirectUrl(b_localIP))
-
         link2_QR = Button(win,font=("Trebuche MS", 17),bg="#8c8c8c",text="QR Code",width=12,command=lambda: open_QR(b_localIP))
-        
         tiny2 = Label(win,font=("Trebuche MS", 17))
-
         tn2_cop = Button(win,font=("Trebuche MS", 17),bg="#856ff8",text="Copiar Link",width=12,command= lambda: copyUrl(tiny_urls[1],win,0.565,0.79,0))
-
         tn2_red = Button(win,font=("Trebuche MS", 17),bg="#27e85e",text="Abrir Link",width=12,command= lambda: redirectUrl(tiny_urls[1]))
 
         link2.place(relx=0.55,rely=0.03)
@@ -729,11 +724,10 @@ def menu(url,localIP,p,default):
         tiny2.place(relx=0.55,rely=0.48)
         tn2_cop.place(relx=0.55,rely=0.55)
         tn2_red.place(relx=0.55,rely=0.65)
-        
-            
+
     #botao para terminar script
     quit = Button(win,font=("Trebuche MS", 17),text="Terminar",bg="#f53b3b",command=lambda: destruir(win))
-    quit.place(relx=0.5,rely=0.91,anchor=CENTER)
+    quit.place(relx=0.5,rely=0.91,anchor=tkinter.CENTER)
 
     #receber o primeiro url encurtado
     if not small:
@@ -750,12 +744,11 @@ def menu(url,localIP,p,default):
 
 # create root window
 def main():
-    global root, defe, ver,add,nome,suc,apg,scrollbar,url_atv,site,host,avan,quit,start
+    global root, defi, ver,add,nome,suc,apg,scrollbar,url_atv,site,host,avan,quit,start
     root = Tk()
-    #defenir tamanho da janela
+    #definir tamanho da janela
     width = 800
     height = 800
-    
 
     #titulo da janela
     root.title("Serviço de mesa")
@@ -764,10 +757,10 @@ def main():
     root.resizable(False, False)
     root.protocol("WM_DELETE_WINDOW", close)
     scrollbar = Scrollbar()
-
-    #colocar titulo das defeniçoes dos utilizadores
-    defe = Label(root, text="Defenições de Utilizadores", font=("Trebuche MS", 17))
-    defe.place(relx=0.02,rely=0.02)
+    
+    #colocar titulo das definiçoes dos utilizadores
+    defi = Label(root, text="Definições de Utilizadores", font=("Trebuche MS", 17))
+    defi.place(relx=0.02,rely=0.02)
 
     #colocar botao para visualizar os utilizadores válidos
     ver = Button(root, text="Ver Utilizadores", font=("Trebuche MS", 12),width=18,bg="#856ff8", command=verTodos)
@@ -793,16 +786,16 @@ def main():
     apg = Button(root, text="Apagar Utilizador", font=("Trebuche MS", 12),width=18,bg="#856ff8", command=apagarUser)
     apg.place(relx=0.05,rely=0.23)
 
-    #colocar titulo das defeniçoes de site
-    site = Label(root, text="Defenições do site", font=("Trebuche MS", 17))
+    #colocar titulo das definiçoes de site
+    site = Label(root, text="Definições do site", font=("Trebuche MS", 17))
     site.place(relx=0.02,rely=0.34)
 
     #colocar botao para alterar urls permitidos
     url_atv = Button(root, text="Urls Permitidos", font=("Trebuche MS", 12),width=18,bg="#856ff8", command=url_validos)
     url_atv.place(relx=0.05,rely=0.41)
 
-    #colocar titulo para defenições avançadas
-    avan = Label(root, text="Defenições Avançadas", font=("Trebuche MS", 17))
+    #colocar titulo para definições avançadas
+    avan = Label(root, text="Definições Avançadas", font=("Trebuche MS", 17))
     avan.place(relx=0.02,rely=0.52)
 
     #colocar botao para alterar configurações de host

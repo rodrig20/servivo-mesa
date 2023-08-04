@@ -90,21 +90,24 @@ h1 {
     
 }
 
-
-#send {
-    background-color: green;
-    font-size: 70px;
-}
-
 #add {
     background-color: blue;
     font-size: 79px;
     color:white;
 }
+#send {
+    background-color: green;
+    font-size: 65px;
+}
 
 #prontos {
     background-color: rgb(255, 0, 60);
-    font-size: 70px;
+    font-size: 65px;
+}
+#qrbotao {
+    background-color: rgb(25, 145, 214);
+    color:white;
+    font-size: 65px;
 }
 
 .coluna {

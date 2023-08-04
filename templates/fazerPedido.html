@@ -1,0 +1,34 @@
+<html>
+    <head>
+        <script type=text/javascript src="{{ url_for('static', filename='jquery.js') }}"> </script>
+        <script type=text/javascript src="{{ url_for('static', filename='meu_ajax.js') }}"> </script>
+        <script type=text/javascript> $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};</script>
+        <meta name="viewport" content="width=device-width, initial-scale=0.4, maximum-scale=0.4, user-scalable=0">
+        <meta name="google" content="notranslate">
+        <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+        <link rel="shortcut icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+        <script>
+            var opcoes_Comida_Bebida = JSON.parse('{{ opcoes_validas|tojson|safe }}');
+        </script>
+    </head>
+    <body>
+        <h1>Pedidos de {{ nome }}</h1>
+        <div style="overflow-x:auto;">
+            <table id="tabela">
+
+            </table>
+        </div>
+        <input type="hidden", class="nome" value="{{ nome }}">
+        <br>
+        {%if validos[0]%}
+            <input class="button" type="button" style='background: #1ea831;' id="add" onclick="addRow('c',opcoes_Comida_Bebida)" value="Adicionar Comida">
+        {%endif%}
+        {%if validos[1]%}
+            <input class="button" type="button" style='background: #2d2091;' id="add" onclick="addRow('b',opcoes_Comida_Bebida)" value="Adicionar Bebida">
+        {%endif%}
+        <br><br>
+        <input class="button" type="submit" id="send" value="Enviar">
+        <input class="button" type="submit" id="prontos" value="Ver Pedidos">
+        <input class="button" type="submit" id="qrbotao" value="QRCODE"
+    </body>
+</html>

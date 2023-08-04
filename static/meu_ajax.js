@@ -1,6 +1,6 @@
 var r = 0;
 
-function addRow(c) {
+function addRow(c,opcoes) {
     var table = document.getElementById("tabela");
     var row = table.insertRow(-1);
     row.setAttribute("id",r);
@@ -10,21 +10,31 @@ function addRow(c) {
     var cell4 = row.insertCell(3);
     var p;
     var c;
-    if (c=='c'){
-        p= 'Comida';
-        c='#1ea831'
-
-    }else{
-        p= 'Bebida'
-        c='#292b94'
+    if (c == 'c') {
+        p = 'Comida';
+        c = '#1ea831'
+        var my_opcoes = opcoes[0]
+    } else {
+        p = 'Bebida'
+        c = '#292b94'
+        var my_opcoes = opcoes[1]
     }
-    cell1.innerHTML = "<input type='number' style='border: 3px solid "+c+";' id='quantity' class='quantity' min='1'>";
-    cell2.innerHTML = "<input type='text' style='border: 3px solid "+c+";' id='pedido' class='pedido' placeholder='"+ p +"'>";
-    cell3.innerHTML = "<input type='button' id='cancelar' onclick='removerPedido("+r+")' value=' x '>"
-    cell4.innerHTML = "<input type='hidden' class='tipo' value='"+ p +"'>"
+    cell1.innerHTML = "<input type='number' style='border: 3px solid " + c + ";' id='quantity' class='quantity' min='1'>";
+    cell2.innerHTML = "<select style='border: 3px solid " + c + ";' id='pedido' class='pedido'></select>";
+    cell3.innerHTML = "<input type='button' id='cancelar' onclick='removerPedido(" + r + ")' value=' x '>"
+    cell4.innerHTML = "<input type='hidden' class='tipo' value='" + p + "'>"
     cell1.className = 'quantiNum';
+    // Adicionar as opções válidas ao select
+    var select = cell2.getElementsByTagName("select")[0];
+    for (let i = 0; i < my_opcoes.length; i++) {
+        var option = document.createElement("option");
+        option.text = my_opcoes[i];
+        option.value = my_opcoes[i];
+        select.add(option);
+    }
+
     r++;
-}
+};
 
 function removerPedido(n){
     var row = document.getElementById(n);
@@ -49,7 +59,7 @@ function pedidoPronto(n,v,t){
 function check(data){
     if (data['suc']='T'){
         $(location).prop('href', data['redirect']);
-    }
+    } 
 }
 
 function reload(data){
@@ -91,6 +101,30 @@ function lista(){
     $(location).prop('href', $SCRIPT_ROOT + '/lista/'+ nome);
 }
 
+function pedAuto(){
+    $(location).prop('href', $SCRIPT_ROOT + "/pedido-automatico");
+}
+
+// Executar a função de decodificação de QR quando um novo frame de vídeo é exibido
+function decodeQR() {
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    var imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+    var code = jsQR(imageData.data, imageData.width, imageData.height);
+    if (code) {
+      // Se um código QR foi decodificado, exibir o resultado
+      console.log(code.data)
+
+    } else {
+      // Se nenhum código QR foi encontrado, tentar novamente no próximo frame
+      requestAnimationFrame(decodeQR);
+    }
+  }
+
+function toQRScanner(){
+    nome = $('input[type="hidden"]').val();
+    $(location).prop('href', $SCRIPT_ROOT + '/QRScanner/' + nome);
+    //window.location.href = "qrcode.html"
+}
 
 // Início do jQuery:
 $(function() {
@@ -99,4 +133,7 @@ $(function() {
     $('#lista').click(lista);
     $('#prontos').click(lista);
     $('#novo').click(voltar);
+    $('#voltarDoQR').click(pedAuto);
+    $('#qrbotao').click(toQRScanner);
+
 });
