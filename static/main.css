@@ -60,7 +60,7 @@ h1 {
     background-color: #4CAF50;
     font-size: 70px;
 }
-#back {
+#back, #back-non-user{
     background-color: rgb(255, 0, 60);
     color:white;
     width: 100%;
@@ -73,7 +73,7 @@ h1 {
     font-size: 100px;
 }
 
-#quantity,#pedido {width:100%;font-size:80px;padding: 12px 20px; }
+#quantity,#pedido{outline:0px;width:100%;font-size:80px;padding: 12px 20px; }
 
 .quantiNum {
     width:15%;
@@ -99,6 +99,10 @@ h1 {
 }
 #send {
     background-color: green;
+    font-size: 65px;
+}
+#menu {
+    background-color: blue;
     font-size: 65px;
 }
 

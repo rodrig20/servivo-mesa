@@ -21,7 +21,7 @@ try:
 except: 
     pass
 
-""""""
+""" """
 
 # Iniciar Falsk app
 app = Flask(__name__)
@@ -163,6 +163,22 @@ def stop():
     else:
         abort(404)
 
+@app.route("/update-files/<tipo>")
+def update_files(tipo):
+    if tipo == "_menu_" or tipo == "_all_":
+        global todas_opcoes,preco_opcoes
+        #ler todas as configurações do menu
+        menu = inter.getMenu(settingsFile)
+        todas_opcoes = [list(menu["cozinha"].keys()),list(menu["bar"].keys())]
+        preco_opcoes = [list(menu["cozinha"].values()),list(menu["bar"].values())]
+    if tipo == "_urls_" or tipo == "_all_":
+        global validUrls
+        #ler todas as configurações de urls
+        validUrls =inter.getUrls(settingsFile)
+    print("s")
+        
+    return ""        
+
 #pagina responsavel por receber os varios pedidos
 @app.route("/servico/<nome>", methods=['GET', 'POST'])
 def servico(nome):
@@ -205,6 +221,10 @@ def pedidoAutomatico():
         return render_template("pedidoAutomatico.html",validos=[validUrls["cozinha"],validUrls["bar"]],opcoes_validas=todas_opcoes,preco_opcoes=preco_opcoes) 
     else:
         abort(404)  
+        
+@app.route("/menu", methods=['GET', 'POST'])
+def menu():
+    return render_template("menu.html")
 
 @app.route("/QRCode/<string:QRbase64>", methods=['GET', 'POST'])
 def QRCodeGenerate(QRbase64):
@@ -358,7 +378,7 @@ def login():
 def home():
     return redirect(url_for("login"))
 
-#INICIO DO SCRIPT
+#-#-INICIO DO SCRIPT-#-#
 if __name__ == "__main__":
     #inicilaizar variaveis imporatntes
     pedidos = []        #Lista com todos os pedidos por fazer
@@ -382,7 +402,7 @@ if __name__ == "__main__":
     data = inter.getHost(settingsFile)
     #ler todas as configurações de urls
     validUrls =inter.getUrls(settingsFile)
-    #let todas as configurações do menu
+    #ler todas as configurações do menu
     menu = inter.getMenu(settingsFile)
     
     todas_opcoes = [list(menu["cozinha"].keys()),list(menu["bar"].keys())]
@@ -416,8 +436,10 @@ if __name__ == "__main__":
         host = '0.0.0.0'
         localhost = socket.gethostbyname(socket.gethostname())
         
+    
     Thread(target=requests.post,args=(f"http://127.0.0.1:{(data['port'])}/start",),kwargs=({"data":{'public_ip': public_ip,"localhost":localhost,"porta":data["port"]}}),).start()
+
     socketio.run(app, host=host,port=data["port"],use_reloader=False, debug=DEBUG)
     if data["loophole"]:
         lh[0].kill()
-#FIM DO SCRIPT
+#-#-FIM DO SCRIPT-#-#

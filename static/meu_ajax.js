@@ -145,9 +145,17 @@ function enviar(){
     $.post($SCRIPT_ROOT, json_send, check,'json');
 }
 
+function menu(){
+    $(location).prop('href', $SCRIPT_ROOT + '/menu');
+}
+
 function voltar(){
     nome = $('input[type="hidden"]').val();
     $(location).prop('href', $SCRIPT_ROOT + '/servico/' + nome);
+}
+
+function voltar_non_user(){
+    $(location).prop('href', $SCRIPT_ROOT + '/pedido-automatico');
 }
 function lista(){
     nome = $('.nome').val();
@@ -199,13 +207,14 @@ function makeLogin(){
     password = $('input[name="password"]').val();
     json_send = {user:user,pass:password}
     $.post($SCRIPT_ROOT, json_send, voltaServico,'json');
-
 }
 
 // Início do jQuery:
 $(function() {
     $('#send').click(enviar);
+    $('#menu').click(menu);
     $('#back').click(voltar);
+    $('#back-non-user').click(voltar_non_user);
     $('#lista').click(lista);
     $('#prontos').click(lista);
     $('#novo').click(voltar);

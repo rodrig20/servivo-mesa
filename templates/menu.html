@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script type=text/javascript src="{{ url_for('static', filename='jquery.js') }}"> </script>
+        <script type=text/javascript src="{{ url_for('static', filename='meu_ajax.js') }}"> </script>
+        <script type=text/javascript> $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};</script>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=0.4, maximum-scale=0.4, user-scalable=0">
+        <meta name="google" content="notranslate">
+        <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+        <link rel="shortcut icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    </head>
+    <body style="background-color:#111243">
+        <img src="static/Menu.jpg" style="width: 100%;" alt="Menu">
+        <input class="button" type="submit" id="back-non-user" value="Voltar" style="width:96.5%">
+    </body>
+</html>
