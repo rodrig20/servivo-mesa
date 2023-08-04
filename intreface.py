@@ -219,18 +219,18 @@ def apgOne(apg):
 def padraoSettings(file):
     #json padrao
     json = '''{
-    "host": {
-        "localNetwork": 1,
-        "ngrok": 0,
-        "ngrok_api": "YOUR_API_KEY",
-        "port": 8080
-    },
+        "host": {
+            "localNetwork": 1,
+            "ngrok": 0,
+            "ngrok_api": "28IsPxR4UPF5SzXRBs7sW4zK6QN_3tYDqpXnTF17uyd4TNT4m",
+            "port": 8080
+        },
 
-    "urls":{
-        "cozinha":1,
-        "bar":0
-    }
-}'''
+        "urls":{
+            "cozinha":1,
+            "bar":0
+        }
+    }'''
     #escrever o json no ficheiro
     with open(file,"w+") as f:
         f.write(json)
@@ -304,7 +304,7 @@ def url_validos():
         bar_color = "#eb4034"
         bar_var = 0
 
-    #botao de guardar
+    #btao de guardar
     save = Button(root,text="Guardar",bg='#27e85e', font=("Trebuche MS", 12),width=18,command=lambda: guardarUrls())
     save.place(relx=0.69,rely=0.09)
 
@@ -552,12 +552,12 @@ def copyUrl(url,win,yCord,xCord,j):
     suc = Label(win,font=("Trebuche MS", 14),text="Copiado",fg="#27e85e")
     suc.place(relx=xCord,rely=yCord)
     #remover aviso apos 5000 ms
-    root.after(5000,lambda: labelRemover(suc))
+    root.after(5000,lambda: destruir(suc))
 
 #função responsavel por centralizar janela
-def centralizaWin(win,width=None,height=None):
+def centralizaWin(win,width=0,height=0):
     #caso a janela não tenha tamanho certo
-    if width == None and height == None:
+    if width == 0 and height == 0:
         #ler o tamnho da janela
         width = win.winfo_reqwidth()
         height = win.winfo_reqheight()
@@ -574,11 +574,14 @@ def centralizaWin(win,width=None,height=None):
 #função resposavel por criar uma janela com um QrCode de um link
 def open_QR(url):
     global qr_win
+    
     #tentar apagar qrcodes antigos
     try:
         qr_win.destroy()
     except:
         pass
+    
+
     #criar uma janela Top Level
     qr_win = Toplevel()
     
@@ -611,18 +614,16 @@ def generate_QR(url):
 def redirectUrl(url):
     webbrowser.open(url)
 
-#remover label
-def labelRemover(label):
-    label.destroy()
-
-#finalizar janela
-def finalizar(win):
-    win.destroy()
+#remover objeto
+def destruir(obj):
+    obj.destroy()
 
 #função responsavel por manter um menu após dar executar o site 
 def menu(url,localIP,p,default):
     win = Tk()
 
+    add = 0
+    
     #lista com os 2 urls encortados
     tiny_urls = [None]*2
     
@@ -641,28 +642,32 @@ def menu(url,localIP,p,default):
     else:
         janela = 1
         width = 600
+        height = 700
         #apenas acesso na rede
         if url=='' and localIP!='':
             url = (f"{localIP}:{p}")
             b_url = f"http://{url}"
             m = 'h' 
+            small = 0
         #apenas acesso na máquina
         elif  url=='' and localIP=='':
             url = f"{default}:{p}"
             b_url = f"http://{url}"
             m = 'h' 
+            small = 1
+            width = 400
+            height = 500
+            add = 0.05
         #apenas acesso fora da rede via ngrok
         else:
             b_url = f"https://{url}"
             m = 'n' 
+            small = 0
 
-    #Thread que faz request para obter o outro url encurtado
-    tn1_url = Thread(target=getTiny,args=(b_url,1,tiny_urls,m,),daemon=True)
-    tn1_url.start()
-
-
-    height = 700
-    
+    if not small:
+        #Thread que faz request para obter o outro url encurtado
+        tn1_url = Thread(target=getTiny,args=(b_url,1,tiny_urls,m,),daemon=True)
+        tn1_url.start()
 
     win.title("Serviço de mesa")
     #defenir tamanho e
@@ -681,21 +686,24 @@ def menu(url,localIP,p,default):
     link1_red = Button(win,font=("Trebuche MS", 17),bg="#27e85e",text="Abrir Link",width=12,command= lambda: redirectUrl(b_url))
     #botao de QrCode do primeiro url
     link1_QR = Button(win,font=("Trebuche MS", 17),bg="#8c8c8c",text="QR Code",width=12,command=lambda: open_QR(b_url))
-    #label do primeiro url encurtado
-    tiny1 = Label(win,font=("Trebuche MS", 17))
-    #boato de copia do primeiro url encurtado
-    tn1_cop = Button(win,font=("Trebuche MS", 17),bg="#856ff8",text="Copiar Link",width=12,command= lambda: copyUrl(tiny_urls[0],win,0.567,0.29,janela))
-    #botao de redirecionamento do primeiro url encurtado
-    tn1_red = Button(win,font=("Trebuche MS", 17),bg="#27e85e",text="Abrir Link",width=12,command= lambda: redirectUrl(tiny_urls[0]))
+    if not small:        
+        #label do primeiro url encurtado
+        tiny1 = Label(win,font=("Trebuche MS", 17))
+        #boato de copia do primeiro url encurtado
+        tn1_cop = Button(win,font=("Trebuche MS", 17),bg="#856ff8",text="Copiar Link",width=12,command= lambda: copyUrl(tiny_urls[0],win,0.567,0.29,janela))
+        #botao de redirecionamento do primeiro url encurtado
+        tn1_red = Button(win,font=("Trebuche MS", 17),bg="#27e85e",text="Abrir Link",width=12,command= lambda: redirectUrl(tiny_urls[0]))
 
     #colocação dos widgets
-    link1.place(relx=0.05,rely=0.03)
-    link1_cop.place(relx=0.05,rely=0.1)
-    link1_red.place(relx=0.05,rely=0.2)
-    link1_QR.place(relx=0.05,rely=0.3)
-    tiny1.place(relx=0.05,rely=0.48)
-    tn1_cop.place(relx=0.05,rely=0.55)
-    tn1_red.place(relx=0.05,rely=0.65)
+    link1.place(relx=0.05,rely=0.03+add)
+    link1_cop.place(relx=0.05,rely=0.1+add*2)
+    link1_red.place(relx=0.05,rely=0.2+add*3)
+    link1_QR.place(relx=0.05,rely=0.3+add*4)
+    
+    if not small:
+        tiny1.place(relx=0.05,rely=0.48)
+        tn1_cop.place(relx=0.05,rely=0.55)
+        tn1_red.place(relx=0.05,rely=0.65)
     
     if janela == 2:
         #repetir os wisgets acima, mas com o segundo url
@@ -723,16 +731,18 @@ def menu(url,localIP,p,default):
         
             
     #botao para terminar script
-    quit = Button(win,font=("Trebuche MS", 17),text="Terminar",bg="#f53b3b",command=lambda: finalizar(win))
+    quit = Button(win,font=("Trebuche MS", 17),text="Terminar",bg="#f53b3b",command=lambda: destruir(win))
     quit.place(relx=0.5,rely=0.91,anchor=CENTER)
 
     #receber o primeiro url encurtado
-    tn1_url.join()
-    tiny1.configure(text=tiny_urls[0])
+    if not small:
+        tn1_url.join()
+        tiny1.configure(text=str(tiny_urls[0]))
+        
     #receber o segundo url encurtado
     if janela == 2:
         tn2_url.join()
-        tiny2.configure(text=tiny_urls[1])
+        tiny2.configure(text=str(tiny_urls[1]))
 
     # Execute Tkinter
     win.mainloop()
