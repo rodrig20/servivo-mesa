@@ -6,7 +6,7 @@ from flask_socketio import SocketIO
 from flask_caching import Cache
 from datetime import timedelta
 from .loophole import *
-from multiprocessing import Process, Array
+from threading import Thread
 import os.path
 import json
 
@@ -14,8 +14,6 @@ def atualizarRotas(dicionario):
     app.config["Comida"] = dicionario.get("cozinha", False)
     app.config["Bebida"] = dicionario.get("bar", False)
     app.config["QrCode"] = dicionario.get("QrCode", False)
-
-
 
 app = Flask(__name__)
 
@@ -38,8 +36,9 @@ app.config["URLS"] = {}
 
 password = "Entrar"
 
-def run_app():
+def run_app(config,progress_callback):
     config_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))+"\\config\\"
+    progress_callback(5)
     try:
         with open(config_path+"users.txt", 'r+',encoding="utf-8") as u:
             users = u.readlines()
@@ -47,7 +46,7 @@ def run_app():
             app.config["USERS"].append(user[:-1])  
     except FileNotFoundError:
         with open(config_path+"users.txt", 'w',encoding="utf-8"): pass
-    
+    progress_callback(10)
     app.config["USERS"].append("cozinha")
     app.config["USERS"].append("bar")
     try:
@@ -56,12 +55,14 @@ def run_app():
         for name, price in menu["Comida"].items():
             app.config["MENU_NAME"][0].append(name)
             app.config["MENU_PRICE"][0].append(price)
+        progress_callback(14)
         for name, price in menu["Bebida"].items():
             app.config["MENU_NAME"][1].append(name)
             app.config["MENU_PRICE"][1].append(price)
             
     except FileNotFoundError:
         with open(config_path+"menu.json", 'w',encoding="utf-8"): pass
+    progress_callback(16)
     try:
         with open(config_path+"network_access.json", 'r+',encoding="utf-8") as u:
             acessos = json.load(u)
@@ -69,15 +70,19 @@ def run_app():
         app.config["URLS"]["bar"] = acessos["enable_Bar"]
         app.config["URLS"]["QrCode"] = acessos["enable_QrCode"]
         port = acessos["port"]
+        progress_callback(15)
         if acessos["enable_local"]:
             host = "0.0.0.0"
+            config.links.append("0.0.0.0")
         else:
+            config.links.append("127.0.0.1")
             host = "localhost"
-            
-        domain = Array("c", acessos["domain"].encode()+b"__________")
-        domain.value = acessos["domain"].encode()
+        progress_callback(10)
         if acessos["enable_loophole"]:
-            Process(target=start_loophole, args=(domain,port),daemon=True).start()
+            config.links.append(acessos["domain"])
+            Thread(target=start_loophole, args=(config.links,port,progress_callback),daemon=True).start()
+        else:
+            progress_callback(15)
     except FileNotFoundError:
         with open(config_path+"network_access.json", 'w',encoding="utf-8"): pass
         app.config["URLS"]["cozinha"] = 1
@@ -85,9 +90,8 @@ def run_app():
         app.config["URLS"]["QrCode"] = 0
         host = "localhost"
         port = 8080
-
+    progress_callback(15)
     atualizarRotas(app.config["URLS"])
-    
     socketio.run(app,host=host,port=port)
 
 from app import routes

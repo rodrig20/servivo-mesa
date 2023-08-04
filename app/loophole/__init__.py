@@ -9,7 +9,6 @@ def PollForToken(device_code, interval):
     grant_type = "urn:ietf:params:oauth:grant-type:device_code"
 
     polling_interval = interval
-    print(f"Polling with interval: {polling_interval} seconds")
 
     while True:
         payload = {
@@ -46,8 +45,9 @@ def PollForToken(device_code, interval):
 
 
 def save_token(token):
-    tokens_location = os.path.join(f"C:\\Users\\{os.getlogin()}", ".loophole", "tokens.json")
-
+    tokens_directory = os.path.join(f"C:\\Users\\{os.getlogin()}", ".loophole")
+    os.makedirs(tokens_directory, exist_ok=True)
+    tokens_location = os.path.join(tokens_directory, "tokens.json")
     token_data = json.dumps(token)
     try:
         with open(tokens_location, "w") as file:
@@ -78,7 +78,7 @@ def get_info():
     return json_response
 
 
-def make_login(url):
+def make_login(url,progress_callback):
     from selenium import webdriver
     from selenium.webdriver.common.by import By
     from selenium.webdriver.chrome.service import Service
@@ -102,6 +102,7 @@ def make_login(url):
     # Esperar o elemento "action" ficar clicável e clicar nele
     confirmar = wait.until(EC.element_to_be_clickable((By.NAME, "action")))
     confirmar.click()
+    progress_callback(1)
     
     wait.until(EC.visibility_of_element_located((By.NAME, "email")))
         
@@ -110,51 +111,58 @@ def make_login(url):
 
     password = driver.find_element(By.NAME, "password")
     password.send_keys("Your_Password")
+    progress_callback(1)
 
     submit = driver.find_element(By.NAME, "submit")
     submit.click()
     
     wait.until(EC.url_contains("https://loophole.eu.auth0.com/device/success"))
+    progress_callback(1)
 
     driver.quit()
     
-def login_loophole():
+def login_loophole(progress_callback):
     json_info = get_info()
-    make_login(json_info["verification_uri_complete"])
+    progress_callback(2)
+    make_login(json_info["verification_uri_complete"],progress_callback)
     token, _ = PollForToken(json_info["device_code"],0.1)
+    progress_callback(2)
     save_token(token)
 
 def isLogged():
     return os.path.exists(os.path.join(f"C:\\Users\\{os.getlogin()}", ".loophole", "tokens.json"))
 
 
-def enable_tunnel(domain,port,start=1):
-    print(domain.value)
-    process = subprocess.Popen(["app\\loophole\\tunnel\\loophole.exe", "http", str(port), "--hostname", domain.value.decode()])
+def enable_tunnel(links, port,progress_callback, start=1):
+    process = subprocess.Popen(["app\\loophole\\tunnel\\loophole.exe", "http", str(port), "--hostname", links[-1]])
+    
+    # Espera até que o processo esteja concluído ou até que tenham passado 3 segundos
+    start_time = time.time()
+    while process.poll() is None and time.time() - start_time < 3:
+        time.sleep(0.5)
+    run = 0
+    if process.poll() is None:
+        progress_callback(8)  # Exibe a mensagem se o processo ainda estiver em execução após 3 segundos
+        run = 1
+        
     process.wait()  # Aguarda a conclusão do processo
-    print(domain.value)
+    if not run:
+        return
     if process.returncode != 0:
         if start:
-            domain.value = (domain.value.decode()+"_0").encode()
+            links[-1] += "_0"
         else:
-            if int(domain.value.decode()[-1]) == 9:
-                domain.value = (domain.value.decode()+"0").encode()
+            if int(links[-1][-1]) == 9:
+                links[-1] += "0"
             else:
-                domain.value = (domain.value.decode()[:-1]+str(int(domain.value.decode()[-1])+1)).encode()
+                links[-1] = (links[-1][:-1] + str(int(links[-1][-1]) + 1))
        
-        enable_tunnel(domain,port,0)
+        enable_tunnel(links, port, progress_callback, 0)
 
-def start_loophole(domain,port):
+def start_loophole(links,port,progress_callback):
     if not isLogged():
-        print("loginnnnn")
-        login_loophole()
-    enable_tunnel(domain,port)
-
-
-if __name__ == "__main__":
-    class Dominio:
-        def __init__(self,val):
-            self.value = val
-    dominio = Dominio(b'foka')
-    start_loophole(dominio,80)
+        login_loophole(progress_callback)
+    else:
+        progress_callback(7)
+    enable_tunnel(links,port,progress_callback)
     
