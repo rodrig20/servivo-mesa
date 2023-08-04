@@ -31,43 +31,58 @@ def login_loophole(folder, file):
 
     if process.poll() is None:
         from selenium import webdriver
-        from webdriver_manager.chrome import ChromeDriverManager
-        from selenium.webdriver.chrome.service import Service
         from selenium.webdriver.common.by import By
+        from selenium.webdriver.chrome.service import Service
+        from selenium.webdriver.chrome.options import Options
+        from selenium.webdriver.support.ui import WebDriverWait
+        from selenium.webdriver.support import expected_conditions as EC
 
-        op = webdriver.ChromeOptions()
-        op.add_argument('headless')
 
-        driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()),options=op)
-        
+        chrome_driver_path = 'chromeDriver/chromedriver.exe'
+
+        # Inicie o serviço do driver do Google Chrome
+        service = Service(chrome_driver_path)
+
+        # Opções para rodar o navegador sem abrir a janela do navegador
+        options = Options()
+        options.headless = True
+
+        # Inicie o navegador passando o serviço e as opções como parâmetros
+        driver = webdriver.Chrome(service=service, options=options)
+        wait = WebDriverWait(driver, 10)
+
         driver.get(substrings[0])
 
-        #Escrever o Codigo
-        code = driver.find_element(By.NAME,"code")
+        #Esperar o elemento "code" ficar visível e enviá-lo
+        code = wait.until(EC.visibility_of_element_located((By.NAME, "code")))
         code.send_keys(str(substrings[1]))
-        time.sleep(0.1)
 
-        enviar = driver.find_element(By.NAME,"action")
+        enviar = driver.find_element(By.NAME, "action")
         enviar.click()
 
-        time.sleep(0.1)
-
-        confirmar = driver.find_elements(By.NAME,"action")
-        confirmar[0].click()
-        time.sleep(2)
+        # Esperar o elemento "action" ficar clicável e clicar nele
+        confirmar = wait.until(EC.element_to_be_clickable((By.NAME, "action")))
+        confirmar.click()
         
-        email = driver.find_element(By.NAME,"email")
+        wait.until(EC.visibility_of_element_located((By.NAME, "email")))
+        
+        email = driver.find_element(By.NAME, "email")
         email.send_keys("Your_Email")
 
-
-        password = driver.find_element(By.NAME,"password")
+        password = driver.find_element(By.NAME, "password")
         password.send_keys("Your_Password")
 
-        submit = driver.find_element(By.NAME,"submit")
+        submit = driver.find_element(By.NAME, "submit")
         submit.click()
+        
+        wait.until(EC.url_contains("https://loophole.eu.auth0.com/device/success"))
 
-        time.sleep(0.5)
         driver.quit()
+        
+def start_loophole(subdomain,port):
+    sub = f"--hostname={subdomain}"
+    command = f'tunnel\\loophole.exe http {port} {sub}'.split()
+    return subprocess.Popen(command,creationflags=subprocess.CREATE_NO_WINDOW,stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
  
-if __name__ =='__main__':       
+if __name__ =='__main__':
     login_loophole("tunnel","log.txt")
