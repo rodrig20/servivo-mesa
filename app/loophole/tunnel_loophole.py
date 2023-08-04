@@ -1,16 +1,12 @@
+from pathlib import Path
 import subprocess
 import requests
-import time
-import json
 import platform
+import paramiko
+import time
 import json
 import os
 import io
-import paramiko
-import json
-import os
-import json
-from pathlib import Path
 
 def get_local_storage_file(file_name, directory_name):
     home = str(Path.home())
@@ -267,10 +263,10 @@ def make_login(url):
     wait.until(EC.visibility_of_element_located((By.NAME, "email")))
         
     email = driver.find_element(By.NAME, "email")
-    email.send_keys("Your_Email")
+    email.send_keys(os.environ.get('USERNAME'))
 
     password = driver.find_element(By.NAME, "password")
-    password.send_keys("Your_Password")
+    password.send_keys(os.environ.get('PASSWORD'))
 
     submit = driver.find_element(By.NAME, "submit")
     submit.click()
