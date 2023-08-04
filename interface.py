@@ -1,7 +1,6 @@
 from tkinter import Tk, Label, Button, Listbox, Entry, BitmapImage, Toplevel
 from collections import OrderedDict
 from unidecode import unidecode
-from bs4 import BeautifulSoup
 from threading import Thread
 from flask_settings import *
 import webbrowser
@@ -128,22 +127,9 @@ def getUrls(file):
     
     return data
 
-def getTiny(original,tipo,urls,modo):
-    #se for para encurtar link loophole
-    if modo == 'n':
-        #criar um request, que returnará um html
-        c = subprocess.Popen(f'curl -s --ssl-no-revoke "https://is.gd/create.php" --data-raw "url={original}', shell=True, stdout=subprocess.PIPE).stdout.read().decode()
-        #tornar o html legivel
-        html = BeautifulSoup(c, 'html.parser')
-        #procurar pela tag onde é guardado o link encurtado
-        html_line = str(html.find('input', {'id': 'short_url'}))
-        #ler o valor dessaa tag
-        print(html_line)
-        link=html_line.split('value="',1)[1].rsplit('"',1)[0]
-    #se for para encurtar link de um host local
-    elif modo == "h":
-        # criar um request que returnará apenas o link encurtado 
-        link = subprocess.Popen(f"curl -s http://tinyurl.com/api-create.php?url={original}", shell=True, stdout=subprocess.PIPE).stdout.read().decode()
+def getTiny(original,tipo,urls):
+    # criar um request que returnará apenas o link encurtado 
+    link = subprocess.Popen(f"curl -s http://tinyurl.com/api-create.php?url={original}", shell=True, stdout=subprocess.PIPE).stdout.read().decode()
 
     #guardar o link na na posição correta da lista
     urls[tipo-1] = link
@@ -609,7 +595,7 @@ def escolherMenu():
     adicionar.place(relx=0.69,rely=0.09)
 
 #remover mensagem de estado ao adicionar um nome
-def sucesso(e):
+def sucesso(_):
     suc.place_forget()
 
 #remover mensagem de estado ao escrever um a porta para o host
@@ -632,8 +618,8 @@ def Files(uFile,sFile):
 def copyUrl(url,win,yCord,xCord,j):
     #copiar para o clipboard
     pyperclip.copy(url)
-    if j==1:
-        xCord+=0.13
+    if j==2:
+        xCord-=0.17
     #informar o utilizador
     suc = Label(win,font=("Trebuche MS", 14),text="Copiado",fg="#27e85e")
     suc.place(relx=xCord,rely=yCord)
@@ -706,10 +692,13 @@ def destruir(obj):
 #função responsavel por manter um menu após dar executar o site 
 def menu(url,localIP,p,default):
     win = Tk()
+    
+    password = f"{url.replace('.loophole.site',':')}{PASS_NUM}"
 
     add = 0
-    height=700
-
+    
+    height = int(win.winfo_screenheight() * 0.60)
+    
     #lista com os 2 urls encortados
     tiny_urls = [None]*2
     
@@ -723,44 +712,41 @@ def menu(url,localIP,p,default):
     #se as definições de acesso local e loophole estiverem ativas
     if url!='' and localIP!='':
         janela = 2
-        width=900
+        width = int(win.winfo_screenwidth()*0.40)
         b_url = f"https://{url}"
         localIP = f"{localIP}:{p}"
         b_localIP = f"http://{localIP}"
         #Thread que faz request para obter o url local encurtado
-        tn2_url = Thread(target=getTiny,args=(b_localIP,2,tiny_urls,'h',),daemon=True)
+        tn2_url = Thread(target=getTiny,args=(b_localIP,2,tiny_urls,),daemon=True)
         tn2_url.start()
-        m = 'n'
         small = 0 or not tiny_enbl
     #se um dos acessos estiverem arivos
     else:
+        width = int(win.winfo_screenwidth()*0.25)
         janela = 1
-        width = 600
         #apenas acesso na rede
         if url=='' and localIP!='':
             url = (f"{localIP}:{p}")
             b_url = f"http://{url}"
-            m = 'h'
             small = 0 or not tiny_enbl
         #apenas acesso na máquina
         elif  url=='' and localIP=='':
             url = f"{default}:{p}"
             b_url = f"http://{url}"
-            m = 'h' 
             small = 1
-            width = 400
-            height = 500
             add = 0.05
         #apenas acesso fora da rede via loophole
         else:
             b_url = f"https://{url}"
-            m = 'n' 
             small = 0 or not tiny_enbl
             
     if not small:
         #Thread que faz request para obter o outro url encurtado
-        tn1_url = Thread(target=getTiny,args=(b_url,1,tiny_urls,m,),daemon=True)
+        tn1_url = Thread(target=getTiny,args=(b_url,1,tiny_urls),daemon=True)
         tn1_url.start()
+    else:
+        height = int(win.winfo_screenheight() * 0.42)
+        add = 0.05
 
     win.title("Serviço de mesa")
     #definir tamanho e
@@ -771,7 +757,7 @@ def menu(url,localIP,p,default):
     #label do primeiro url
     link1 = Label(win,font=("Trebuche MS", 17),text=url)
     #boato de copia do primeiro url
-    link1_cop = Button(win,font=("Trebuche MS", 17),bg="#856ff8",text="Copiar Link",width=12,command=lambda: copyUrl(b_url,win,0.12+(small/10),0.29+(small/5),janela))
+    link1_cop = Button(win,font=("Trebuche MS", 17),bg="#856ff8",text="Copiar Link",width=12,command=lambda: copyUrl(b_url,win,0.12+(small/10),0.50,janela))
     #botao de redirecionamento do primeiro url
     link1_red = Button(win,font=("Trebuche MS", 17),bg="#27e85e",text="Abrir Link",width=12,command= lambda: redirectUrl(b_url))
     #botao de QrCode do primeiro url
@@ -786,7 +772,7 @@ def menu(url,localIP,p,default):
         #label do primeiro url encurtado
         tiny1 = Label(win,font=("Trebuche MS", 17))
         #boato de copia do primeiro url encurtado
-        tn1_cop = Button(win,font=("Trebuche MS", 17),bg="#856ff8",text="Copiar Link",width=12,command= lambda: copyUrl(tiny_urls[0],win,0.567,0.29,janela))
+        tn1_cop = Button(win,font=("Trebuche MS", 17),bg="#856ff8",text="Copiar Link",width=12,command= lambda: copyUrl(tiny_urls[0],win,0.567,0.50,janela))
         #botao de redirecionamento do primeiro url encurtado
         
         tn1_red = Button(win,font=("Trebuche MS", 17),bg="#27e85e",text="Abrir Link",width=12,command= lambda: redirectUrl(tiny_urls[0]))
@@ -797,17 +783,17 @@ def menu(url,localIP,p,default):
     if janela == 2:
         #repetir os wisgets acima, mas com o segundo url
         link2 = Label(win,font=("Trebuche MS", 17),text=localIP)
-        link2_cop = Button(win,font=("Trebuche MS", 17),bg="#856ff8",text="Copiar Link",width=12,command=lambda: copyUrl(b_localIP,win,0.12,0.79,0))
+        link2_cop = Button(win,font=("Trebuche MS", 17),bg="#856ff8",text="Copiar Link",width=12,command=lambda: copyUrl(b_localIP,win,0.12+(small/10),0.83,0))
         link2_red = Button(win,font=("Trebuche MS", 17),bg="#27e85e",text="Abrir Link",width=12,command= lambda: redirectUrl(b_localIP))
         link2_QR = Button(win,font=("Trebuche MS", 17),bg="#8c8c8c",text="QR Code",width=12,command=lambda: open_QR(b_localIP))
        
-        link2.place(relx=0.55,rely=0.03)
-        link2_cop.place(relx=0.55,rely=0.1)
-        link2_red.place(relx=0.55,rely=0.2)
-        link2_QR.place(relx=0.55,rely=0.3)
+        link2.place(relx=0.55,rely=0.03+add)
+        link2_cop.place(relx=0.55,rely=0.1+add*2)
+        link2_red.place(relx=0.55,rely=0.2+add*3)
+        link2_QR.place(relx=0.55,rely=0.3+add*4)
         if not small:
             tiny2 = Label(win,font=("Trebuche MS", 17))
-            tn2_cop = Button(win,font=("Trebuche MS", 17),bg="#856ff8",text="Copiar Link",width=12,command= lambda: copyUrl(tiny_urls[1],win,0.565,0.79,0))
+            tn2_cop = Button(win,font=("Trebuche MS", 17),bg="#856ff8",text="Copiar Link",width=12,command= lambda: copyUrl(tiny_urls[1],win,0.565,0.83,0))
             tn2_red = Button(win,font=("Trebuche MS", 17),bg="#27e85e",text="Abrir Link",width=12,command= lambda: redirectUrl(tiny_urls[1]))
 
             tiny2.place(relx=0.55,rely=0.48)
@@ -816,17 +802,18 @@ def menu(url,localIP,p,default):
 
     #botao para terminar script
     quit = Button(win,font=("Trebuche MS", 17),text="Terminar",bg="#f53b3b",command=lambda: destruir(win))
-    quit.place(relx=0.5,rely=0.91,anchor=tkinter.CENTER)
+    quit.place(relx=0.3,rely=0.91,anchor=tkinter.CENTER)
+    passwordL = Label(win,font=("Trebuche MS", 17),text=f"Passsword:\n{password}")
+    passwordL.place(relx=0.7,rely=0.91,anchor=tkinter.CENTER)
 
     #receber o primeiro url encurtado
     if not small:
         tn1_url.join()
         tiny1.configure(text=str(tiny_urls[0]))
-        
-    #receber o segundo url encurtado
-    if janela == 2:
-        tn2_url.join()
-        tiny2.configure(text=str(tiny_urls[1]))
+        #receber o segundo url encurtado
+        if janela == 2:
+            tn2_url.join()
+            tiny2.configure(text=str(tiny_urls[1]))
 
     # Execute Tkinter
     win.mainloop()
@@ -836,8 +823,8 @@ def main():
     global root, defi, ver,add,nome,suc,apg,menuTitle,menuOpc,url_atv,site,host,avan,quit,start
     root = Tk()
     #definir tamanho da janela
-    width = 800
-    height = 800
+    width = int(root.winfo_screenwidth() * 0.42)
+    height = int(root.winfo_screenheight() * 0.74)
 
     #titulo da janela
     root.title("Serviço de mesa")
