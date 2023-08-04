@@ -623,6 +623,7 @@ def menu(url,localIP,p,default):
     win = Tk()
 
     add = 0
+    height=700
     
     #lista com os 2 urls encortados
     tiny_urls = [None]*2
@@ -638,11 +639,11 @@ def menu(url,localIP,p,default):
         tn2_url = Thread(target=getTiny,args=(b_localIP,2,tiny_urls,'h',),daemon=True)
         tn2_url.start()
         m = 'n'
+        small = 0
     #se um dos acessos estiverem arivos
     else:
         janela = 1
         width = 600
-        height = 700
         #apenas acesso na rede
         if url=='' and localIP!='':
             url = (f"{localIP}:{p}")
