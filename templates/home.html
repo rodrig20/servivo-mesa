@@ -23,11 +23,11 @@
                 var c;
                 if (c=='c'){
                     p= 'Comida';
-                    c='#292b94'
+                    c='#1ea831'
 
                 }else{
                     p= 'Bebida'
-                    c='#5b6ccf'
+                    c='#292b94'
                 }
                 cell1.innerHTML = "<input type='number' style='border: 3px solid "+c+";' id='quantity' class='quantity' min='1'>";
                 cell2.innerHTML = "<input type='text' style='border: 3px solid "+c+";' id='pedido' class='pedido' placeholder='"+ p +"'>";
@@ -47,22 +47,17 @@
         <h1 style="font-size:100px; text-align: center;">Pedidos de {{ nome }}</h1>
         <div style="overflow-x:auto;">
             <table id="tabela">
-        <!-- 
-            <tr id="0">
-                <td class='quanti'><input type="number"
-                    id="quantity" 
-                    class="quantity" 
-                    min="1"></td>
-                <td><input type="text" class="pedido" id="pedidoComida" placeholder="Comida"></td>
-                <td><input type="button" id="cancelar" value=" x " onclick=removeRow(0)></td>
-            </tr>
-        -->
+
             </table>
         </div>
         <input type="hidden", class="nome" value="{{ nome }}">
         <br>
-        <input type="button" style='background: #292b94;' id="add" onclick="addRow('c')" value="Adicionar Comida">
-        <!--<input type="button" style='background: #2d2091;' id="add" onclick="addRow('b')"value="Adicionar Bebida">-->
+        {%if validos[0]%}
+            <input type="button" style='background: #1ea831;' id="add" onclick="addRow('c')" value="Adicionar Comida">
+        {%endif%}
+        {%if validos[1]%}
+            <input type="button" style='background: #2d2091;' id="add" onclick="addRow('b')"value="Adicionar Bebida">
+        {%endif%}
         <br><br>
         <input type="submit" id="send" value="Enviar">
         <input type="submit" id="prontos" value="Ver Pedidos">
