@@ -1,6 +1,7 @@
 var r = 0;
 
 function addRow(c,opcoes,preco) {
+    document.getElementById("titulo").style.display = "table"
     var table = document.getElementById("tabela");
     var row = table.insertRow(-1);
     row.setAttribute("id",r);
@@ -52,6 +53,7 @@ function calcular_preco(){
 }
 
 function addPreSetRow(opcoes,preco,q,p,t){
+    document.getElementById("titulo").style.display = "table"
     var table = document.getElementById("tabela");
     var row = table.insertRow(-1);
     row.setAttribute("id",r);
@@ -91,6 +93,9 @@ function addPreSetRow(opcoes,preco,q,p,t){
 function removerPedido(n){
     var row = document.getElementById(n);
     row.parentNode.removeChild(row)
+    if ($('.pedido').length==0){
+        document.getElementById("titulo").style.display = "none"
+    }
     calcular_preco();
 }
 
@@ -106,6 +111,7 @@ function pedidoEntregue(n){
 function pedidoPronto(n,v,t){
     $('table#test tr#3').remove();
     json_send = {feito:n, ped:v};
+    console.log(n)
     $.post($SCRIPT_ROOT + '/'+t , json_send, reload,'json');
 }
 
@@ -140,8 +146,8 @@ function enviar(){
     }
 
     emper = $('input[class="nome"]').val();
-
-    json_send = {emper:emper, quant: quant, ped: ped, tip:tip};
+    mesa = $('#mesa').val();
+    json_send = {emper:emper, quant: quant, ped: ped, tip:tip, mesa:mesa};
     $.post($SCRIPT_ROOT, json_send, check,'json');
 }
 
@@ -203,7 +209,7 @@ function voltaServico(data){
 }
 
 function makeLogin(){
-    user = $('input[name="username"]').val();
+    user = $('input[name="username"]').val().replace(/^\s+|\s+$/g, '');
     password = $('input[name="password"]').val();
     json_send = {user:user,pass:password}
     $.post($SCRIPT_ROOT, json_send, voltaServico,'json');

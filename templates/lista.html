@@ -17,12 +17,17 @@
         </script> 
         <h1>Pedidos prontos</h1>
         <div id="main">
+            {% set mesa_atual = []%}
             {% for p in pedidos %}
+                {% if mesa_atual[-1] != p[-2] %}
+                    <h2 style="font-size:60px;" >&emsp;{{p[-2]}}</h2>
+                    {{ mesa_atual.append(p[-2]) or "" }}
+                {% endif %}
                 {%  if p[0]== nome %}
-                    <table id='{{ p[-2] }}'>
+                    <table id='{{ p[-3] }}'>
                         <tr>
-                            <td><input class="check"  type="button" id="removerPronto" value="&#x2714;" onclick="pedidoEntregue('{{ p[-2]}}')"></td>
-                            <td><label style="font-size:60px">&nbsp;{{p[1]}}</label><label style="font-size:60px;color: red;">&nbsp;➜</label><label style="font-size:60px;">&nbsp;&nbsp;{{p[2]}}</label></td>
+                            <td><input class="check"  type="button" id="removerPronto" value="&#x2714;" onclick="pedidoEntregue('{{ p[-3]}}')"></td>
+                            <td><label style="font-size:50px">&nbsp;{{p[1]}}</label><label style="font-size:50px;color: red;">&nbsp;➜</label><label style="font-size:50px;">&nbsp;&nbsp;{{p[2]}}</label></td>
                         </tr>
                     </table>
                 {% endif %}

@@ -14,6 +14,31 @@
     </head>
     <body>
         <h1>Pedidos Automático: <span id="preco">0.00</span>€</h1>
+        <style>
+            .align-label {
+                display: flex;
+                align-items: center;
+            }
+
+            .align-label label {
+                margin: 0;
+            }
+        </style>
+
+        <table id="titulo" style="width:100%;display:none;">
+            <tr>
+                <th style="width:15%; color: #374e4f; font-size: 50px; padding: 12px 20px;">
+                    <div class="align-label">
+                        <label>Qtd.</label>
+                    </div>
+                </th>
+                <th style="width:85%; color: #374e4f; font-size: 50px; padding: 12px 20px;">
+                    <div class="align-label">
+                        <label>Pedidos</label>
+                    </div>
+                </th>
+            </tr>
+        </table>
         <div style="overflow-x:auto;">
             <table id="tabela">
 

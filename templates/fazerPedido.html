@@ -14,10 +14,52 @@
     </head>
     <body>
         <h1>Pedidos de {{ nome }}: <span id="preco">0.00</span>€</h1>
+        <style>
+            .align-label {
+                display: flex;
+                align-items: center;
+            }
+
+            .align-label label {
+                margin: 0;
+            }
+
+            #mesa {
+                outline:0px;
+                width:100%;
+                font-size:50px;
+                padding: 12px 20px;
+                border: 1px solid #ccc;
+                border-radius: 10px;
+            }
+
+        </style>
+
+        <table id="titulo" style="width:100%;display:none;">
+            <tr>
+                <th style="width:15%; color: #374e4f; font-size: 50px; padding: 12px 20px;">
+                    <div class="align-label">
+                        <label>Qtd.</label>
+                    </div>
+                </th>
+                <th style="width:45%; color: #374e4f; font-size: 50px; padding: 12px 20px;">
+                    <div class="align-label">
+                        <label>Pedidos</label>
+                    </div>
+                </th>
+                <th style="width:40%; color: #374e4f; font-size: 40px; padding: 12px 20px;">
+                    <div class="align-label">
+                        <input id="mesa" type="text" placeholder="Mesa">
+                    </div>
+                </th>
+            </tr>
+        </table>
+
         <div style="overflow-x:auto;">
             <table id="tabela">
                 {% for p in range(pre_def[0]|length) %}
                     <script>
+                        
                         addPreSetRow(opcoes_Comida_Bebida,preco_Comida_Bebida,"{{pre_def[0][p]}}","{{pre_def[1][p]}}","{{pre_def[2][p]}}");
                         if("{{p}}" == "{{(pre_def[0]|length)-1}}"){
                             calcular_preco();

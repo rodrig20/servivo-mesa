@@ -14,6 +14,7 @@ import base64
 import socket
 import qrcode
 import ast
+
 # remover blur do ecrã
 try:
     from ctypes import windll
@@ -34,7 +35,7 @@ socketio= SocketIO(app, async_mode='gevent', cors_allowed_origins="*")
 
 class ListasNamespace(Namespace):
     def on_reload(self):
-        pass
+        return
 
 #função responsavel por iniciar o loophole
 def startExternalAccess(subdomain,port,proc):
@@ -50,7 +51,7 @@ def createList(tipo):
     j=0
     for p in pedidos:
         #copiar alguns dados para a nova lista
-        ped=[p[0],[],[],[],[],p[5]]
+        ped=[p[0],[],[],[],[],p[-3],p[-1]]
         i=0
         existe=0
         #verificar cada sub-pedido para ver se pertence à bar
@@ -78,6 +79,7 @@ def processarPedidos(nome,request):
         quant = (request.form.getlist('quant[]'))
         ped = (request.form.getlist('ped[]'))
         tipo=(request.form.getlist('tip[]'))
+        mesa = request.form["mesa"]
         remove=[]
         #ler as linhas sem pedidos
         for i in range(len(quant)):
@@ -91,7 +93,7 @@ def processarPedidos(nome,request):
             ped.pop(i)
 
         #se o pedidio não for vazio
-        if len(quant) != 0:
+        if len(quant) != 0 and mesa.strip() != '':
             if nome != '':
                 #adicionar mais 1 ao nº global do pedido 
                 n+=1
@@ -100,7 +102,7 @@ def processarPedidos(nome,request):
                 for j in range(len(quant)):
                     list_n.append(n_p+1+j)
                 n_p+= len(quant)
-                pedidos.append([nome,quant,ped,tipo,list_n,n])
+                pedidos.append([nome,quant,ped,tipo,mesa,list_n,n])
                 
                 #indicar sucesso e redirecionar para a confirmação
                 handle_update_page("/listaPedidos")
@@ -120,13 +122,16 @@ def processarPedidos(nome,request):
 
 # função responsavel por iniciar a interface grafica parar o script
 def startInterface(vars):
-    public_ip = vars['public_ip']
-    porta = vars['porta']
-    localhost = vars['localhost']
-    #por fim chamar o menu da interface gráfica
-    inter.menu(public_ip,localhost,porta,"127.0.0.1")
     try:
-        requests.post(f"http://127.0.0.1:{porta}/stop",data={"paragem":FRASE_DE_ENCRRAMENTO})
+        public_ip = vars['public_ip']
+        porta = vars['porta']
+        localhost = vars['localhost']
+        #por fim chamar o menu da interface gráfica
+        inter.menu(public_ip,localhost,porta,"127.0.0.1")
+        try:
+            requests.post(f"http://127.0.0.1:{porta}/stop",data={"paragem":FRASE_DE_ENCRRAMENTO})
+        except:
+            pass
     except:
         pass
 
@@ -175,7 +180,6 @@ def update_files(tipo):
         global validUrls
         #ler todas as configurações de urls
         validUrls =inter.getUrls(settingsFile)
-    print("s")
         
     return ""        
 
@@ -299,17 +303,25 @@ def listaCeB():
                         c=1
                         
                         #adicionamos esse pedido à lista dos pedidos prontos
-                        prontos.append([pedidos_area[i][0],pedidos_area[i][1][p],pedidos_area[i][2][p],pedidos_area[i][-2][p],pedidos_area[i][-1]])
+                        ins = 0
+                        for j in range(len(prontos)):
+                            if prontos[j][-2] == pedidos_area[i][-2]:
+                                prontos.insert(j,[pedidos_area[i][0],pedidos_area[i][1][p],pedidos_area[i][2][p],pedidos_area[i][-3][p],pedidos_area[i][-2],pedidos_area[i][-1]])
+                                ins = 1
+                                break
+                        if not ins:
+                            prontos.append([pedidos_area[i][0],pedidos_area[i][1][p],pedidos_area[i][2][p],pedidos_area[i][-3][p],pedidos_area[i][-2],pedidos_area[i][-1]])
+                                
                         #extarir o nome do utilizador
                         nome = pedidos_area[i][0]
                         
                         #guardar o numero do sub-pedido
-                        ap = pedidos_area[i][-2][p]
+                        ap = pedidos_area[i][-3][p]
                         #remover o sub-pedido da lista dos pedidos da area
                         pedidos_area[i][1].pop(p)
                         pedidos_area[i][2].pop(p)
                         pedidos_area[i][3].pop(p)
-                        pedidos_area[i][-2].pop(p)
+                        pedidos_area[i][-3].pop(p)
                         
                 #procurar pelo pedido na lista de todos os pedidos        
                 if pedidos[i][-1]==int(f):
@@ -324,7 +336,7 @@ def listaCeB():
                             break
                     #se já não houver nenhum sub-pedido dentro do pedido global, 
                     #podemos remover o mesmo
-                    if pedidos [i][1]==[]:
+                    if pedidos[i][1]==[]:
                         pedidos.pop(i)
                     break
             
@@ -345,7 +357,7 @@ def lista_pessoa(nome):
             f = request.form["feito"]
             #procurar em todos os pedidos por aquele sub-pedido
             for i in range(len(prontos)):
-                if prontos[i][-2]==int(f):
+                if prontos[i][-3]==int(f):
                     #se for encontrado é removido
                     prontos.pop(i)
                     break
@@ -438,7 +450,7 @@ if __name__ == "__main__":
         
     
     Thread(target=requests.post,args=(f"http://127.0.0.1:{(data['port'])}/start",),kwargs=({"data":{'public_ip': public_ip,"localhost":localhost,"porta":data["port"]}}),).start()
-
+    
     socketio.run(app, host=host,port=data["port"],use_reloader=False, debug=DEBUG)
     if data["loophole"]:
         lh[0].kill()

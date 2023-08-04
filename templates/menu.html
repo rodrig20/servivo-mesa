@@ -1,17 +1,64 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <script type=text/javascript src="{{ url_for('static', filename='jquery.js') }}"> </script>
-        <script type=text/javascript src="{{ url_for('static', filename='meu_ajax.js') }}"> </script>
-        <script type=text/javascript> $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};</script>
+        <script type="text/javascript" src="{{ url_for('static', filename='jquery.js') }}"> </script>
+        <script type="text/javascript" src="{{ url_for('static', filename='meu_ajax.js') }}"> </script>
+        <script type="text/javascript"> $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};</script>
         <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=0.4, maximum-scale=0.4, user-scalable=0">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="google" content="notranslate">
         <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
         <link rel="shortcut icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+        <style>
+            html, body {
+                height: 100%;
+                margin: 0;
+                padding: 0;
+                overflow-x: hidden;
+            }
+
+            body {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: flex-start;
+                overflow-y: scroll; /* Permite a rolagem vertical */
+            }
+
+            /* Esconde a barra de rolagem no Chrome */
+            body::-webkit-scrollbar {
+                display: none;
+            }
+
+            .background-image {
+                width: 100vw;
+                height: auto;
+                object-fit: contain;
+            }
+
+            .button-container {
+                width: 100%;
+                display: flex;
+                justify-content: center;
+                align-items: flex-start;
+                padding-bottom: 0;
+            }
+
+            #back-non-user {
+                border-radius: 0;
+                margin: 0;
+            }
+            @media (orientation: portrait){
+                #back-non-user {
+                    font-size:30px
+            }
+            }
+        </style>
     </head>
-    <body style="background-color:#111243">
-        <img src="static/Menu.jpg" style="width: 100%;" alt="Menu">
-        <input class="button" type="submit" id="back-non-user" value="Voltar" style="width:96.5%">
+    <body>
+        <img src="{{ url_for('static', filename='Menu.jpg') }}" class="background-image" alt="Menu">
+        <div class="button-container">
+            <input class="button" type="submit" id="back-non-user" value="Voltar">
+        </div>
     </body>
 </html>
