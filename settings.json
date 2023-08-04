@@ -1,8 +1,17 @@
 {
     "host": {
-        "localNetwork": 1,
-        "ngrok": 0,
-        "ngrok_api": "YOUR_API_KEY",
+        "localNetwork": 0,
+        "loophole": 1,
+        "subdomain": "bingo",
         "port": 80
+    },
+    "urls": {
+        "cozinha": 1,
+        "bar": 0,
+        "QRCode": 0
+    },
+    "menu": {
+        "cozinha": {},
+        "bar": {}
     }
 }
