@@ -1,12 +1,12 @@
 from flask import Flask, request, render_template, jsonify, url_for,abort
-from flask_socketio import SocketIO, emit
+from flask_socketio import SocketIO, emit, Namespace
+from engineio.async_drivers import gevent
 from pyngrok import ngrok, conf
 from threading import Thread
-#script da interface grafica
-import intreface as inter
-import hashlib
+from flask_settings import * #script com de defenições basicas
+import intreface as inter    #script da interface grafica
+import requests
 import socket
-import ast
 import os
 # remover blur do ecrã
 try:
@@ -16,8 +16,13 @@ except: pass
 
 # Iniciar Falsk app
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'R6D2M5'
-socketio = SocketIO(app)
+app.config['SECRET_KEY'] = SECRET_KEY
+app.config['ASYNC_MODE'] = 'threading'
+socketio= SocketIO(app, async_mode='gevent')
+
+class ListasNamespace(Namespace):
+    def on_reload(self):
+        pass
 
 #função responsavel por iniciar o ngrok
 def startNgrok(port,key,url):
@@ -58,9 +63,41 @@ def createList(tipo):
         
     return tipoLista
 
-def createHash(string):
-    hashObj = hashlib.sha256(string.encode("utf-8"))
-    return hashObj.hexdigest()
+def startInterface(vars):
+    public_ip = vars['public_ip']
+    porta = vars['porta']
+    localhost = vars['localhost']
+    #por fim chamar o menu da interface gráfica
+    inter.menu(public_ip,localhost,porta,"127.0.0.1")
+    try:
+        requests.post(f"http://127.0.0.1:{porta}/stop",data={"paragem":FRASE_DE_ENCRRAMENTO})
+    except:
+        pass
+    
+@socketio.on('update_page')
+def handle_update_page(namspc):
+    emit('reloadPedidos', broadcast=True,namespace=namspc)
+
+@app.before_first_request
+def before_first_request():
+    th = Thread(target=startInterface, args=([request.form]),daemon=True)
+    th.start()
+    
+@app.route("/start", methods=['GET', 'POST'])
+def start():
+    return ''
+
+@app.route("/stop", methods=["GET",'POST'])
+def stop():
+    if request.method == "POST":
+        if "paragem" in request.form:
+            if request.form["paragem"] == FRASE_DE_ENCRRAMENTO:
+                socketio.stop()
+        return "Boa tentativa"
+    
+    else:
+        abort(404)
+      
 
 #pagina responsavel por receber os varios pedidos
 @app.route("/servico/<nome>", methods=['GET', 'POST'])
@@ -95,6 +132,7 @@ def servico(nome):
                 n_p+= len(quant)
                 pedidos.append([nome,quant,ped,tipo,list_n,n])
                 #indicar sucesso e redirecionar para a confirmação
+                handle_update_page("/listaPedidos")
                 return jsonify({'suc':'T','redirect':url_for('confirmar',nome=nome)})
             else:
                 #se não ouver nenhum pedido é indicado ao client que ouve um erro
@@ -107,7 +145,6 @@ def servico(nome):
         return "Acesso negado"
     return render_template("home.html",nome=nome,validos=[validUrls["cozinha"],validUrls["bar"]])
 
-
 #pagina responsavel por indicar que os dados foram enviados com sucesso
 @app.route("/confirmar/<nome>", methods=['GET', 'POST'])
 def confirmar(nome):
@@ -116,9 +153,8 @@ def confirmar(nome):
         return "Acesso negado"
     return render_template("confirmar.html",nome=nome)
 
-
 #pagina resposnavel por ler todos os pedidos para a cozinha
-@app.route('/listaC', methods=['GET','POST'])
+@app.route('/listaC', methods=['GET', 'POST'])
 def listaC():
     #verificar se os pedidos para a cozinha foi ativado atraves da interface gráfica
     if validUrls["cozinha"]:
@@ -140,6 +176,8 @@ def listaC():
                         
                         #adicionamos esse pedido à lista dos pedidos prontos
                         prontos.append([comidas[i][0],comidas[i][1][p],comidas[i][2][p],comidas[i][-2][p],comidas[i][-1]])
+                        #extarir o nome do utilizador
+                        nome = comidas[i][0]
                         
                         #guardar o numero do sub-pedido
                         ap = comidas[i][-2][p]
@@ -164,12 +202,12 @@ def listaC():
                     #podemos remover o mesmo
                     if pedidos [i][1]==[]:
                         pedidos.pop(i)
-                        
                     break
+            
+            # avisar o utilizador que fez o pedido 
+            handle_update_page("/pess/"+nome)
             #enviar sucesso
-            #return jsonify({'suc':'T','redirect':'listaC','nome':0})
-            loop = render_template('pedLoop.html', pedidos=comidas,tip="listaC")
-            return jsonify(body=loop,change=True) 
+            return jsonify({'suc':'T','redirect':'listaC'})
         #mostrar a os pedidos
         return render_template("pedidos.html",tip='listaC',pedidos=comidas)
 
@@ -179,7 +217,7 @@ def listaC():
         
 
 #pagina resposnavel por ler todos os pedidos para o bar
-@app.route('/listaB', methods=['GET','POST'])
+@app.route('/listaB', methods=['GET', 'POST'])
 def listaB():
     #verificar se os pedidos para o bar foi ativado atraves da interface gráfica
     if validUrls["bar"]:
@@ -202,6 +240,8 @@ def listaB():
                         
                         #adicionamos esse pedido à lista dos pedidos prontos
                         prontos.append([bebidas[i][0],bebidas[i][1][p],bebidas[i][2][p],bebidas[i][-2][p],bebidas[i][-1]])
+                        #extarir o nome do utilizador
+                        nome = bebidas[i][0]
                         
                         #guardar o numero do sub-pedido
                         ap = bebidas[i][-2][p]
@@ -228,8 +268,10 @@ def listaB():
                         pedidos.pop(i)
                         
                     break
+            # avisar o utilizador que fez o pedido 
+            handle_update_page("/pess/"+nome)
             #enviar sucesso
-            return jsonify({'suc':'T','redirect':'listaB','nome':0})
+            return jsonify({'suc':'T','redirect':'listaB'})
         #mostrar a os pedidos
         return render_template("pedidos.html",tip='listaB',pedidos=bebidas)
 
@@ -251,52 +293,20 @@ def lista_pessoa(nome):
                 prontos.pop(i)
                 break
         #returnar sucesso
-        #return jsonify({'suc':'T','redirect':'lista/'+nome,})
-        loop = render_template('lisLoop.html', pedidos=prontos,nome=nome)
-        return jsonify(body=loop,change=True)
+        return jsonify({'suc':'T','redirect':'lista/'+nome,})
     #se o utilizador não for permitido será indicado
     if not nome in users:
         return "Acesso negado"
     #mostar resultados
     return render_template("lista.html",nome=nome,pedidos=prontos)
 
-
-@app.route('/reload', methods=['GET'])
-def reload():
-    #try:
-    #    hash = str(request.args.get('hash', '', type=str))
-    looPage = str(request.args.get('page', '', type=str))
-    tipoUrl = str(request.args.get('tipo', '', type=str))
-    if tipoUrl == "listaC":
-        tipo = "Comida"
-    elif tipoUrl == "listaB":
-        tipo = "Bebida"
-    elif tipoUrl == '':
-        nome = str(request.args.get('nome', '', type=str))  
-        loop = render_template(looPage, pedidos=prontos,nome=nome)
-        return jsonify(body=loop,)
-    #        
-    #    else:
-    #        print("Algo errado aconteceu")
-    comidasBebidas = createList(tipo)
-    #except Exception as i:
-    #    print("Erro:",i)
-    #    return jsonify(change=False)
-#
-    #return jsonify(change=not(comidasHash==hash))
-    loop = render_template(looPage, pedidos=comidasBebidas,tip=tipoUrl)
-    return jsonify(body=loop,)
-#pagina temporaria
+# pagina temporaria
 @app.route("/", methods=['GET', 'POST'])
 def home():
     return "Inserir Nome"
-
-
+   
 #INICIO DO SCRIPT
 if __name__ == "__main__":
-    ##############
-    DEBUG = True#
-    ##############
     #inicilaizar variaveis imporatntes
     pedidos = []        #Lista com todos os pedidos por fazer
     prontos = []        #Lista com todos os pedidos prontos
@@ -320,6 +330,10 @@ if __name__ == "__main__":
     #ler todas as configurações de urls
     validUrls =inter.getUrls(settingsFile)
     
+    socketio.on_namespace(ListasNamespace('/listaPedidos'))
+    for user in users:
+        socketio.on_namespace(ListasNamespace('/pess/'+user))
+        
     #inicializar outras variaveis importantes
     public_ip = ['']*1
     host = 'localhost'
@@ -330,31 +344,21 @@ if __name__ == "__main__":
         #iniciar o ngrok por uma Thread
         ngrok_tunnel = Thread(target=startNgrok,args=(data["port"],data["ngrok_api"],public_ip,),daemon=True,)
         ngrok_tunnel.start()
+    else: ngrok_tunnel=''
 
     #ler dos dados de host se o localhost foi ativado
     if data["localNetwork"]:
         #defenir host e obter o ip da máquina
         host = '0.0.0.0'
         localhost = socket.gethostbyname(socket.gethostname())
-
-    if DEBUG:
-        app.run(host=host,port=data["port"],debug=True)
-    else:
-        #importar a production WSGI server em vez do Flask
-        from waitress import serve
-        
-        #executar a aplicação flask com o serve
-        th = Thread(target=serve, args=(app,),kwargs={'host':host,'port':data["port"]},daemon=True)
-        th.start()
-    
     #caso o ngrok esteja ativo esperar pelo resultado da Thread
-    if data["ngrok"]:
+    if ngrok_tunnel != '':
         ngrok_tunnel.join()
-
-        #remover o http do ngrok
+        
+    #remover o http do ngrok
     public_ip=public_ip[0].replace("http://",'')
-
-    #por fim chamar o menu da interface gráfica
-    inter.menu(public_ip,localhost,data["port"],"127.0.0.1")
-
+    
+    Thread(target=requests.post,args=(f"http://127.0.0.1:{(data['port'])}/start",),kwargs=({"data":{'public_ip': public_ip,"localhost":localhost,"porta":data["port"],"ngrok_tunnel":ngrok_tunnel}}),).start()
+    socketio.run(app, host=host,port=data["port"],use_reloader=False, debug=DEBUG)
+    ngrok.kill()
 #FIM DO SCRIPT

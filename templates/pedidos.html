@@ -3,6 +3,7 @@
         <script type=text/javascript src="{{ url_for('static', filename='jquery.js') }}"> </script>
         <script type=text/javascript src="{{ url_for('static', filename='meu_ajax.js') }}"> </script>
         <script type=text/javascript>$SCRIPT_ROOT = {{ request.script_root|tojson|safe }};</script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.1/socket.io.js" integrity="sha512-xbQU0+iHqhVt7VIXi6vBJKPh3IQBF5B84sSHdjKiSccyX/1ZI7Vnkt2/8y8uruj63/DVmCxfUNohPNruthTEQA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
         <meta name="google" content="notranslate">
         <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
         <link rel="shortcut icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
@@ -37,6 +38,12 @@
               
         </style>
         <script>
+            
+            var socket = io.connect('http://' + document.domain + ':' + location.port + '/listaPedidos');
+            socket.on('reloadPedidos', function() {
+                location.reload();
+            });
+
             //verificar se existe uma posição pra o scrool Y guardada no navegador
             document.addEventListener("DOMContentLoaded", function(event) { 
                 var scrollpos = localStorage.getItem('scrollpos');
@@ -48,14 +55,11 @@
                 localStorage.setItem('scrollpos', window.scrollY);
             };   
 
+
         </script>
     </head>
     <body id="corpo"> 
         <div id="main">
-            <script>
-                l = window.setInterval(function() {
-                    verificaReload("{{ pedidos }}","{{ tip }}","pedLoop.html")}, 5000);
-            </script>
 
             {% set metade = (pedidos|length)%}
             {% set linha = [] %}

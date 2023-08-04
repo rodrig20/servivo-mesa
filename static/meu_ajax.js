@@ -1,34 +1,3 @@
-function verificaReload(ped,tip,page,nome='') {
-    // Obtem o valor da variável 'pedidos' do template Django e remove os caracteres de escape
-    ped = ped.replaceAll("&#39;",'');
-    ped = ped.replaceAll('"','');
-    
-    // Envia uma requisição GET para o servidor Flask para verificar se há mudanças na página
-    $.getJSON($SCRIPT_ROOT + '/reload', {
-        tipo: tip,
-        page: page,
-        nome:nome,
-        }, function(data) {
-            document.getElementById('main').innerHTML=(data.body);
-            
-    });
-}
-
-function verificaReloadList(ped) {
-    // Obtem o valor da variável 'pedidos' do template Django e remove os caracteres de escape
-    ped = ped.replaceAll("&#39;",'');
-    ped = ped.replaceAll('"','');
-    // Calcula o hash SHA256 do valor da variável 'pedidos' usando a biblioteca CryptoJS
-    var hashHex = String(CryptoJS.SHA256(ped));
-    // Envia uma requisição GET para o servidor Flask para verificar se há mudanças na página
-    $.getJSON($SCRIPT_ROOT + '/reload', {
-        hash: hashHex,
-        }, function(data) {
-            if (data.change)
-                $('body').html(data.body);
-    });
-}
-
 var r = 0;
 
 function addRow(c) {
@@ -68,17 +37,13 @@ function pedidoEntregue(n){
 
     json_send = {feito:n};
     nome = $('input[type="hidden"]').val();
-    $.post($SCRIPT_ROOT + '/lista/'+nome, json_send, update,'json');
+    $.post($SCRIPT_ROOT + '/lista/'+nome, json_send, reload,'json');
 }
 
 function pedidoPronto(n,v,t){
     $('table#test tr#3').remove();
     json_send = {feito:n, ped:v};
-    $.post($SCRIPT_ROOT + '/'+t , json_send, update,'json');
-}
-
-function update(data){
-    document.getElementById('main').innerHTML=(data.body);
+    $.post($SCRIPT_ROOT + '/'+t , json_send, reload,'json');
 }
 
 function check(data){
@@ -89,15 +54,9 @@ function check(data){
 
 function reload(data){
     if (data['suc']='T'){
-        if (data['nome']==0)
-            $(location).prop('href', $SCRIPT_ROOT + '/'+data['redirect']);
-            //location.reload();
-        else
-            $(location).prop('href', $SCRIPT_ROOT + '/'+data['redirect']);  
-            //location.reload();
+        location.reload();
     }
 } 
-
 function enviar(){
     var l1 = $('.quantity').length;
     var quant = [];
@@ -131,6 +90,7 @@ function lista(){
     nome = $('.nome').val();
     $(location).prop('href', $SCRIPT_ROOT + '/lista/'+ nome);
 }
+
 
 // Início do jQuery:
 $(function() {

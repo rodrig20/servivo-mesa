@@ -3,13 +3,20 @@
         <script type=text/javascript src="{{ url_for('static', filename='jquery.js') }}"> </script>
         <script type=text/javascript src="{{ url_for('static', filename='meu_ajax.js') }}"> </script>
         <script type=text/javascript>$SCRIPT_ROOT = {{ request.script_root|tojson|safe }};</script> 
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.1/socket.io.js" integrity="sha512-xbQU0+iHqhVt7VIXi6vBJKPh3IQBF5B84sSHdjKiSccyX/1ZI7Vnkt2/8y8uruj63/DVmCxfUNohPNruthTEQA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
         <meta name="google" content="notranslate">
         <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
         <link rel="shortcut icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
 
         <script>
-            window.setInterval(function() {
-                verificaReload("{{ pedidos }}","","lisLoop.html","{{nome}}")}, 5000);
+            //window.setInterval(function() {
+            //    verificaReload("{{ pedidos }}","","lisLoop.html","{{nome}}")}, 5000);
+            var socket = io.connect('http://' + document.domain + ':' + location.port + '/pess/'+"{{ nome }}");
+            console.log('/pess/'+"{{ nome }}")
+            socket.on('reloadPedidos', function() {
+                console.log("d")
+                location.reload();
+            });
         </script>
     </head>
     <body>      
@@ -27,7 +34,7 @@
             {% endfor %}  
             <br>  
             </div>
-            <input type="hidden" value="{{nome}}">
+            <input type="hidden" value="{{ nome }}">
             <input class="button" type="submit" id="novo" value="Novo Pedido">
         <div>
     </body>
