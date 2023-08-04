@@ -139,7 +139,7 @@ h1 {
     font-family: Arial, sans-serif;
 }
 
-#login-form input[type="submit"] {
+#login-form input[type="button"] {
     background-color: #4CAF50;
     color: #fff;
     display: block;
@@ -154,6 +154,18 @@ h1 {
     font-family: Arial, sans-serif;
 }
 
-#login-form input[type="submit"]:hover {
+#login-form input[type="button"]:hover {
     background-color: #45a049;
 }
+
+#password {
+    display: inline-block;
+}
+
+#error-message {
+    display:none;
+    margin-top: 1px;
+    color: red;
+    font-size: 15px;
+    text-align: left;
+  }

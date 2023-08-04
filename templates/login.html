@@ -16,13 +16,14 @@
 			<h1>Login</h1>
 			<form id="login-form">
 				<p>
-				<input type="text" id="username" name="username" placeholder="Nome" autocomplete="off" required="">
+					<input type="text" id="username" name="username" placeholder="Nome" autocomplete="off" required="" autocapitalize="none">
 				</p>
 				<p>
-				<input type="password" id="password" name="password" autocomplete="new-password" placeholder="Password" required="">
+					<input type="password" id="password" name="password" autocomplete="new-password" placeholder="Password" required="">
 				</p>
 				<p>
-				<input type="submit" id="login" value="Login">
+				<p id="error-message">*nome de utilizador ou password incorreta</p>
+					<input type="button" id="login" value="Login">
 				</p>
 			</form>
 		</div>

@@ -1,6 +1,6 @@
 var r = 0;
 
-function addRow(c,opcoes) {
+function addRow(c,opcoes,preco) {
     var table = document.getElementById("tabela");
     var row = table.insertRow(-1);
     row.setAttribute("id",r);
@@ -12,31 +12,46 @@ function addRow(c,opcoes) {
     var c;
     if (c == 'c') {
         p = 'Comida';
-        c = '#1ea831'
-        var my_opcoes = opcoes[0]
+        c = '#1ea831';
+        var my_opcoes = opcoes[0];
+        var my_preco = preco[0];
     } else {
         p = 'Bebida'
-        c = '#292b94'
-        var my_opcoes = opcoes[1]
+        c = '#292b94';
+        var my_opcoes = opcoes[1];
+        var my_preco = preco[1];
     }
-    cell1.innerHTML = "<input type='number' style='border: 3px solid " + c + ";' id='quantity' class='quantity' min='1'>";
-    cell2.innerHTML = "<select style='border: 3px solid " + c + ";' id='pedido' class='pedido'><option value=''></option></select>";
+    cell1.innerHTML = "<input type='number' style='border: 3px solid " + c + ";' id='quantity' class='quantity' min='1' oninput='calcular_preco()'>";
+    cell2.innerHTML = "<select style='border: 3px solid " + c + ";' id='pedido' class='pedido' onchange='calcular_preco()'><option selected disabled hidden value=''></option></select>";
     cell3.innerHTML = "<input type='button' id='cancelar' onclick='removerPedido(" + r + ")' value=' x '>"
     cell4.innerHTML = "<input type='hidden' class='tipo' value='" + p + "'>"
     cell1.className = 'quantiNum';
     // Adicionar as opções válidas ao select
     var select = cell2.getElementsByTagName("select")[0];
     for (let i = 0; i < my_opcoes.length; i++) {
-        option = document.createElement("option");
+        var option = document.createElement("option");
         option.text = my_opcoes[i];
-        option.value = my_opcoes[i];
+        option.value = my_preco[i];
         select.add(option);
     }
 
     r++;
 };
 
-function addPreSetRow(opcoes,q,p,t){
+function calcular_preco(){
+    var elements = document.getElementsByClassName("pedido")
+    var quantidade = document.getElementsByClassName("quantity")
+    var preco_text = document.getElementById("preco")
+    var preco_final = 0;
+    for (let i=0; i<elements.length;i++){
+        preco_final+=parseFloat(quantidade[i].value*(elements[i].options[elements[i].selectedIndex].value));
+    }
+    preco_text.textContent = preco_final.toFixed(2)
+    
+    
+}
+
+function addPreSetRow(opcoes,preco,q,p,t){
     var table = document.getElementById("tabela");
     var row = table.insertRow(-1);
     row.setAttribute("id",r);
@@ -47,12 +62,14 @@ function addPreSetRow(opcoes,q,p,t){
     if (t == 'Comida') {
         c = '#1ea831'
         var my_opcoes = opcoes[0]
+        var my_preco = preco[0];
     } else {
         c = '#292b94'
         var my_opcoes = opcoes[1]
+        var my_preco = preco[1];
     }
-    cell1.innerHTML = "<input type='number' value="+q+" style='border: 3px solid " + c + ";' id='quantity' class='quantity' min='1'>";
-    cell2.innerHTML = "<select style='border: 3px solid " + c + ";' id='pedido' class='pedido'></select>";
+    cell1.innerHTML = "<input type='number' value="+q+" style='border: 3px solid " + c + ";' id='quantity' class='quantity' min='1' oninput='calcular_preco()'>";
+    cell2.innerHTML = "<select style='border: 3px solid " + c + ";' id='pedido' class='pedido' onchange='calcular_preco()'><option selected disabled hidden value=''></option></select>";
     cell3.innerHTML = "<input type='button' id='cancelar' onclick='removerPedido(" + r + ")' value=' x '>"
     cell4.innerHTML = "<input type='hidden' class='tipo' value='" + t + "'>"
     cell1.className = 'quantiNum';
@@ -60,10 +77,13 @@ function addPreSetRow(opcoes,q,p,t){
     for (let i = 0; i < my_opcoes.length; i++) {
         var option = document.createElement("option");
         option.text = my_opcoes[i];
-        option.value = my_opcoes[i];
+        option.value = my_preco[i];
         select.add(option);
+      
+        if (my_opcoes[i] === p) {
+          select.selectedIndex = i + 1;
+        }
     }
-    select.value = p
     
     r++;
 }
@@ -71,6 +91,7 @@ function addPreSetRow(opcoes,q,p,t){
 function removerPedido(n){
     var row = document.getElementById(n);
     row.parentNode.removeChild(row)
+    calcular_preco();
 }
 
 function pedidoEntregue(n){
@@ -106,12 +127,12 @@ function enviar(){
         quant.push($('.quantity').eq(i).val());
     }
 
-    var l2 = $('.pedido').length;
+    var elements = document.getElementsByClassName("pedido")
     var ped = [];
-    for (i = 0; i < l2; i++) { 
-        ped.push($('.pedido').eq(i).val());
+    for (let i=0; i<elements.length;i++){
+        ped.push(elements[i].options[elements[i].selectedIndex].text);
+        console.log(ped)
     }
-
     var l3 = $('.tipo').length;
     var tip = [];
     for (i = 0; i < l3; i++) { 
@@ -152,9 +173,8 @@ function decodeQR() {
 }
 
 function toQRScanner(){
-    nome = $('input[type="hidden"]').val();
+    nome = $('input[type="hidden"][class="nome"]').val();
     $(location).prop('href', $SCRIPT_ROOT + '/QRScanner/' + nome);
-    //window.location.href = "qrcode.html"
 }
 
 function sendQrdata(data){
@@ -165,6 +185,12 @@ function sendQrdata(data){
 function voltaServico(data){
     if (data.suc == "T"){
         $(location).prop('href', data['redirect']);
+    }
+    else{
+        if ("message" in data){
+            document.getElementById("password").value = "";
+            document.getElementById('error-message').style.display = "block"
+        }
     }
 }
 
