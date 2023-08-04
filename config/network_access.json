@@ -1,0 +1,10 @@
+{
+    "enable_Cozinha": true,
+    "enable_Bar": false,
+    "enable_QrCode": true,
+    "enable_TinyUrl": false,
+    "enable_local": false,
+    "enable_loophole": true,
+    "domain": "dominio-de-teste",
+    "port": 80
+}
