@@ -7,6 +7,7 @@ import webbrowser
 import subprocess
 import pyperclip
 import pyqrcode
+import requests
 import tkinter
 import socket
 import json
@@ -74,7 +75,7 @@ def getUsers(file):
     #lista de utilizadores
     utilizadores=[]
     try:
-        with open(file,"r") as f:
+        with open(file,"r",encoding="utf-8") as f:
             #percorrer todas as linhas não vazias
             for linha in f:
                 if linha.strip()!='':
@@ -83,7 +84,7 @@ def getUsers(file):
 
     #caso esse ficheiro não exista será criado em branco
     except FileNotFoundError:
-        with open(file,"a+") as f:
+        with open(file,"a+",encoding="utf-8") as f:
             pass
         
     return utilizadores
@@ -91,12 +92,12 @@ def getUsers(file):
 def getHost(file):
     #tentar ler as configuralões de host
     try:
-        with open(file,"r") as s:
+        with open(file,"r",encoding="utf-8") as s:
             data = json.load(s)["host"]
     #se não conseguir irá colocar as mesmas em padrão
     except:
         padraoSettings(file)
-        with open(file,"r") as s:
+        with open(file,"r",encoding="utf-8") as s:
             data = json.load(s)["host"]
     
     return data
@@ -104,12 +105,12 @@ def getHost(file):
 def getMenu(file):
     #abrir o menu
     try:
-        with open(file,"r") as s:
+        with open(file,"r",encoding="utf-8") as s:
             data = json.load(s)["menu"]
     #se não conseguir irá colocar as mesmas em padrão
     except:
         padraoSettings(file)
-        with open(file,"r") as s:
+        with open(file,"r",encoding="utf-8",) as s:
             data = json.load(s)["menu"]
             
     return data
@@ -117,12 +118,12 @@ def getMenu(file):
 def getUrls(file):
     #tentar ler as configuralões de urls
     try:
-        with open(file,"r") as s:
+        with open(file,"r",encoding="utf-8") as s:
             data = json.load(s)["urls"]
     #se não conseguir irá colocar as mesmas em padrão
     except:
         padraoSettings(file)
-        with open(file,"r") as s:
+        with open(file,"r",encoding="utf-8") as s:
             data = json.load(s)["urls"]
     
     return data
@@ -152,7 +153,7 @@ def addUser(_=None):
                 #e caso o nome já não exista
                 else:
                     #o nome é escrito no ficheiro
-                    with open(usersFile, 'a+') as f:
+                    with open(usersFile, 'a+',encoding="utf-8") as f:
                         f.write(f"\n{novo}")
                     #apaga a caixa de entrada
                     nome.delete(0, tkinter.END)
@@ -182,16 +183,17 @@ def apagarUser():
     #altearar as configurações para poder usar com outra funcionalidade
     ver.configure(text="Voltar", bg='#f53b3b', command= lambda: desverTodos([w_users,atual,todos,]))
     
+    #obter todos os utilizadores registados
+    users= sorted(getUsers(usersFile), key=lambda x: unidecode((x[0]).lower()))
+    
     #botão responsavel por apagar os utilizadores selecionados
-    atual = Button(root, text="Apagar Atual", font=("Trebuche MS", 12),width=18,bg="#856ff8", command=lambda: apgOne(w_users.curselection()))
+    atual = Button(root, text="Apagar Atual", font=("Trebuche MS", 12),width=18,bg="#856ff8", command=lambda: apgOne(w_users.curselection(),users))
     atual.place(relx=0.37,rely=0.09)
 
     #botão responsavel por apagar todos os utilizadores
-    todos = Button(root, text="Apagar Tudo", font=("Trebuche MS", 12),width=18,bg="#856ff8", command=lambda: apgOne(w_users.size()))
+    todos = Button(root, text="Apagar Tudo", font=("Trebuche MS", 12),width=18,bg="#856ff8", command=lambda: apgOne(w_users.size(),users))
     todos.place(relx=0.69,rely=0.09)
 
-    #obter todos os utilizadores registados
-    users= sorted(getUsers(usersFile), key=lambda x: unidecode((x[0]).lower()))
     #mostar rodos os utilizadores
     w_users = Listbox(root, width=51,activestyle="none",selectmode=tkinter.MULTIPLE, height=19, font=("Consolas", 17))
     for u in users:
@@ -199,10 +201,10 @@ def apagarUser():
     w_users.place(relx=0.02,rely=0.15)
 
 #função responsavel por remover utilizadores 
-def apgOne(apg):
+def apgOne(apg,users):
     global w_users
     #ler todos os utilizadores
-    users=getUsers(usersFile)
+    #users=getUsers(usersFile)
 
     #lista com os index a apagar
     list_apg=[]
@@ -222,7 +224,7 @@ def apgOne(apg):
         users.pop(a)
         w_users.delete(a)
     #escrever lista com utilizadores removidos
-    with open(usersFile,"w") as f:
+    with open(usersFile,"w",encoding="utf-8") as f:
         for u in users:
             f.write(f"{u}\n")
     root.focus()
@@ -246,10 +248,10 @@ def apagarMenu(apagar,tip):
             to_dict.append(menu[e])
         menu = {to_dict[i]: to_dict[i + 1] for i in range(0, len(to_dict), 2)}
         #ler todas as defenições
-        with open(settingsFile,"r") as j:
+        with open(settingsFile,"r",encoding="utf-8") as j:
             new = json.load(j)
         #rescrever com as novas atualizações
-        with open(settingsFile,"w") as j:
+        with open(settingsFile,"w",encoding="utf-8") as j:
             new["menu"][tip[p]] = menu
             j.write(json.dumps(new, indent=4))
         p+=1
@@ -304,9 +306,9 @@ def guardarOpcMenu(win,bts,nome,preco,err,list):
                 menu = getMenu(settingsFile)[tip]
                 menu[nome.get()] = preco_var
                 menu = dict(sorted(menu.items(), key=lambda x: unidecode((x[0]).lower())))
-                with open(settingsFile,"r") as j:
+                with open(settingsFile,"r",encoding="utf-8") as j:
                     new = json.load(j)
-                with open(settingsFile,"w") as j:
+                with open(settingsFile,"w",encoding="utf-8") as j:
                     new["menu"][tip] = menu
                     j.write(json.dumps(new, indent=4))
                 
@@ -375,7 +377,7 @@ def addMenuOpc(coz,bar):
 #função responsavel por definiro padrao das definiçóes
 def padraoSettings(file):
     #escrever o json no ficheiro
-    with open(file,"w+") as f:
+    with open(file,"w+",encoding="utf-8") as f:
         f.write(DEFAUT_SETTINGS)
 
 def esconderMainWidgets():
@@ -402,12 +404,12 @@ def url_validos():
 
     #tentar extrair as configurações atuais dos urls
     try:
-        with open(settingsFile,"r+") as j:
+        with open(settingsFile,"r+",encoding="utf-8") as j:
             urls=json.load(j)["urls"]
     #caso haja algum erro as definições são definidas para padrão     
     except:
         padraoSettings(settingsFile)
-        with open(settingsFile,"r+") as j:
+        with open(settingsFile,"r+",encoding="utf-8") as j:
             urls=json.load(j)["urls"]
 
     #linha da cozinha
@@ -427,7 +429,7 @@ def url_validos():
 #função resposavel por guardar os urls válidos nos ficheiros
 def guardarUrls(coz,bar,encort,qr):
     #abrir o ficheiro e ler o ficheiro
-    with open(settingsFile,"r+") as j:
+    with open(settingsFile,"r+",encoding="utf-8") as j:
         data = json.load(j)
     #alterar as configurações
     data["urls"]["cozinha"] = int(coz.value)
@@ -435,7 +437,7 @@ def guardarUrls(coz,bar,encort,qr):
     data["urls"]["tiny"] = int(encort.value)
     data["urls"]["QRCode"] = int(qr.value)
     #atualizar o ficheiro
-    with open(settingsFile, 'w') as j:
+    with open(settingsFile, 'w',encoding="utf-8") as j:
         json.dump(data, j, indent=4)
 
 #função responsavel por mostar as alterações possiveis aos host
@@ -525,7 +527,7 @@ def guardarHost(loophole,local_access,erro):
         #remover mensagem de erro
         erro.place_forget()
         #ler arquivo de definições
-        with open(settingsFile,"r+") as j:
+        with open(settingsFile,"r+",encoding="utf-8") as j:
             data = json.load(j)
 
         #alaterar as definições de acordo com o selecionado
@@ -535,7 +537,7 @@ def guardarHost(loophole,local_access,erro):
         data["host"]["port"] = int(porta.get())
         
         #carregar as novas definições 
-        with open(settingsFile, 'w') as j:
+        with open(settingsFile, 'w',encoding="utf-8") as j:
             json.dump(data, j, indent=4)
     
     else:
@@ -689,6 +691,11 @@ def redirectUrl(url):
 def destruir(obj):
     obj.destroy()
 
+
+
+def update_web(url):
+    requests.get(url)
+    
 #função responsavel por manter um menu após dar executar o site 
 def menu(url,localIP,p,default):
     win = Tk()
@@ -720,7 +727,7 @@ def menu(url,localIP,p,default):
         tn2_url = Thread(target=getTiny,args=(b_localIP,2,tiny_urls,),daemon=True)
         tn2_url.start()
         small = 0 or not tiny_enbl
-    #se um dos acessos estiverem arivos
+    #se um dos acessos estiverem ativos
     else:
         width = int(win.winfo_screenwidth()*0.25)
         janela = 1
@@ -814,7 +821,10 @@ def menu(url,localIP,p,default):
         if janela == 2:
             tn2_url.join()
             tiny2.configure(text=str(tiny_urls[1]))
-
+    
+    win.bind("<Control-m>", lambda _: update_web("http://"+default+"/update-files/_menu_"))
+    win.bind("<Control-u>", lambda _: update_web("http://"+default+"/update-files/_urls_"))
+    win.bind("<Control-a>", lambda _: update_web("http://"+default+"/update-files/_all_"))
     # Execute Tkinter
     win.mainloop()
 
