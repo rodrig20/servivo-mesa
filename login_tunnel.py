@@ -1,7 +1,7 @@
 import subprocess
 import time
 
-def login(folder, file):
+def login_loophole(folder, file):
     if folder != '':
         sep = '\\'
     else:
@@ -70,4 +70,4 @@ def login(folder, file):
         driver.quit()
  
 if __name__ =='__main__':       
-    login("tunnel","log.txt")
+    login_loophole("tunnel","log.txt")
