@@ -1,3 +1,6 @@
+import ctypes
+ctypes.windll.user32.SetProcessDPIAware()
+
 from interface import start_window
 from app import *
 
