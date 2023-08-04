@@ -8,7 +8,6 @@ import os
 # remover blur do ecrã
 try:
     from ctypes import windll
-    
     windll.shcore.SetProcessDpiAwareness(1)
 except: pass
 
@@ -91,7 +90,6 @@ def listaC():
         #criar uma lista com apenas os pedidos para a cozinha 
         comidas=[]
         j=0
-        print(pedidos)
         for p in pedidos:
             #copiar alguns dados para a nova lista
             ped=[p[0],[],[],[],[],p[5]]
@@ -120,6 +118,8 @@ def listaC():
             c=0
             #por cada pedido na lista de pedidos
             for i in range(len(pedidos)):
+                #definir a varivael
+                ap = None
                 #procurar pelo pedido na lista de comida
                 if c==0:
                     #se os numeros dos pedidos globais forem iguais
@@ -173,7 +173,6 @@ def listaB():
         #criar uma lista com apenas os pedidos para o bar 
         bebidas=[]
         j=0
-        print(pedidos)
         for p in pedidos:
             #copiar alguns dados para a nova lista
             ped=[p[0],[],[],[],[],p[5]]
@@ -202,6 +201,8 @@ def listaB():
             c=0
             #por cada pedido na lista de pedidos
             for i in range(len(pedidos)):
+                #definir a varivael
+                ap = None
                 #procurar pelo pedido na lista de bebida
                 if c==0:
                     #se os numeros dos pedidos globais forem iguais
@@ -275,6 +276,9 @@ def home():
 
 #INICIO DO SCRIPT
 if __name__ == "__main__":
+    #############
+    DEBUG = True
+    #############
     #inicilaizar variaveis imporatntes
     pedidos = []        #Lista com todos os pedidos por fazer
     prontos = []        #Lista com todos os pedidos prontos
@@ -315,21 +319,24 @@ if __name__ == "__main__":
         host = '0.0.0.0'
         localhost = socket.gethostbyname(socket.gethostname())
 
-    #importar a production WSGI server em vez do Flask
-    from waitress import serve
-    
-    #executar a aplicação flask com o serve
-    th = Thread(target=serve, args=(app,),kwargs={'host':host,'port':data["port"]},daemon=True)
-    th.start()
+    if DEBUG:
+        app.run(host=host,port=data["port"],debug=True)
+    else:
+        #importar a production WSGI server em vez do Flask
+        from waitress import serve
+        
+        #executar a aplicação flask com o serve
+        th = Thread(target=serve, args=(app,),kwargs={'host':host,'port':data["port"]},daemon=True)
+        th.start()
     
     #caso o ngrok esteja ativo esperar pelo resultado da Thread
     if data["ngrok"]:
         ngrok_tunnel.join()
 
-    #remover o http do ngrok
+        #remover o http do ngrok
     public_ip=public_ip[0].replace("http://",'')
 
     #por fim chamar o menu da interface gráfica
     inter.menu(public_ip,localhost,data["port"],"127.0.0.1")
 
-#FIM DO SCIPT
+#FIM DO SCRIPT
