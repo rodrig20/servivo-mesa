@@ -1,7 +1,81 @@
-#quantity {width:100%;font-size:80px;padding: 12px 20px; }
-#pedido {width:100%;  font-size:80px;padding: 12px 20px; }
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f2f2f2;
+}
+h1 { 
+    font-size:100px; 
+    text-align: center;
+}
 
-.quanti {
+.button {
+    background-color: #4CAF50;
+    border: none;
+    color: white;
+    padding: 15px;      
+    margin: 15px;
+    cursor: pointer;
+    border-radius: 7px;
+}
+
+.check {
+    color: white;
+    border: none;
+    padding: 0px 0px;
+    margin: 3px 2px;
+    cursor: pointer;
+    border-radius: 40%;
+}
+#linhaPed:hover {
+    background-color: #e0e0e0;
+}
+
+#avisarPronto {
+    background-color: #4CAF50;
+    font-size: 27px;
+    width: 40px;
+    height: 40px
+    
+}
+
+#avisarPronto:hover {
+    background-color: #3e8e41;
+}
+
+#bigdiv {
+    display: flex;
+    justify-content: space-between;
+}
+
+#removerPronto {
+    background-color: #445cd5;
+    font-size: 35px;
+    width: 58px;
+    height: 58px
+}
+#removerPronto:hover {
+    background-color: #2a43bb;
+    transition: background-color 0.3s ease-in-out;
+}
+#novo {
+    background-color: #4CAF50;
+    font-size: 70px;
+}
+#back {
+    background-color: rgb(255, 0, 60);
+    color:white;
+    width: 100%;
+    font-size: 100px;
+}
+#lista {
+    background-color: green;
+    color:white;
+    width: 100%;
+    font-size: 100px;
+}
+
+#quantity,#pedido {width:100%;font-size:80px;padding: 12px 20px; }
+
+.quantiNum {
     width:15%;
 }
 
@@ -16,89 +90,24 @@
     
 }
 
-table {
-    font-family: Arial, Helvetica, sans-serif;
-    width:97%;
-    border-collapse:collapse;
-    padding:4px;
-    
-    margin-left: auto;
-    margin-right: auto;
-}
-    
-table td {
-    text-align:left;
-    padding:3px;
-    color: #000000;
-    border:collapse; 
-}
-    
+
 #send {
-    padding: 15px;
-    margin:15px;
-    border-radius: 7px;
-    border: none;
     background-color: green;
-    color:white;
     font-size: 70px;
 }
 
 #add {
-    padding: 15px;
-    margin:15px;
-    border-radius: 7px;
-    border: none;
     background-color: blue;
-    color:white;
     font-size: 79px;
+    color:white;
 }
 
 #prontos {
-    padding: 15px;
-    border-radius: 7px;
-    margin:15px;
-    border: none;
     background-color: rgb(255, 0, 60);
-    color:white;
     font-size: 70px;
 }
 
-#novo {
-    padding: 15px;
-    border-radius: 7px;
-    margin:15px;
-    border: none;
-    background-color: rgb(35, 179, 73);
-    color:white;
-    font-size: 40px;
-}
-
-#back {
-    border-radius: 10px;
-    border: none;
-    background-color: rgb(255, 0, 60);
-    width: 50%;
-    height: 150px;
-    color:white;
-    font-size: 100px;
-}
-
-#lista {
-    border-radius: 10px;
-    border: none;
-    background-color: green;
-    width: 50%;
-    height: 150px;
-    color:white;
-    font-size: 100px;
-}
-
-#feito{
-    border-radius: 4px;
-    border: none;
-    background-color: blue;
-    width: 120px;
-    height: 30px;
-    color:white;
-    font-size: 20px;
+.coluna {
+    flex: 1;
+    order: -1;
 }

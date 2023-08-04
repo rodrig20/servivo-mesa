@@ -2,39 +2,33 @@
     <head>
         <script type=text/javascript src="{{ url_for('static', filename='jquery.js') }}"> </script>
         <script type=text/javascript src="{{ url_for('static', filename='meu_ajax.js') }}"> </script>
-        <script type=text/javascript>
-            $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
-        </script>
+        <script type=text/javascript>$SCRIPT_ROOT = {{ request.script_root|tojson|safe }};</script> 
         <meta name="google" content="notranslate">
-        <meta http-equiv="refresh" content="5">
-    </head>
-    <body> 
         <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
-        
-        <script>
-            function removeRow(n){
-                var tbl = document.getElementById(n);
-                console.log(tbl);
-                tbl.remove();
+        <link rel="shortcut icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
 
-                json_send = {feito:n};
-                nome = $('input[type="hidden"]').val();
-                $.post($SCRIPT_ROOT + '/lista/'+nome, json_send, reload,'json');
-            }
-        </script>       
-        <h1 style="font-size:100px">Pedidos prontos</h1>
-        {% for p in pedidos %}
-            {%  if p[0]== nome %}
-                <table id='{{ p[-2] }}''>
-                    <tr>
-                        <input type="button" id="Feito" value="Entregue" onclick="removeRow('{{ p[-2]}}')"> <label style="font-size:50px">{{p[1]}}       {{p[2]}}</label>
-                    </tr>
-                    <tr><p style="font-size:10px"></p></tr>
-                </table>
-            {% endif %}
-        {% endfor %}  
-        <br>  
-        <input type="hidden" value="{{nome}}">
-        <input type="submit" id="novo" value="Novo Pedido">
+        <script>
+            window.setInterval(function() {
+                verificaReload("{{ pedidos }}","","lisLoop.html","{{nome}}")}, 5000);
+        </script>
+    </head>
+    <body>      
+        <h1>Pedidos prontos</h1>
+        <div id="main">
+            {% for p in pedidos %}
+                {%  if p[0]== nome %}
+                    <table id='{{ p[-2] }}'>
+                        <tr>
+                            <td><input class="check"  type="button" id="removerPronto" value="&#x2714;" onclick="pedidoEntregue('{{ p[-2]}}')"></td>
+                            <td><label style="font-size:60px">&nbsp;{{p[1]}}</label><label style="font-size:60px;color: red;">&nbsp;➜</label><label style="font-size:60px;">&nbsp;&nbsp;{{p[2]}}</label></td>
+                        </tr>
+                    </table>
+                {% endif %}
+            {% endfor %}  
+            <br>  
+            </div>
+            <input type="hidden" value="{{nome}}">
+            <input class="button" type="submit" id="novo" value="Novo Pedido">
+        <div>
     </body>
 </html>

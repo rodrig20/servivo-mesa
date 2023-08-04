@@ -2,18 +2,40 @@
     <head>
         <script type=text/javascript src="{{ url_for('static', filename='jquery.js') }}"> </script>
         <script type=text/javascript src="{{ url_for('static', filename='meu_ajax.js') }}"> </script>
-        <script type=text/javascript>
-            $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
-        </script>
+        <script type=text/javascript>$SCRIPT_ROOT = {{ request.script_root|tojson|safe }};</script>
         <meta name="google" content="notranslate">
+        <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+        <link rel="shortcut icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+        <style>
+            /* Define o estilo para o corpo da página */
+            body {
+                display: flex;
+                justify-content: center;
+                overflow: hidden;
+            }
+            div {
+                position: absolute;
+                bottom: 5%;
+            }
+
+            @media only screen and (max-width: 600px) {
+                h1 {
+                    font-size: 36px;
+            }
+            @media screen and (min-width: 601px) {
+                input[type="submit"] {
+                    margin: 4px 2px;
+            }
+        
+        </style>
     </head>
     <body>
-        <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
         <h1 style="font-size:100px">Pedido enviado com sucesso!</h1>
-        <br></br><br></br><br></br>
-        <input type="hidden", class="nome" value="{{ nome }}">
-        <input type="submit" id="back" value="Voltar">
-        <br></br>
-        <input type="submit" id="lista" value="Pedidos">
+        <div>
+            <input type="hidden", class="nome" value="{{ nome }}">
+            <input class="button"  type="submit" id="back" value="Voltar">
+            <br></br>
+            <input class="button"  type="submit" id="lista" value="Pedidos">
+        </div>
     </body>
 </html>

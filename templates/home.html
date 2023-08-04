@@ -5,46 +5,11 @@
         <script type=text/javascript> $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};</script>
         <meta name="viewport" content="width=device-width, initial-scale=0.4, maximum-scale=0.4, user-scalable=0">
         <meta name="google" content="notranslate">
+        <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+        <link rel="shortcut icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
     </head>
     <body>
-        <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
-        
-        <script>
-            var r = 0;
-            function addRow(c) {
-                var table = document.getElementById("tabela");
-                var row = table.insertRow(-1);
-                row.setAttribute("id",r);
-                var cell1 = row.insertCell(0);
-                var cell2 = row.insertCell(1);
-                var cell3 = row.insertCell(2);
-                var cell4 = row.insertCell(3);
-                var p;
-                var c;
-                if (c=='c'){
-                    p= 'Comida';
-                    c='#1ea831'
-
-                }else{
-                    p= 'Bebida'
-                    c='#292b94'
-                }
-                cell1.innerHTML = "<input type='number' style='border: 3px solid "+c+";' id='quantity' class='quantity' min='1'>";
-                cell2.innerHTML = "<input type='text' style='border: 3px solid "+c+";' id='pedido' class='pedido' placeholder='"+ p +"'>";
-                cell3.innerHTML = "<input type='button' id='cancelar' onclick='removeRow("+r+")' value=' x '>"
-                cell4.innerHTML = "<input type='hidden' class='tipo' value='"+ p +"'>"
-                cell1.className = 'quanti';
-                r++;
-            }
-
-            function removeRow(n){
-                var row = document.getElementById(n);
-                row.parentNode.removeChild(row)
-            }
-
-        </script>
-
-        <h1 style="font-size:100px; text-align: center;">Pedidos de {{ nome }}</h1>
+        <h1>Pedidos de {{ nome }}</h1>
         <div style="overflow-x:auto;">
             <table id="tabela">
 
@@ -53,13 +18,13 @@
         <input type="hidden", class="nome" value="{{ nome }}">
         <br>
         {%if validos[0]%}
-            <input type="button" style='background: #1ea831;' id="add" onclick="addRow('c')" value="Adicionar Comida">
+            <input class="button" type="button" style='background: #1ea831;' id="add" onclick="addRow('c')" value="Adicionar Comida">
         {%endif%}
         {%if validos[1]%}
-            <input type="button" style='background: #2d2091;' id="add" onclick="addRow('b')"value="Adicionar Bebida">
+            <input class="button" type="button" style='background: #2d2091;' id="add" onclick="addRow('b')"value="Adicionar Bebida">
         {%endif%}
         <br><br>
-        <input type="submit" id="send" value="Enviar">
-        <input type="submit" id="prontos" value="Ver Pedidos">
+        <input class="button" type="submit" id="send" value="Enviar">
+        <input class="button" type="submit" id="prontos" value="Ver Pedidos">
     </body>
 </html>
