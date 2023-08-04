@@ -29,7 +29,7 @@
             window.setTimeout( function() {
                 window.location.reload(true);
             }, 5000);
-
+            
             function removeRow(n,v,t){
                 //var row = document.getElementById(n);
                 //row.parentNode.removeChild(row)
@@ -37,28 +37,145 @@
                 json_send = {feito:n, ped:v};
                 $.post($SCRIPT_ROOT + '/'+t, json_send, reload,'json');
             }
-        </script>       
-        <h1 style="font-size:100px">Lista de pedidos</h1>
-        {% for p in pedidos %}
-            <table id="{{ p[-1] }}">
-                <tr>
-                    <td>
-                        <p style="font-size:70px" ><b>{{ p[0] }}</b></p>
-                    </td>
-                </tr>               
-            {% for i in range(p[1]|length) %}
-                <tr id={{ i }}>
-                    <td>    
-                        <input type="button" name="{{ p[-1] }}" id="feito" value="Feito" onclick="removeRow({{ p[-1] }}, {{ i }}, '{{ tip }}')">
-                        <label style="font-size:30px">{{p[1][i]}}       {{p[2][i]}}</label>
-                    </td>
-                </tr>
-            {% endfor %}
-            
-            </table>
-            <br></br>
-            <br></br>
+        </script>   
+        <style>
+            h1 {
+                font-size: 100px;
+            }
+            p{
+                margin:5px 10px 5px 20px
+            }
+        
+            table {
+                border-collapse: collapse;
+                width: 100%;
+                border-top: 3px solid #d3d3d3
+                
+            }
+        
+            td {
+                margin:3px;
+                display: flex;
+                align-items: center;
+                height: 50px
+            }
+
+            #linhaPed:hover {
+                background-color: #e0e0e0;
+              }
+        
+            #feito {
+                color: white;
+                background-color: #4CAF50;
+                border: none;
+                color: white;
+                padding: 0px 0px;
+                text-align: center;
+                text-decoration: none;
+                display: inline-block;
+                font-size: 27px;
+                margin: 0px 2px;
+                cursor: pointer;
+                border-radius: 40%;
+                width: 40px;
+                height: 40px
+                
+            }
+
+            #feito:hover {
+                background-color: #3e8e41;
+            }
+
+            #bigdiv {
+                display: flex;
+                justify-content: space-between;
+            }
+            table, td, th {
+                color: #333;
+            }
+            body {
+                background-color: #f2f2f2;
+            }
+              
+        </style>
+        {% set metade = (pedidos|length)%}
+        {% set linha = [] %}
+        {% set part1 = pedidos[::2]%}
+        {% set part2 = pedidos[1::2]%}
+        {% set i = 0 %}
+        {% for i in range(part2|length) %}
+            {{ linha.append((part2[i][2]|length)-(part1[i][2]|length)) or "" }}
         {% endfor %}
+
+        {% if part1|length != part2|length %}
+            {{ linha.append(-(part1[i][2]|length)) or "" }}
+        {% endif %}
+
+        <h1>Lista de pedidos</h1>
+        <div id="bigdiv">
+        <div style="flex: 1;order: -1;border-right: 2px solid #d3d3d3;">            
+            {% for p in range(part1|length) %}
+                <table id="{{ part1[p][-1] }}">
+                    <tr>
+                    <td id="nome">
+                        <p style="font-size:70px" ><b>{{ part1[p][0] }}</b></p>
+                    </td>
+                    </tr>               
+                    {% for i in range(part1[p][1]|length) %}
+                        <tr>
+                            <td id="linhaPed">    
+                            <input type="button" name="{{ part1[p][-1] }}" id="feito" value="&#x2714;" onclick="removeRow({{ part1[p][-1] }}, {{ i }}, '{{ tip }}')">
+                            <label style="font-size:40px;">&nbsp;{{ part1[p][1][i]}}  ⇒  {{ part1[p][2][i]}}</label>
+                            </td>
+                        </tr>
+                {% endfor %}
+                {% if linha[p] > 0 %}
+                    {% for i in range(linha[p])%}
+                        <tr>
+                            <td id="linhaPed">    
+                            <label style="font-size:40px">&nbsp;</label>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% endif %}
+                
+                <br></br>
+                {% endfor %}
+            </table>
+        </div>
+        <div style="flex: 1;order: -1;border-left: 2px solid #d3d3d3;">
+            {% for p in range(part2|length) %}
+                <table id="{{ part2[p][-1] }}">
+                    <tr>
+                    <td id="nome">
+                        <p style="font-size:70px" ><b>{{ part2[p][0] }}</b></p>
+                    </td>
+                    </tr>               
+                    {% for i in range(part2[p][1]|length) %}
+                        <tr>
+                            <td id="linhaPed">    
+                            <input type="button" name="{{ part2[p][-1] }}" id="feito" value="&#x2714;" onclick="removeRow({{ part2[p][-1] }}, {{ i }}, '{{ tip }}')">
+                            <label style="font-size:40px">&nbsp; {{part2[p][1][i]}}  ⇒  {{part2[p][2][i]}}</label>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    {% if linha[p] < 0 %}
+                        {% for i in range(-linha[p]) %}
+                            <tr>
+                                <td id="linhaPed">    
+                                <label style="font-size:40px">&nbsp;</label>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% endif %}
+                    <br></br>
+                    {% endfor %}
+                </table>
+
+
+            </table>
+        </div>
+        </div>
         <br></br>
     </body>
 </html>
