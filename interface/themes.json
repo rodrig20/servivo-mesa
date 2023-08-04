@@ -1,0 +1,75 @@
+{
+    "colors":{
+        "roxo":{
+            "escuro":{
+                "primary": "#8e0793",
+                "primary_variant": "#3d033f"
+            },
+            "claro":{
+                "primary": "#ba62c4",
+                "primary_variant": "#f8c4ff"
+            }
+        },
+        "amarelo":{
+            "escuro":{
+                "primary": "#c19b09",
+                "primary_variant": "#5a4b00"
+            },
+            "claro":{
+                "primary": "#fdd023",
+                "primary_variant": "#f2f2bc"
+            }
+        },
+        "verde":{
+            "escuro":{
+                "primary": "#008e25",
+                "primary_variant": "#0b3817"
+            },
+            "claro":{
+                "primary": "#2ee55e",
+                "primary_variant": "#bcffcd"
+            }
+        },
+        "azul":{
+            "escuro":{
+                "primary": "#000f7d",
+                "primary_variant": "#000632"
+            },
+            "claro":{
+                "primary": "#0328c9",
+                "primary_variant": "#bdbdff"
+            }
+        },
+        "vermelho":{
+            "escuro":{
+                "primary": "#ba3030",
+                "primary_variant": "#451212"
+            },
+            "claro":{
+                "primary": "#dd2f2f",
+                "primary_variant": "#ffcaca"
+            }
+        }
+    },
+    "theme":{
+        "escuro":{
+            "background":"#121212",
+            "widget":"#3c4042",
+            "subwidget": "#2b2b2b",
+            "text":"#f1f1f1",
+            "sidebar": "#1b1d1c",
+            "backgroundWidget": "#1d1d1d",
+            "sidebarHouver":"#3b3d3c"
+        },
+        "claro": {
+            "background":"#cbcbcb",
+            "widget":"#bcbcbc",
+            "subwidget": "#939393",
+            "text":"#121212",
+            "sidebar": "#eeeeee",
+            "backgroundWidget": "#c0c0c0",
+            "sidebarHouver":"#c1c1c1"
+
+        }
+    }
+}
