@@ -159,13 +159,21 @@ function toQRScanner(){
 
 function sendQrdata(data){
     json_send = {pedB64:data}
-    $.post($SCRIPT_ROOT, json_send, volatServico,'json');
+    $.post($SCRIPT_ROOT, json_send, voltaServico,'json');
 }
 
-function volatServico(data){
+function voltaServico(data){
     if (data.suc == "T"){
         $(location).prop('href', data['redirect']);
     }
+}
+
+function makeLogin(){
+    user = $('input[name="username"]').val();
+    password = $('input[name="password"]').val();
+    json_send = {user:user,pass:password}
+    $.post($SCRIPT_ROOT, json_send, voltaServico,'json');
+
 }
 
 // Início do jQuery:
@@ -177,5 +185,6 @@ $(function() {
     $('#novo').click(voltar);
     $('#voltarDoQR').click(pedAuto);
     $('#qrbotao').click(toQRScanner);
+    $('#login').click(makeLogin);
 
 });

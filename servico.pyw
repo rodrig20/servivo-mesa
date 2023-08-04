@@ -1,13 +1,16 @@
-from flask import Flask, request, render_template, jsonify, url_for,abort
+from flask import Flask, request, render_template, jsonify, url_for,abort, make_response
 from flask_socketio import SocketIO, emit, Namespace
 from engineio.async_drivers import gevent
-from login_tunnel import login  #script com o login do loophole
+from login_tunnel import login_loophole  #script com o login do loophole
 from threading import Thread
 from flask_settings import *    #script com de defenições basicas
 import intreface as inter       #script da interface grafica
 from io import BytesIO
 import subprocess
+import datetime
 import requests
+import string
+import random
 import base64
 import socket
 import qrcode
@@ -17,8 +20,9 @@ try:
     from ctypes import windll
     windll.shcore.SetProcessDpiAwareness(1)
 except: pass
+
 """ 
-pyinstaller --noconfirm --onedir --console --add-data "C:/Users/Rodrigo/Desktop/Rodrigo/Python/Servico/Serv_12/flask_settings.py;." --add-data "C:/Users/Rodrigo/Desktop/Rodrigo/Python/Servico/Serv_12/intreface.py;." --add-data "C:/Users/Rodrigo/Desktop/Rodrigo/Python/Servico/Serv_12/settings.json;." --add-data "C:/Users/Rodrigo/Desktop/Rodrigo/Python/Servico/Serv_12/users.txt;." --add-data "C:/Users/Rodrigo/Desktop/Rodrigo/Python/Servico/Serv_12/static;static/" --add-data "C:/Users/Rodrigo/Desktop/Rodrigo/Python/Servico/Serv_12/templates;templates/" --hidden-import "engineio.async_eventlet"  "C:/Users/Rodrigo/Desktop/Rodrigo/Python/Servico/Serv_12/servico.pyw"
+pyinstaller --noconfirm --onedir --console --add-data "C:/Users/Rodrigo/Desktop/Rodrigo/Python/Servico/Serv_16/static;static/" --add-data "C:/Users/Rodrigo/Desktop/Rodrigo/Python/Servico/Serv_16/templates;templates/" --add-data "C:/Users/Rodrigo/Desktop/Rodrigo/Python/Servico/Serv_16/tunnel;tunnel/" --add-data "C:/Users/Rodrigo/Desktop/Rodrigo/Python/Servico/Serv_16/settings.json;." --add-data "C:/Users/Rodrigo/Desktop/Rodrigo/Python/Servico/Serv_16/users.txt;." --add-data "C:/Users/Rodrigo/Desktop/Rodrigo/Python/Servico/Serv_16/flask_settings.py;." --add-data "C:/Users/Rodrigo/Desktop/Rodrigo/Python/Servico/Serv_16/intreface.py;." --add-data "C:/Users/Rodrigo/Desktop/Rodrigo/Python/Servico/Serv_16/login_tunnel.py;."  "C:/Users/Rodrigo/Desktop/Rodrigo/Python/Servico/Serv_16/servico.pyw"
 """
 
 # Iniciar Falsk app
@@ -33,13 +37,11 @@ class ListasNamespace(Namespace):
 
 #função responsavel por iniciar o loophole
 def startExternalAccess(port,subdomain=''):
-    login("tunnel","log.txt")
-    if subdomain == '':
-        sub = ''
-    else:
-        sub = f"--hostname {subdomain}"
+    login_loophole("tunnel","log.txt")
+
+    sub = f"--hostname={subdomain}"
     command = f'tunnel\\loophole.exe http {port} {sub}'.split()
-    return subprocess.Popen(command,stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    return subprocess.Popen(command,creationflags=subprocess.CREATE_NO_WINDOW,stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 def createList(tipo):
     global pedidos
@@ -128,6 +130,10 @@ def startInterface(vars):
     except:
         pass
 
+def randomSubdomain(tamanho):
+    caracteres = string.ascii_letters + string.digits
+    return str(''.join(random.choice(caracteres) for _ in range(tamanho))).lower()
+
 def encodeQR(string):
     encoded_string = str(string).encode("utf8")
     return base64.b64encode(encoded_string).decode()
@@ -151,6 +157,7 @@ def stop():
     if request.method == "POST":
         if "paragem" in request.form:
             if request.form["paragem"] == FRASE_DE_ENCRRAMENTO:
+                print("stop")
                 socketio.stop()
         return "Boa tentativa"
     
@@ -288,7 +295,8 @@ def listaCeB():
                 #podemos remover o mesmo
                 if pedidos [i][1]==[]:
                     pedidos.pop(i)
-                break  
+                break
+        
         # avisar o utilizador que fez o pedido 
         handle_update_page("/pess/"+nome)
         #enviar sucesso
@@ -316,6 +324,21 @@ def lista_pessoa(nome):
     #mostar resultados
     return render_template("lista.html",nome=nome,pedidos=prontos)
 
+@app.route("/login", methods=['GET', 'POST'])
+def login():
+    if request.method == "POST":
+        user = request.form["user"]
+        password = request.form["pass"]
+        if user in users and password == "mywebpassword":
+            resp = make_response(jsonify({"suc":"T","redirect":"/servico/"+user}))
+            expires = datetime.datetime.now() + datetime.timedelta(hours=24)
+            resp.set_cookie('cookie_login_servico', password, expires=expires)
+            return resp
+        else:
+            return jsonify({"suc":"F"})        
+        
+    return render_template("login.html")
+
 # pagina temporaria
 @app.route("/", methods=['GET', 'POST'])
 def home():
@@ -338,17 +361,18 @@ if __name__ == "__main__":
     inter.Files(usersFile,settingsFile)
     
     #chamar a interface gráfica para configuração do site
-    inter.main()
-    opcoes_comida = ["Batatas Fritas", "Bife"] 
-    opcoes_bebida = ["Água com gás","Coca Cola"]
-    todas_opcoes = [opcoes_comida,opcoes_bebida] 
+    inter.main() 
     #ler todos os utilizadores
     users = inter.getUsers(usersFile)
     #ler todas as configurações de host
     data = inter.getHost(settingsFile)
     #ler todas as configurações de urls
     validUrls =inter.getUrls(settingsFile)
+    #let todas as configurações do menu
+    menu = inter.getMenu(settingsFile)
     
+    todas_opcoes = [list(menu["cozinha"].keys()),list(menu["bar"].keys())]
+        
     socketio.on_namespace(ListasNamespace('/listaPedidos'))
     for user in users:
         socketio.on_namespace(ListasNamespace('/pess/'+user))
@@ -359,16 +383,20 @@ if __name__ == "__main__":
 
     #ler dos dados de host se o loophole foi ativado
     if data["loophole"]:
-        loophole_tunnel = startExternalAccess(data["port"],data["subdomain"])
-        public_ip=data["subdomain"]+".loophole.site"
+        if data["subdomain"].strip() != '':
+            my_sub = data["subdomain"]
+        else:
+            my_sub = randomSubdomain(10)
+        loophole_tunnel = startExternalAccess(data["port"],my_sub)
+        public_ip=my_sub+".loophole.site"
     else: public_ip = ''
 
     #ler dos dados de host se o localhost foi ativado
     if data["localNetwork"]:
         #defenir host e obter o ip da máquina
         host = '0.0.0.0'
-        localhost = socket.gethostbyname(socket.gethostname())   
-    
+        localhost = socket.gethostbyname(socket.gethostname())
+        
     Thread(target=requests.post,args=(f"http://127.0.0.1:{(data['port'])}/start",),kwargs=({"data":{'public_ip': public_ip,"localhost":localhost,"porta":data["port"]}}),).start()
     
     socketio.run(app, host=host,port=data["port"],use_reloader=False, debug=DEBUG)

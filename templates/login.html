@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<script type=text/javascript src="{{ url_for('static', filename='jquery.js') }}"> </script>
+        <script type=text/javascript src="{{ url_for('static', filename='meu_ajax.js') }}"> </script>
+        <script type=text/javascript> $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};</script>
+		<meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=0.4, maximum-scale=0.4, user-scalable=0">
+        <meta name="google" content="notranslate">
+        <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+        <link rel="shortcut icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+		<title>Login</title>
+	</head>
+	<body style="padding: 0px;">
+		<div id="login-form-wrap">
+			<h1>Login</h1>
+			<form id="login-form">
+				<p>
+				<input type="text" id="username" name="username" placeholder="Nome" autocomplete="off" required="">
+				</p>
+				<p>
+				<input type="password" id="password" name="password" autocomplete="new-password" placeholder="Password" required="">
+				</p>
+				<p>
+				<input type="submit" id="login" value="Login">
+				</p>
+			</form>
+		</div>
+	</body>
+</html>

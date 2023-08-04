@@ -90,6 +90,8 @@ h1 {
     
 }
 
+
+
 #add {
     background-color: blue;
     font-size: 79px;
@@ -113,4 +115,45 @@ h1 {
 .coluna {
     flex: 1;
     order: -1;
+}
+
+#login-form-wrap {
+    position: absolute;
+    justify-content: center;
+    align-items: center;
+    top: 36%;
+    left: 40%;
+    transform: translate(-50%, -50%);
+    text-align: center; 
+}
+
+
+#login-form input[type="text"],
+#login-form input[type="password"]{
+    width: 130%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    resize: vertical;
+    font-size: 50px;
+    font-family: Arial, sans-serif;
+}
+
+#login-form input[type="submit"] {
+    background-color: #4CAF50;
+    color: #fff;
+    display: block;
+    margin: 0 auto;
+    cursor: pointer;
+    width: 134%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    resize: vertical;
+    font-size: 50px;
+    font-family: Arial, sans-serif;
+}
+
+#login-form input[type="submit"]:hover {
+    background-color: #45a049;
 }
