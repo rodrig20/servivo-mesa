@@ -79,5 +79,3 @@ def get_password(domain) -> str:
     int_hash_data = int(hash_data,16)
     pass_number = number_to_string(int_hash_data%10000,4)
     return domain+":"+pass_number
-
-print(get_password("foka"))
