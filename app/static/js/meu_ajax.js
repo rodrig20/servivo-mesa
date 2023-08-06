@@ -12,12 +12,12 @@ function addRow(c,opcoes,preco) {
     var p;
     var c;
     if (c == 'c') {
-        p = 'Comida';
+        p = 'Cozinha';
         c = '#1ea831';
         var my_opcoes = opcoes[0];
         var my_preco = preco[0];
     } else {
-        p = 'Bebida'
+        p = 'Bar'
         c = '#292b94';
         var my_opcoes = opcoes[1];
         var my_preco = preco[1];
@@ -62,7 +62,7 @@ function addPreSetRow(opcoes,preco,q,p,t){
     var cell2 = row.insertCell(1);
     var cell3 = row.insertCell(2);
     var cell4 = row.insertCell(3);
-    if (t == 'Comida') {
+    if (t == 'Cozinha') {
         c = '#1ea831'
         var my_opcoes = opcoes[0]
         var my_preco = preco[0];
@@ -113,7 +113,7 @@ function enviar_pedido(){
     }
     var tipos = document.getElementsByClassName("tipo")
     var tip = [];
-    for (let i = 0; i < tipos.length; i++) { 
+    for (let i = 0; i < tipos.length; i++) {
         tip.push(tipos[i].value);
     }
     

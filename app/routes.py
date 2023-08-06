@@ -1,6 +1,6 @@
 from flask import render_template, jsonify, url_for, abort, redirect, send_from_directory, session, request, Response
 from werkzeug.datastructures import ImmutableMultiDict
-from typing import List, Tuple, Literal, Callable, Union, Optional, Iterator
+from typing import List, Tuple, Literal, Callable, Union, Optional
 from flask_socketio import Namespace, emit
 from datetime import datetime, timedelta
 from functools import wraps
@@ -25,16 +25,16 @@ class PedidoBase:
 #Estrutura de um pedido que está em Espera
 class PedidoEspera(PedidoBase):
     #Elementos básicos de um Pedido em Espera
-    def __init__(self, nome: str, ped_quantidades: List[str], ped_nomes: List[str], tipos: List[Literal["Comida", "Bebida"]], mesa: str) -> None:
+    def __init__(self, nome: str, ped_quantidades: List[str], ped_nomes: List[str], tipos: List[Literal["Cozinha", "Bar"]], mesa: str) -> None:
         super().__init__(nome, ped_quantidades, ped_nomes, mesa)
         self.tipos = tipos
     
     #verificar se o pedido contem um certo tipo
-    def contemTipo(self, tipo: Literal["Comida", "Bebida"]) -> bool:
+    def contemTipo(self, tipo: Literal["Cozinha", "Bar"]) -> bool:
         return tipo in self.tipos
     
     #remover o idx-esimo elemento de um certo tipo e retorna o mesmo
-    def removeTipo(self, idx: int, tipo: Literal["Comida", "Bebida"]) -> Optional["PedidoPronto"]:
+    def removeTipo(self, idx: int, tipo: Literal["Cozinha", "Bar"]) -> Optional["PedidoPronto"]:
         for t in range(len(self.tipos)):
             if self.tipos[t] == tipo:
                 if idx == 0:
@@ -56,7 +56,7 @@ class PedidoEspera(PedidoBase):
         return pedido
     
     #retornar todos os subpedidos de um certo tipo
-    def listaTipo(self, tipo: Literal["Comida","Bebida"]) -> Optional[List[Union[str, List[str]]]]:
+    def listaTipo(self, tipo: Literal["Cozinha","Bar"]) -> Optional[List[Union[str, List[str]]]]:
         quatidades = []
         nomes = []
         for i in range(len(self.tipos)):
@@ -120,14 +120,14 @@ class ListaTodosPedidos_Espera:
         return True
     
     #tornar um pedido pronto
-    def tornarPronto(self, pedido_idx: int, sub_pedido_idx: int, tipo: Literal["Comida","Bebida"]):
+    def tornarPronto(self, pedido_idx: int, sub_pedido_idx: int, tipo: Literal["Cozinha","Bar"]):
         #Obter o subpedido pelo idx e tipo e trocalo de posição
         pedido = self.getPedidoTipo(pedido_idx,tipo)
         pedido_pronto = pedido.removeTipo(sub_pedido_idx,tipo)
         app.config["PEDIDOS_PRONTOS"].append(pedido_pronto)
     
     #Função responsavel por criar uma lista com pedidos em espera
-    def createList(self, tipo: Literal["Comida","Bebida"]):
+    def createList(self, tipo: Literal["Cozinha","Bar"]):
         pedidos_area = [] 
         for pedido in self.pedidos:
             pedido_process = pedido.listaTipo(tipo)
@@ -138,7 +138,7 @@ class ListaTodosPedidos_Espera:
         return pedidos_area
     
     #returnar pedidos de um certo tipo
-    def getPedidoTipo(self, idx: int, tipo: Literal["Comida","Bebida"]):
+    def getPedidoTipo(self, idx: int, tipo: Literal["Cozinha","Bar"]):
         for pedido in self.pedidos:
             if pedido.contemTipo(tipo):#percorrer até chegar ao pedido do indice
                 if idx==0:
@@ -218,8 +218,8 @@ def route_activated_factory(*args: str):
         def wrapper_function(*args, **kwargs):
             #verificar se os caminhos estão ativos
             if len(condition) > 1:
-                path = request.path.replace("/lista/","")
-                if path in condition and app.config.get(path,False):
+                tipo = request.path.replace("/lista/","")
+                if tipo in condition and app.config["URLS"].get(tipo,False):
                     return original_function(*args, **kwargs)
             else:
                 if app.config.get(condition[0],False):
@@ -267,15 +267,15 @@ def servico():
     nome = session["username"]
     #retornar html
     if request.method == "GET":
-        return render_template("fazerPedido.html",nome=nome,urls_ativos=[app.config["Comida"],app.config["Bebida"],app.config["QrCode"]],opcoes_validas=app.config["MENU_NAME"],preco_opcoes=app.config["MENU_PRICE"],pre_def=[[],[],[]])
+        return render_template("fazerPedido.html",nome=nome,urls_ativos=app.config["URLS"],opcoes_validas=app.config["MENU_NAME"],preco_opcoes=app.config["MENU_PRICE"])
     elif request.method == "POST":
         #tentar guardar pedido em espera
         if guardado:=app.config["PEDIDOS_ESPERA"].add(request.form,nome):
             #atulizar pontos
-            if "Comida" in request.form.getlist('tip[]'):
-                handle_updateEspera("Comida")
-            if "Bebida" in request.form.getlist('tip[]'):
-                handle_updateEspera("Bebida")
+            if "Cozinha" in request.form.getlist('tip[]'):
+                handle_updateEspera("Cozinha")
+            if "Bar" in request.form.getlist('tip[]'):
+                handle_updateEspera("Bar")
         return jsonify({'suc':guardado,'redirect':url_for('confirmar')})
 
 #rota janela confirmação de envio de pedido
@@ -323,12 +323,12 @@ def QrCode():
 @app.route("/pedido-automatico", methods=['GET'])
 @route_activated_factory("QrCode")
 def pedidoAutomatico():
-    return render_template("fazerPedido.html",urls_ativos=[app.config["URLS"]["cozinha"],app.config["URLS"]["bar"],app.config["URLS"]["QrCode"]],opcoes_validas=app.config["MENU_NAME"],preco_opcoes=app.config["MENU_PRICE"],pre_def=[[],[],[]])
+    return render_template("fazerPedido.html",urls_ativos=app.config["URLS"],opcoes_validas=app.config["MENU_NAME"],preco_opcoes=app.config["MENU_PRICE"])
 
 #rota com os pontos onde são recebidos os pedidos
-@app.route('/lista/Comida', methods=['GET', 'PUT'])
-@app.route('/lista/Bebida', methods=['GET', 'PUT'])
-@route_activated_factory("Comida","Bebida")
+@app.route('/lista/Cozinha', methods=['GET', 'PUT'])
+@app.route('/lista/Bar', methods=['GET', 'PUT'])
+@route_activated_factory("Cozinha","Bar")
 @login_required(True)
 def listaCeB():
     tipo = request.path.replace("/lista/",'')

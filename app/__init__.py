@@ -11,12 +11,6 @@ import os.path
 import json
 
 
-def atualizarRotas(dicionario: dict) -> None:
-    app.config["Comida"] = dicionario.get("cozinha", False)
-    app.config["Bebida"] = dicionario.get("bar", False)
-    app.config["QrCode"] = dicionario.get("QrCode", False)
-
-
 app = Flask(__name__)
 app.config['async_mode'] = 'gevent'
 app.config['SECRET_KEY'] = get_secret_key()
@@ -25,18 +19,18 @@ app.config['CACHE_KEY_PREFIX'] = 'file_'  # Prefixo para chaves de cache
 app.config['SESSION_REFRESH_EACH_REQUEST'] = True
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=5)
 app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config["MAX_PASSWORD_TRIES_PER_MINUTE"] = 10
 
 cache = Cache(app)
 
 socketio = SocketIO(app, async_mode="gevent", cors_allowed_origins="*")
+# Inicializar variaveis
+app.config["URLS"] = {}
 app.config["USERS"] = []
+app.config["PASSWORD"] = ""
+app.config["PASSWORD_TRIES"] = {}
 app.config["MENU_NAME"] = [[],[]]
 app.config["MENU_PRICE"] = [[],[]]
-atualizarRotas({})
-
-app.config["PASSWORD"] = ""
-app.config["MAX_PASSWORD_TRIES_PER_MINUTE"] = 10
-app.config["PASSWORD_TRIES"] = {}
 
 def run_app(config_server) -> Callable:
     config_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))+"\\config\\"
@@ -48,8 +42,8 @@ def run_app(config_server) -> Callable:
     except FileNotFoundError:
         with open(config_path+"users.txt", 'w',encoding="utf-8"): pass
     
-    app.config["USERS"].append("cozinha")
-    app.config["USERS"].append("bar")
+    app.config["USERS"].append("Cozinha")
+    app.config["USERS"].append("Bar")
     try:
         with open(config_path+"menu.json", 'r+',encoding="utf-8") as m:
             menu = json.load(m)
@@ -68,8 +62,7 @@ def run_app(config_server) -> Callable:
         
     else:
         domain = "pass/Word"
-        
-        
+    
     host = config_server.host
     port = config_server.port
     loop = 0
@@ -79,8 +72,7 @@ def run_app(config_server) -> Callable:
             loop = 1
     if not loop:
         config_server.final = 1
-    atualizarRotas(config_server.access)
-    
+    app.config["URLS"] = config_server.access
     app.config["PASSWORD"] = get_password(domain)
     config_server.password = app.config["PASSWORD"]
     createUserNamespace("/atualizarProntos",app.config["USERS"])
@@ -94,10 +86,10 @@ def createUserNamespace(basic_namespace: str, user_list: List[str]) -> None:
         socketio.on_namespace(routes.AtualizarPagina(basic_namespace+"/"+user))
 
 def createListNamespace(basic_namespace: str) -> None:
-    if app.config["Comida"]:
-        socketio.on_namespace(routes.AtualizarPagina(basic_namespace+"/Comida"))
-    if app.config["Bebida"]:
-        socketio.on_namespace(routes.AtualizarPagina(basic_namespace+"/Bebida"))
+    if app.config["URLS"]["Cozinha"]:
+        socketio.on_namespace(routes.AtualizarPagina(basic_namespace+"/Cozinha"))
+    if app.config["URLS"]["Bar"]:
+        socketio.on_namespace(routes.AtualizarPagina(basic_namespace+"/Bar"))
         
 app.config["PEDIDOS_ESPERA"] = routes.ListaTodosPedidos_Espera()
 app.config["PEDIDOS_PRONTOS"] = routes.ListaTodosPedidos_Prontos()

@@ -753,8 +753,8 @@ class ConfigServer:
         self.port = config["port"]
 
         #Urls Acessiveis
-        self.access["cozinha"] = config["enable_Cozinha"]
-        self.access["bar"] = config["enable_Bar"]
+        self.access["Cozinha"] = config["enable_Cozinha"]
+        self.access["Bar"] = config["enable_Bar"]
         self.access["QrCode"] = config["enable_QrCode"]
     
     #Obter Full Url
