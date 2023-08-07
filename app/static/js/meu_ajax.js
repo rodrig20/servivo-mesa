@@ -1,6 +1,6 @@
 var r = 0;
 
-function addRow(c,opcoes,preco) {
+function addRow(opcoes,preco,tipo,content) {
     document.getElementById("titulo").style.display = "table"
     var table = document.getElementById("tabela");
     var row = table.insertRow(-1);
@@ -9,36 +9,35 @@ function addRow(c,opcoes,preco) {
     var cell2 = row.insertCell(1);
     var cell3 = row.insertCell(2);
     var cell4 = row.insertCell(3);
-    var p;
-    var c;
-    if (c == 'c') {
-        p = 'Cozinha';
-        c = '#1ea831';
-        var my_opcoes = opcoes[0];
-        var my_preco = preco[0];
+    if (tipo == 'Cozinha') {
+        cor = '#1ea831'
+        var opcoes_tipo = opcoes[0]
+        var preco_tipo = preco[0];
     } else {
-        p = 'Bar'
-        c = '#292b94';
-        var my_opcoes = opcoes[1];
-        var my_preco = preco[1];
+        cor = '#292b94'
+        var opcoes_tipo = opcoes[1]
+        var preco_tipo = preco[1];
     }
-    cell1.innerHTML = "<input type='number' style='border: 3px solid " + c + ";' id='quantity' class='quantity' min='1' oninput='validarInteiro(this),calcular_preco()'>";
-    cell2.innerHTML = "<select style='border: 3px solid " + c + ";' id='pedido' class='pedido' onchange='calcular_preco()'><option selected disabled hidden value=''></option></select>";
+    cell1.innerHTML = "<input type='number' " + (content !== undefined ? "value='" + content[0] + "'" : "") + " style='border: 3px solid " + cor + ";' id='quantity' class='quantity' min='1' oninput='validarInteiro(this), calcular_preco()'>";
+    cell2.innerHTML = "<select style='border: 3px solid " + cor + ";' id='pedido' class='pedido' onchange='calcular_preco()'><option selected disabled hidden value=''></option></select>";
     cell3.innerHTML = "<input type='button' id='removerPedido' onclick='removerPedido(" + r + ")' value='&times;'>"
-    cell4.innerHTML = "<input type='hidden' class='tipo' value='" + p + "'>"
+    cell4.innerHTML = "<input type='hidden' class='tipo' value='" + tipo + "'>"
     cell1.className = 'quantiTable';
     cell2.className = 'pedidoTable';
     // Adicionar as opções válidas ao select
     var select = cell2.getElementsByTagName("select")[0];
-    for (let i = 0; i < my_opcoes.length; i++) {
+    for (let i = 0; i < opcoes_tipo.length; i++) {
         var option = document.createElement("option");
-        option.text = my_opcoes[i];
-        option.value = my_preco[i];
+        option.text = opcoes_tipo[i];
+        option.value = preco_tipo[i];
         select.add(option);
+        if (content !== undefined && opcoes_tipo[i] === content[1]) {
+            select.selectedIndex = i + 1;
+          }
     }
 
     r++;
-};
+}
 
 function calcular_preco(){
     var elements = document.getElementsByClassName("pedido")
@@ -51,45 +50,6 @@ function calcular_preco(){
     preco_text.textContent = preco_final.toFixed(2)
     
     
-}
-
-function addPreSetRow(opcoes,preco,q,p,t){
-    document.getElementById("titulo").style.display = "table"
-    var table = document.getElementById("tabela");
-    var row = table.insertRow(-1);
-    row.setAttribute("id",r);
-    var cell1 = row.insertCell(0);
-    var cell2 = row.insertCell(1);
-    var cell3 = row.insertCell(2);
-    var cell4 = row.insertCell(3);
-    if (t == 'Cozinha') {
-        c = '#1ea831'
-        var my_opcoes = opcoes[0]
-        var my_preco = preco[0];
-    } else {
-        c = '#292b94'
-        var my_opcoes = opcoes[1]
-        var my_preco = preco[1];
-    }
-    cell1.innerHTML = "<input type='number' value="+q+" style='border: 3px solid " + c + ";' id='quantity' class='quantity' min='1' oninput='calcular_preco();validarInteiro(this)'>";
-    cell2.innerHTML = "<select style='border: 3px solid " + c + ";' id='pedido' class='pedido' onchange='calcular_preco()'><option selected disabled hidden value=''></option></select>";
-    cell3.innerHTML = "<input type='button' id='removerPedido' onclick='removerPedido(" + r + ")' value='&times;'>"
-    cell4.innerHTML = "<input type='hidden' class='tipo' value='" + t + "'>"
-    cell1.className = 'quantiTable';
-    cell2.className = 'pedidoTable';
-    var select = cell2.getElementsByTagName("select")[0];
-    for (let i = 0; i < my_opcoes.length; i++) {
-        var option = document.createElement("option");
-        option.text = my_opcoes[i];
-        option.value = my_preco[i];
-        select.add(option);
-      
-        if (my_opcoes[i] === p) {
-          select.selectedIndex = i + 1;
-        }
-    }
-    
-    r++;
 }
 
 function validarInteiro(input) {
