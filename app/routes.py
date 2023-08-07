@@ -222,7 +222,7 @@ def route_activated_factory(*args: str):
                 if tipo in condition and app.config["URLS"].get(tipo,False):
                     return original_function(*args, **kwargs)
             else:
-                if app.config.get(condition[0],False):
+                if app.config["URLS"].get(condition[0],False):
                     return original_function(*args, **kwargs)
             abort(404)
         return wrapper_function
@@ -358,10 +358,10 @@ def login():
         user_password = request.form['pass']
         time = datetime.timestamp(datetime.now())
         #Primeiro Login
-        if username not in app.config["PASSWORD_TRIES"] or (app.config["PASSWORD_TRIES"][username][-1] < 0 and -app.config["PASSWORD_TRIES"][username][-1] < time):
+        if username not in app.config["PASSWORD_TRIES"] or (app.config["PASSWORD_TRIES"][username] != [] and app.config["PASSWORD_TRIES"][username][-1] < 0 and -app.config["PASSWORD_TRIES"][username][-1] < time):
             app.config["PASSWORD_TRIES"][username] = []
         # Verificar expiração de alguns tempos
-        elif app.config["PASSWORD_TRIES"][username][-1] >= 0:   
+        elif app.config["PASSWORD_TRIES"][username] != [] and app.config["PASSWORD_TRIES"][username][-1] >= 0:   
             for e in range(len(app.config["PASSWORD_TRIES"][username])-1,0,-1):
                 if app.config["PASSWORD_TRIES"][username][e] > time:
                     app.config["PASSWORD_TRIES"][username].pop(-1)
@@ -373,8 +373,10 @@ def login():
                 app.config["PASSWORD_TRIES"][username] = []
                 session["username"] = username
                 session.permanent = True
-                
-                return jsonify({'suc':1,'redirect':url_for('servico')})
+                if username == "Cozinha" or username == "Bar":
+                    return jsonify({'suc':1,'redirect':"/lista/"+username})
+                else:
+                    return jsonify({'suc':1,'redirect':url_for('servico')})
             #se não for permitido acrescentar o tempo
             else:  
                 if len(app.config["PASSWORD_TRIES"][username]) < app.config["MAX_PASSWORD_TRIES_PER_MINUTE"]:
