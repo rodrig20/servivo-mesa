@@ -1,5 +1,6 @@
 from engineio.async_drivers import gevent
 from app.password import get_secret_key, get_password
+from config.config import ConfigServer
 from flask_socketio import SocketIO
 from typing import List, Callable
 from flask_caching import Cache
@@ -7,8 +8,6 @@ from datetime import timedelta
 from threading import Thread
 from flask import Flask
 from .loophole import *
-import os.path
-import json
 
 
 app = Flask(__name__)
@@ -32,30 +31,21 @@ app.config["PASSWORD_TRIES"] = {}
 app.config["MENU_NAME"] = [[],[]]
 app.config["MENU_PRICE"] = [[],[]]
 
-def run_app(config_server) -> Callable:
-    config_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))+"\\config\\"
-    try:
-        with open(config_path+"users.txt", 'r+',encoding="utf-8") as u:
-            users = u.readlines()
-        for user in users:
-            app.config["USERS"].append(user[:-1])  
-    except FileNotFoundError:
-        with open(config_path+"users.txt", 'w',encoding="utf-8"): pass
+def run_app(config_server: ConfigServer) -> Callable:
+    users, menu, _ = config_server.get_info()
+    
+    for user in users:
+        app.config["USERS"].append(user[:-1])
     
     app.config["USERS"].append("Cozinha")
     app.config["USERS"].append("Bar")
-    try:
-        with open(config_path+"menu.json", 'r+',encoding="utf-8") as m:
-            menu = json.load(m)
-        for name, price in menu["Comida"].items():
-            app.config["MENU_NAME"][0].append(name)
-            app.config["MENU_PRICE"][0].append(price)
-        for name, price in menu["Bebida"].items():
-            app.config["MENU_NAME"][1].append(name)
-            app.config["MENU_PRICE"][1].append(price)
-            
-    except FileNotFoundError:
-        with open(config_path+"menu.json", 'w',encoding="utf-8"): pass
+    
+    for name, price in menu["Comida"].items():
+        app.config["MENU_NAME"][0].append(name)
+        app.config["MENU_PRICE"][0].append(price)
+    for name, price in menu["Bebida"].items():
+        app.config["MENU_NAME"][1].append(name)
+        app.config["MENU_PRICE"][1].append(price)
     
     if "loophole" in config_server.type:
         domain = config_server.urls[config_server.type.index("loophole")]

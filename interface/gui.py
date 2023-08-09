@@ -4,11 +4,11 @@ from .Ui.ui_loadWidget import *
 from .Ui.ui_endWidget import *
 from .Ui.ui_tools import *
 from .qt_core import *
+from config.config import ConfigServer
 #Funções secundarias
 from typing import Literal
 import webbrowser
 import pyperclip
-import socket
 import qrcode
 import json
 import time
@@ -31,7 +31,7 @@ class StartWidget(QWidget):
         self.setupCustomUI()
         self.load_style()
         self.setupCommands()
-        self.load_all()
+        self.serverConfig.load_page(self)
         self.changed = False
     
     #Função responsavel por criar os botões do tipo Switch   
@@ -172,93 +172,10 @@ class StartWidget(QWidget):
         with open("interface/Ui/app.color","w",encoding="utf-8") as c: 
             c.write(self.ui.color_name.currentText()+"; "+self.ui.theme_name.currentText())
         self.load_style()
-    
-    #Carregar as informações
-    def load_all(self) -> None:
-        #Load Users
-        try:
-            with open(self.config_path+"users.txt", 'r+',encoding="utf-8") as u:
-                users = u.readlines()
-            for user in users:
-                self.ui.list_users.addItem(user[:-1])  
-        except FileNotFoundError:
-            with open(self.config_path+"users.txt", 'w',encoding="utf-8"): pass
-         
-        #Load Menu
-        try:
-            with open(self.config_path+"menu.json", 'r+',encoding="utf-8") as m:
-                menu = json.load(m)
-            for name, price in menu["Comida"].items():
-                line = MenuLine(name,price,self)
-                self.comida_box.insertWidget(0,line)
-            for name, price in menu["Bebida"].items():
-                line = MenuLine(name,price,self)
-                self.bebida_box.insertWidget(0,line)
-                
-        except FileNotFoundError:
-            with open(self.config_path+"menu.json", 'w',encoding="utf-8"): pass
-        
-        #Load Network
-        try:
-            with open(self.config_path+"network_access.json", 'r+',encoding="utf-8") as na:
-                dados = json.load(na)
-            self.enable_cozinha.setChecked(dados["enable_Cozinha"])
-            self.enable_bar.setChecked(dados["enable_Bar"])
-            self.enable_QrCode.setChecked(dados["enable_QrCode"])
-            self.enable_local.setChecked(dados["enable_local"])
-            self.enable_loophole.setChecked(dados["enable_loophole"])
-            if dados["domain"] != self.ui.domain_name.placeholderText():
-                self.ui.domain_name.setText(dados["domain"])
-            if str(dados["port"]) != self.ui.port_number.placeholderText():
-                self.ui.port_number.setText(str(dados["port"]))
-        except FileNotFoundError:
-            with open(self.config_path+"network_access.json", 'w',encoding="utf-8"): pass
                  
     def save_all(self) -> None:
-        #Save Users
-        with open(self.config_path+"users.txt","w",encoding="utf-8") as u:
-            for i in range(self.ui.list_users.count()):
-                u.write((self.ui.list_users.item(i).text())+"\n")
-                
-        #Save Menu
-        menu = {"Comida":{},"Bebida":{}}
-        for line in self.ui.scroll_comida.findChildren(MenuLine):
-            nome = line["name"]
-            price = line["price"]
-            menu["Comida"][nome] = price
-        for line in self.ui.scroll_bebida.findChildren(MenuLine):
-            nome = line["name"]
-            price = line["price"]
-            menu["Bebida"][nome] = price
-        
-        with open(self.config_path+"menu.json","w",encoding="utf-8") as m:
-            json.dump(menu, m,indent=4)
-        
-        #save network and access 
-        network_access_Config = {}
-        network_access_Config["enable_Cozinha"] = self.enable_cozinha.isChecked()
-        network_access_Config["enable_Bar"] = self.enable_bar.isChecked()
-        network_access_Config["enable_QrCode"] = self.enable_QrCode.isChecked()
-        network_access_Config["enable_local"] = self.enable_local.isChecked()
-        network_access_Config["enable_loophole"] = self.enable_loophole.isChecked()
-        
-        domain = self.ui.domain_name.text().strip().replace(" ","-").lower()
-        if domain == '':
-            domain = "dominio-de-teste"
-        network_access_Config["domain"] = domain
-        port = self.ui.port_number.text()
-        if port == '':
-            port = "8080"
-        
-        port = int(port)
-        if port > 65535 or port < 1:
-            port = 8080
-        network_access_Config["port"] = int(port)
-        with open(self.config_path+"network_access.json","w",encoding="utf-8") as na:
-            json.dump(network_access_Config, na,indent=4)     
-        
-        #Save server configs
-        self.serverConfig.update(network_access_Config)
+        #Save
+        self.serverConfig.save_config(self)
         self.changed = False
     
     #Função ativa sempre que há redimensionamento  
@@ -723,58 +640,7 @@ class EndWidget(QWidget):
         if event != None:
             return super().resizeEvent(event)
 
-#Class para configurar servidor
-class ConfigServer:
-    def __init__(self):
-        self.final = 0
-        self.run_loophole = 1
-    
-    #Atulizar as configurações
-    def update(self,config):
-        self.urls = []
-        self.type = []
-        self.access = {}
-        #Loophole
-        if config["enable_loophole"]:
-            self.urls.append(config["domain"])
-            self.type.append("loophole")
-            self.host = "localhost"
-        #Acesso dentro da rede
-        if config["enable_local"]:
-            self.urls.append(socket.gethostbyname(socket.gethostname()))
-            self.type.append("same_network")
-            self.host = "0.0.0.0"
-        
-        #Acesso apenas na maquina local     
-        if not config["enable_loophole"] and not config["enable_local"]:
-            self.urls.append("127.0.0.1")
-            self.type.append("local")
-            self.host = "localhost"
-        self.port = config["port"]
 
-        #Urls Acessiveis
-        self.access["Cozinha"] = config["enable_Cozinha"]
-        self.access["Bar"] = config["enable_Bar"]
-        self.access["QrCode"] = config["enable_QrCode"]
-    
-    #Obter Full Url
-    def getUrl(self,idx):
-        url = self.urls[idx]
-        type = self.type[idx]
-        
-        if type == "loophole":
-            url = f"https://{url}.loophole.site"
-        elif type == "same_network":
-            url = f"http://{url}"
-            if self.port != 80:
-                url += ":"+str(self.port)     
-        else:
-            url = f"http://127.0.0.1"
-            if self.port != 80:
-                url += ":"+str(self.port)
-        return url
-
-        
 #Class Worker
 class Worker(QThread):
     finished = Signal()  # Sinal para indicar que a tarefa foi concluída
@@ -805,7 +671,7 @@ class MainWindow(QMainWindow):
         self.setWindowIcon(QIcon(".\\interface\\Ui\\images\\icon.ico"))
         self.style_sheet = self.getStyleSheet()
         self.function = function
-        self.config = ConfigServer()
+        self.config = ConfigServer(MenuLine)
         self.janelas = QStackedWidget(self)
         self.start_window = StartWidget(self.style_sheet, self.config)
         self.load_window = LoadingWidget(self.style_sheet)
