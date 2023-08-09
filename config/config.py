@@ -90,7 +90,7 @@ class ConfigServer:
         try:
             with open(self.config_path+"users.txt", 'r+',encoding="utf-8") as u:
                 users = u.readlines()
-        except FileNotFoundError:
+        except (FileNotFoundError, json.decoder.JSONDecodeError):
             with open(self.config_path+"users.txt", 'w',encoding="utf-8"): 
                 users = []
                 
@@ -99,16 +99,16 @@ class ConfigServer:
             with open(self.config_path+"menu.json", 'r+',encoding="utf-8") as m:
                 menu = json.load(m)
         
-        except FileNotFoundError:
+        except (FileNotFoundError, json.decoder.JSONDecodeError):
             with open(self.config_path+"menu.json", 'w',encoding="utf-8"): 
-                menu = {"Comida":{"":""},"Bebida":{"":""}}
+                menu = {"Comida":{},"Bebida":{}}
                 
         
         #Load Network
         try:
             with open(self.config_path+"network_access.json", 'r+',encoding="utf-8") as na:
                 network = json.load(na)
-        except FileNotFoundError:
+        except (FileNotFoundError, json.decoder.JSONDecodeError):
             with open(self.config_path+"network_access.json", 'w',encoding="utf-8"):
                 network = {"enable_Cozinha":1, "enable_Bar":0, "enable_QrCode":0, "enable_local":0, "enable_loophole": 0, "domain":"dominio-de-teste", "port":"8080"}
         

@@ -24,21 +24,25 @@ if __name__ == "__main__":
         import os
         
         config = ConfigServer()
-        with open(config.config_path+"network_access.json") as na:
-            info = json.load(na)
-        config.prepare_config(info)
-        fun = run_app(config)
-        print(config.password)
-        
-        thread = Thread(target=fun)
-        thread.start()
-        input("-> Enter para Parar \n")
-        if "loophole" in config.type:
-            config.run_loophole = 0
-            while config.run_loophole != 2:
-                time.sleep(0.1)
-                    
-        os.kill(os.getpid(), signal.SIGINT)   
+        try:
+            with open(config.config_path+"network_access.json") as na:
+                info = json.load(na)
+        except (FileNotFoundError, json.decoder.JSONDecodeError):
+            print("Não existem configurações feitas!")
+        else:
+            config.prepare_config(info)
+            fun = run_app(config)
+            print(config.password)
+            
+            thread = Thread(target=fun)
+            thread.start()
+            input("-> Enter para Parar \n")
+            if "loophole" in config.type:
+                config.run_loophole = 0
+                while config.run_loophole != 2:
+                    time.sleep(0.1)
+                        
+            os.kill(os.getpid(), signal.SIGINT)   
         
     else:
         start_window(run_app)
