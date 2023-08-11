@@ -163,15 +163,9 @@ h1 {
     line-height: 93px; /* Defina o line-height igual à altura do botão */
     
 }
-/*
-#verPedidos {
-    background-color: green;
-    color:white;
-    width: 100%;
-    font-size: 100px;
-}*/
 
-#voltar_cliente, #voltar_servico{
+
+#voltar_cliente, #voltar_servico, #voltar_menu{
     background-color: rgb(255, 0, 60);
     color:white;
     width: 100%;
@@ -198,13 +192,12 @@ h1 {
     font-size: 65px;
 }
 
-/*
 
 #menu {
     background-color: blue;
-    font-size: 65pfx;
+    font-size: 65px;
 }
-*/
+
 .coluna {
     flex: 1;
     order: -1;
