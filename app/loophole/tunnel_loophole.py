@@ -70,7 +70,7 @@ def user_agent():
     return f"loophole-cli/development-unknown ({platform.system()}/{platform.machine()})"
 
 def get_refresh_token():
-    tokens_location = os.path.join(f"C:\\Users\\{os.getlogin()}", ".loophole", "tokens.json")
+    tokens_location = get_local_storage_file("tokens.json", "")
 
     try:
         with open(tokens_location, 'r') as tokens_file:
@@ -203,7 +203,7 @@ def PollForToken(device_code, interval):
 
 
 def save_token(token):
-    tokens_location = os.path.join(f"C:\\Users\\{os.getlogin()}", ".loophole", "tokens.json")
+    tokens_location = get_local_storage_file("tokens.json", "")
 
     token_data = json.dumps(token)
     try:
