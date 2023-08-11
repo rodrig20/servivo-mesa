@@ -1,0 +1,14 @@
+PySide6
+Flask
+flask-socketio
+flask_caching
+pyperclip
+qrcode
+gevent
+psutil
+wmi
+requests
+paramiko
+Pillow
+gevent-websocket
+pyinstaller
