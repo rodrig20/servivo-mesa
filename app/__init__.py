@@ -8,7 +8,12 @@ from datetime import timedelta
 from threading import Thread
 from flask import Flask
 from .loophole import *
+from PIL import Image
+import os
 
+def transform_to_png(image_path):
+    im = Image.open(image_path)
+    im.save(r"app\static\images\Menu.png")
 
 app = Flask(__name__)
 app.config['async_mode'] = 'gevent'
@@ -46,6 +51,12 @@ def run_app(config_server: ConfigServer) -> Callable:
     for name, price in menu["Bebida"].items():
         app.config["MENU_NAME"][1].append(name)
         app.config["MENU_PRICE"][1].append(price)
+    
+    file_path = menu["Menu_Img_File"]
+    if file_path and os.path.exists(file_path):
+        transform_to_png(file_path)
+    elif os.path.exists(r"app\static\images\Menu.png"):
+        os.remove(r"app\static\images\Menu.png")
     
     if "loophole" in config_server.type:
         domain = config_server.urls[config_server.type.index("loophole")]

@@ -1,15 +1,25 @@
+# -*- coding: utf-8 -*-
+
+################################################################################
+## Form generated from reading UI file 'endWidgetsLiMLn.ui'
+##
+## Created by: Qt User Interface Compiler version 6.5.1
+##
+## WARNING! All changes made in this file will be lost when recompiling UI file!
+################################################################################
+
 from ..qt_core import *
 
 class Ui_StartWidget(object):
-    def setupUi(self, MainWidget):
-        if not MainWidget.objectName():
-            MainWidget.setObjectName(u"MainWidget")
-        MainWidget.setWindowTitle(u"")
-        self.verticalLayout_15 = QVBoxLayout(MainWidget)
+    def setupUi(self, StartWidget):
+        if not StartWidget.objectName():
+            StartWidget.setObjectName(u"StartWidget")
+        StartWidget.setWindowTitle(u"")
+        self.verticalLayout_15 = QVBoxLayout(StartWidget)
         self.verticalLayout_15.setSpacing(0)
         self.verticalLayout_15.setObjectName(u"verticalLayout_15")
         self.verticalLayout_15.setContentsMargins(0, 0, 0, 0)
-        self.mainFrame = QFrame(MainWidget)
+        self.mainFrame = QFrame(StartWidget)
         self.mainFrame.setObjectName(u"mainFrame")
         self.mainFrame.setStyleSheet(u"")
         self.mainFrame.setFrameShape(QFrame.StyledPanel)
@@ -398,7 +408,7 @@ class Ui_StartWidget(object):
         self.comida_list.setWidgetResizable(True)
         self.scroll_comida = QWidget()
         self.scroll_comida.setObjectName(u"scroll_comida")
-        self.scroll_comida.setGeometry(QRect(0, 0, 98, 28))
+        self.scroll_comida.setGeometry(QRect(0, 0, 516, 82))
         self.comida_list.setWidget(self.scroll_comida)
 
         self.verticalLayout_7.addWidget(self.comida_list)
@@ -468,13 +478,37 @@ class Ui_StartWidget(object):
         self.bebida_list.setWidgetResizable(True)
         self.scroll_bebida = QWidget()
         self.scroll_bebida.setObjectName(u"scroll_bebida")
-        self.scroll_bebida.setGeometry(QRect(0, 0, 98, 28))
+        self.scroll_bebida.setGeometry(QRect(0, 0, 516, 82))
         self.bebida_list.setWidget(self.scroll_bebida)
 
         self.verticalLayout_10.addWidget(self.bebida_list)
 
         self.tabs_page.addTab(self.bebida_tab, "")
         self.tabs_page.setTabText(self.tabs_page.indexOf(self.bebida_tab), u"Bebida")
+        self.menu_tab = QWidget()
+        self.menu_tab.setObjectName(u"menu_tab")
+        self.verticalLayout_17 = QVBoxLayout(self.menu_tab)
+        self.verticalLayout_17.setObjectName(u"verticalLayout_17")
+        self.choose_menu = QPushButton(self.menu_tab)
+        self.choose_menu.setObjectName(u"choose_menu")
+        self.choose_menu.setMinimumSize(QSize(150, 0))
+        self.choose_menu.setFont(font3)
+        self.choose_menu.setCursor(QCursor(Qt.ArrowCursor))
+        self.choose_menu.setText(u"Escolher Imagem do Menu")
+
+        self.verticalLayout_17.addWidget(self.choose_menu)
+
+        self.remove_Img = QPushButton(self.menu_tab)
+        self.remove_Img.setObjectName(u"remove_Img")
+        self.remove_Img.setMinimumSize(QSize(150, 0))
+        self.remove_Img.setFont(font3)
+        self.remove_Img.setCursor(QCursor(Qt.ArrowCursor))
+        self.remove_Img.setText(u"Remover Imagem do Menu")
+
+        self.verticalLayout_17.addWidget(self.remove_Img)
+
+        self.tabs_page.addTab(self.menu_tab, "")
+        self.tabs_page.setTabText(self.tabs_page.indexOf(self.menu_tab), u"Menu")
 
         self.verticalLayout_4.addWidget(self.tabs_page)
 
@@ -578,21 +612,21 @@ class Ui_StartWidget(object):
         self.verticalLayout_13.addWidget(self.frame_10)
 
         self.pages.addWidget(self.network_page)
-        self.page = QWidget()
-        self.page.setObjectName(u"page")
-        self.verticalLayout_8 = QVBoxLayout(self.page)
+        self.settings_page = QWidget()
+        self.settings_page.setObjectName(u"settings_page")
+        self.verticalLayout_8 = QVBoxLayout(self.settings_page)
         self.verticalLayout_8.setObjectName(u"verticalLayout_8")
-        self.settings_title = QLabel(self.page)
+        self.settings_title = QLabel(self.settings_page)
         self.settings_title.setObjectName(u"settings_title")
         self.settings_title.setFont(font1)
         self.settings_title.setStyleSheet(u"")
-        self.settings_title.setText(u"Rede da Aplica\u00e7\u00e3o")
+        self.settings_title.setText(u"Defini\u00e7\u00f5es")
         self.settings_title.setAlignment(Qt.AlignCenter)
         self.settings_title.setMargin(5)
 
         self.verticalLayout_8.addWidget(self.settings_title)
 
-        self.frame_11 = QFrame(self.page)
+        self.frame_11 = QFrame(self.settings_page)
         self.frame_11.setObjectName(u"frame_11")
         sizePolicy2.setHeightForWidth(self.frame_11.sizePolicy().hasHeightForWidth())
         self.frame_11.setSizePolicy(sizePolicy2)
@@ -683,7 +717,7 @@ class Ui_StartWidget(object):
 
         self.verticalLayout_8.addWidget(self.frame_11)
 
-        self.pages.addWidget(self.page)
+        self.pages.addWidget(self.settings_page)
 
         self.horizontalLayout.addWidget(self.pages)
 
@@ -723,7 +757,7 @@ class Ui_StartWidget(object):
         self.version_label.setMinimumSize(QSize(54, 0))
         self.version_label.setMaximumSize(QSize(54, 16777215))
         self.version_label.setStyleSheet(u"")
-        self.version_label.setText(u"v2.5")
+        self.version_label.setText(u"v2.2")
         self.version_label.setAlignment(Qt.AlignCenter)
 
         self.verticalLayout_14.addWidget(self.version_label)
@@ -752,18 +786,20 @@ class Ui_StartWidget(object):
         self.verticalLayout_15.addWidget(self.mainFrame)
 
 
-        self.retranslateUi(MainWidget)
+        self.retranslateUi(StartWidget)
 
-        self.pages.setCurrentIndex(1)
+        self.pages.setCurrentIndex(0)
         self.list_users.setCurrentRow(-1)
         self.tabs_page.setCurrentIndex(0)
         self.color_name.setCurrentIndex(0)
 
 
-        QMetaObject.connectSlotsByName(MainWidget)
+        QMetaObject.connectSlotsByName(StartWidget)
     # setupUi
 
-    def retranslateUi(self, MainWidget):
+    def retranslateUi(self, StartWidget):
+
+
         pass
     # retranslateUi
 

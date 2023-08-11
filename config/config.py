@@ -26,6 +26,7 @@ class ConfigServer:
             nome = line["name"]
             price = line["price"]
             menu["Bebida"][nome] = price
+        menu["Menu_Img_File"] = page.menu_file
         
         with open(self.config_path+"menu.json","w",encoding="utf-8") as m:
             json.dump(menu, m,indent=4)
@@ -44,7 +45,7 @@ class ConfigServer:
         port = page.ui.port_number.text()
         network_access_Config["port"] = port
         
-        with open(page.config_path+"network_access.json","w",encoding="utf-8") as na:
+        with open(self.config_path+"network_access.json","w",encoding="utf-8") as na:
             json.dump(network_access_Config, na,indent=4)
             
         self.prepare_config(network_access_Config)
@@ -101,7 +102,7 @@ class ConfigServer:
         
         except (FileNotFoundError, json.decoder.JSONDecodeError):
             with open(self.config_path+"menu.json", 'w',encoding="utf-8"): 
-                menu = {"Comida":{},"Bebida":{}}
+                menu = {"Comida":{},"Bebida":{},"Menu_Img_File":None}
                 
         
         #Load Network
@@ -127,6 +128,13 @@ class ConfigServer:
         for name, price in menu["Bebida"].items():
             line = self.menuline(name,price,page)
             page.bebida_box.insertWidget(0,line)
+        menu_path = menu["Menu_Img_File"]
+        if menu_path and os.path.exists(menu_path):
+            page.img.load_image(menu_path)
+            page.menu_file = menu_path
+        else:
+            page.menu_file = None
+            
         
         #Load Network
         page.enable_cozinha.setChecked(network["enable_Cozinha"])

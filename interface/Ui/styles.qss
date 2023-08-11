@@ -124,7 +124,7 @@ QTabBar
 {
     font: bold 17pt;
 }
-#comida_tab, #bebida_tab{
+#comida_tab, #bebida_tab, #menu_tab{
 	background-color: var(subwidget);
 }
 QTabWidget::tab-bar {
@@ -142,25 +142,31 @@ QTabBar::tab {
 
 QTabBar::tab:selected { 
   background: var(subwidget); 
-  border-top: 1px solid var(primary);
-  border-left: 1px solid var(primary);
-  border-right: 1px solid var(primary);
+  border-top: 2px solid var(primary);
+  border-left: 2px solid var(primary);
+  border-right: 2px solid var(primary);
 }
 QTabBar::tab:!selected { 
   background: #5c5e62; 
   color: #adadad;
   border-bottom: 1px solid var(primary);
+  border-left: 1px solid var(primary_variant);
+  border-right: 1px solid var(primary_variant);
 }
 
 QTabWidget::pane {border: 1px solid var(primary);top: -1px}
 
 
-#add_atend, #remove_atend, #remove_all_atend,#add_comida, #remove_comida, #add_bebida, #remove_bebida {
+#add_atend, #remove_atend, #remove_all_atend,#add_comida, #remove_comida, #add_bebida, #remove_bebida, #choose_menu, #remove_Img {
 	background-color: var(primary);
 	padding-left:10px;
 	padding-right:10px;
 	padding-top:2px;
 	padding-bottom:2px;
+}
+
+#menu_image {
+    background-color: var(backgroundWidget)
 }
 
 #save_all{
@@ -183,7 +189,7 @@ QComboBox{
  	color: var(text);
 	background-color:var(widget);
 }
- QComboBox::drop-down {
+QComboBox::drop-down {
     width: 20px;  /* ajuste o tamanho da caixa */
 }
 

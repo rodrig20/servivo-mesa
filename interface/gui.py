@@ -13,7 +13,6 @@ import qrcode
 import json
 import time
 import io
-import os
 
 #Widget da janela principal e suas funcionalidades
 class StartWidget(QWidget):
@@ -26,7 +25,6 @@ class StartWidget(QWidget):
         self.atual_page = None
         self.sideBar_compressed = 1
         self.btn_list = (self.ui.Home_sideBar,self.ui.Users_sideBar,self.ui.Menu_sideBar,self.ui.Access_sideBar,self.ui.Network_sideBar,self.ui.Settings_sideBar)
-        self.config_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))+"\\config\\"
         self.style_sheet =  style_sheet
         self.setupCustomUI()
         self.load_style()
@@ -55,8 +53,8 @@ class StartWidget(QWidget):
         self.ui.port_number.setValidator(QRegularExpressionValidator(QRegularExpression("[1-9]\\d*")))
         
         #Adicionar itens ao menu
-        #Comida
         self.price_validator = QRegularExpressionValidator(QRegularExpression(r"^(?:\d+|\d{1,3}(?:,\d{3})+)?(?:[.,]\d+)?$"))
+        #Comida
         self.ui.comida_price.setValidator(self.price_validator)
         self.comida_box = QVBoxLayout(self.ui.scroll_comida)
         self.comida_box.setObjectName(u"comida_box")
@@ -72,6 +70,10 @@ class StartWidget(QWidget):
         self.ui.bebida_list.setWidget(self.ui.scroll_bebida)
         self.beb_spacer = QSpacerItem(20, 20, QSizePolicy.Minimum, QSizePolicy.Expanding)
         self.bebida_box.addItem(self.com_spacer)
+        
+        #Menu
+        self.img = ImageMenu()
+        self.ui.verticalLayout_17.insertWidget(2, self.img)
     
     #Função responsavel por definir os comandos relaizados 
     def setupCommands(self) -> None:
@@ -109,6 +111,12 @@ class StartWidget(QWidget):
         self.ui.domain_name.textChanged.connect(lambda: setattr(self, 'changed', True))
         self.ui.theme_name.currentIndexChanged.connect(self.update_theme)
         self.ui.color_name.currentIndexChanged.connect(self.update_theme)
+        
+        #Add image
+        self.ui.choose_menu.clicked.connect(self.change_image)
+        
+        #Remove image
+        self.ui.remove_Img.clicked.connect(self.remove_image)
         
         #Action Buttons:
         self.ui.close_btn.clicked.connect(QCoreApplication.instance().quit)
@@ -212,9 +220,8 @@ class StartWidget(QWidget):
         self.ui.bebida_price.setFont(normal_font)
         self.ui.comida_price.setFont(normal_font)
         self.ui.bebida_name.setFont(normal_font)
-        self.ui.comida_name.setFont(normal_font)
-        
-        #self.ui.tabs_page.setStyleSheet("QTabWidget{font-size:"+"50"+"px;}")
+        self.ui.choose_menu.setFont(normal_font)
+        self.ui.remove_Img.setFont(normal_font)
 
         self.ui.bebida_price.setMinimumWidth(round(self.width() * 0.03/2+62))
         self.ui.comida_price.setMinimumWidth(round(self.width() * 0.03/2+62))
@@ -278,7 +285,6 @@ class StartWidget(QWidget):
         self.ui.color_name.setFont(big_font)
         self.ui.theme_name.setFont(big_font)
         self.ui.save_all.setFont(big_font)
-
         
         height_padding = round(self.width() * 0.02/2)
         for btn in self.btn_list:
@@ -310,7 +316,6 @@ class StartWidget(QWidget):
         self.atual_page = page_idx
         #atualizar o tamnho dos botões
         for btn in self.btn_list:
-            #btn.setStyleSheet(btn.styleSheet()+"QFrame{padding-top:"+ str(height_padding) +";padding-bottom:"+ str(height_padding) +"}")
             btn.setIconSize(QSize(round(self.width() * 0.05/2+40),round(self.width() * 0.01/2+40)))
     
     #animar no estilo SideBar
@@ -401,6 +406,19 @@ class StartWidget(QWidget):
         for item in children:
             self.changed = True
             item.deleteLater()
+            
+    def change_image(self):
+        file = self.img.set_image()
+        if file != "" and file != self.menu_file:
+            self.menu_file = file
+            self.changed = True
+    
+    def remove_image(self):
+        if self.menu_file:
+            self.changed = True
+            self.img.remove_image()
+        self.menu_file = None
+        
 
 #Janela de carregamento
 class LoadingWidget(QFrame):

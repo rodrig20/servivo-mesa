@@ -219,3 +219,61 @@ class MenuLine(QFrame):
             return self.ped_name.text()
         if key == "preco" or key == "price":
             return self.preco_name.text()
+
+class ImageMenu(QWidget):
+    def __init__(self):
+        super().__init__()
+
+        self.init_ui()
+
+    def init_ui(self):
+        self.setWindowTitle("Image Resizer")
+        self.setGeometry(100, 100, 800, 600)
+
+        self.scroll_area = QScrollArea()
+        self.label = QLabel()
+        self.scroll_area.setWidget(self.label)
+        self.scroll_area.setObjectName("menu_image")
+        self.scroll_area.setStyleSheet('QLabel{background-color:"transparent"}')
+        layout = QVBoxLayout()
+        layout.addWidget(self.scroll_area)
+
+        self.setLayout(layout)
+
+        self.image = None  # Store the loaded image
+
+    def set_image(self):
+        options = QFileDialog.Options()
+        options |= QFileDialog.ReadOnly
+        file_name, _ = QFileDialog.getOpenFileName(self, "Open Image File", "", "Images (*.png *.jpg *.jpeg *.bmp *.gif)", options=options)
+
+        self.load_image(file_name)
+                
+        return file_name
+
+    def load_image(self,file_name):
+        if file_name:
+            self.image = QImage(file_name)
+            if not self.image.isNull():
+                self.update_image()
+                
+        return file_name
+    
+    def update_image(self):
+        resized_image = self.image.scaledToWidth(self.width() - 30)
+        pixmap = QPixmap.fromImage(resized_image)
+        self.label.setPixmap(pixmap)
+        self.label.adjustSize()
+
+        self.scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+
+    def remove_image(self):
+        self.image = None
+        self.label.clear()
+        
+    def resizeEvent(self, event):
+        if self.image:
+            self.update_image()
+        return super().resizeEvent(event)
+    
