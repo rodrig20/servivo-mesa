@@ -560,6 +560,27 @@ function makeLogout(){
     window.location.replace($SCRIPT_ROOT + '/logout');
 }
 
+function ver_menu(){
+    if (nome)
+        window.location.replace($SCRIPT_ROOT + '/menu?page=servico');
+    else
+        window.location.replace($SCRIPT_ROOT + '/menu?page=cliente');
+}
+
+function voltar_menu() {
+    const url = new URL(window.location.href);
+    const params = new URLSearchParams(url.search);
+
+    const pageValue = params.get('page');
+
+    if (pageValue === "servico") {
+        window.location.replace($SCRIPT_ROOT + '/servico');
+    } else {
+        window.location.replace($SCRIPT_ROOT + '/pedido-automatico');
+    }
+    
+}
+
 $(function() {
     $('#send').click(enviar_pedido);
     $('#voltar_servico').click(voltar_servico);
@@ -568,4 +589,6 @@ $(function() {
     $('#scanQR').click(scanQR);
     $('#login').click(makeLogin);
     $('#logout').click(makeLogout);
+    $('#menu').click(ver_menu);
+    $('#voltar_menu').click(voltar_menu);
 });

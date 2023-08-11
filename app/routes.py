@@ -4,6 +4,7 @@ from typing import List, Tuple, Literal, Callable, Union, Optional
 from flask_socketio import Namespace, emit
 from datetime import datetime, timedelta
 from functools import wraps
+from os.path import exists
 #Coisas importantes para iniciar o servidor
 from app import app, socketio
 
@@ -344,6 +345,14 @@ def listaCeB():
         app.config["PEDIDOS_ESPERA"].tornarPronto(numero_pedido,numero_sub_pedido,tipo)
         handle_updateProntos(session["username"])
         return ''
+
+@app.route('/menu', methods=['GET'])
+def menu():
+    menu_img = "./app/static/images/Menu.png"
+    if exists(menu_img):
+        return render_template("menu.html")
+    else:
+        abort(404)
 
 #rota responsavel por autenticar o utilizador         
 @app.route('/login', methods=['GET', 'POST'])
