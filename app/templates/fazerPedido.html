@@ -108,6 +108,8 @@
         {% else %}
             <input class="button" type="submit" id="send" value="Criar QrCode">
         {% endif %}
-        <input class="button" type="submit" id="menu" value="Ver Menu">
+        {%if urls_ativos["Cozinha"]%}
+            <input class="button" type="submit" id="menu" value="Ver Menu">
+        {%endif%}
     </body>
 </html>
