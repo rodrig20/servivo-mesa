@@ -4,7 +4,6 @@ from typing import List, Tuple, Literal, Callable, Union, Optional
 from flask_socketio import Namespace, emit
 from datetime import datetime, timedelta
 from functools import wraps
-from os.path import exists
 #Coisas importantes para iniciar o servidor
 from app import app, socketio
 
@@ -151,8 +150,6 @@ class ListaTodosPedidos_Prontos:
     def __init__(self) -> None:
         self.pedidos: List[PedidoPronto] = []
     
-
-        
     #Adicionar de forma a juntar todos os pedidos do mesmo atendente
     def append(self, pedido: PedidoPronto):
         for ped in self.pedidos:
@@ -347,12 +344,9 @@ def listaCeB():
         return ''
 
 @app.route('/menu', methods=['GET'])
+@route_activated_factory("Menu_Img")
 def menu():
-    menu_img = "./app/static/images/Menu.png"
-    if exists(menu_img):
-        return render_template("menu.html")
-    else:
-        abort(404)
+    return render_template("menu.html")
 
 #rota responsavel por autenticar o utilizador         
 @app.route('/login', methods=['GET', 'POST'])

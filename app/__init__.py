@@ -53,14 +53,9 @@ def run_app(config_server: ConfigServer) -> Callable:
         app.config["MENU_PRICE"][1].append(price)
     
     file_path = menu["Menu_Img_File"]
-    if file_path and os.path.exists(file_path):
-        transform_to_png(file_path)
-    elif os.path.exists(r"app\static\images\Menu.png"):
-        os.remove(r"app\static\images\Menu.png")
     
     if "loophole" in config_server.type:
         domain = config_server.urls[config_server.type.index("loophole")]
-        
     else:
         domain = "pass/Word"
     
@@ -73,7 +68,17 @@ def run_app(config_server: ConfigServer) -> Callable:
             loop = 1
     if not loop:
         config_server.final = 1
+        
     app.config["URLS"] = config_server.access
+    if file_path and os.path.exists(file_path):
+        transform_to_png(file_path)
+        app.config["URLS"]["Menu_Img"] = True
+    elif os.path.exists(r"app\static\images\Menu.png"):
+        os.remove(r"app\static\images\Menu.png")
+        app.config["URLS"]["Menu_Img"] = False
+    else: 
+        app.config["URLS"]["Menu_Img"] = False
+    
     app.config["PASSWORD"] = get_password(domain)
     config_server.password = app.config["PASSWORD"]
     createUserNamespace("/atualizarProntos",app.config["USERS"])
