@@ -16,8 +16,9 @@ import io
 
 #Widget da janela principal e suas funcionalidades
 class StartWidget(QWidget):
-    def __init__(self,style_sheet: str, config: "ConfigServer") -> None:
+    def __init__(self, main_window: "MainWindow", style_sheet: str, config: "ConfigServer") -> None:
         super().__init__()
+        self.main_window = main_window
         self.ui = Ui_StartWidget() #Widget em si
         self.ui.setupUi(self) 
         #variaveis importantes
@@ -128,6 +129,7 @@ class StartWidget(QWidget):
         try:
             with open("interface/Ui/app.color", 'r+',encoding="utf-8") as c:
                 info = c.read().split("; ")
+                self.main_window.barTheme(info)
             
         except FileNotFoundError:
             with open("interface/Ui/app.color", 'w',encoding="utf-8"): pass
@@ -681,8 +683,9 @@ class Worker(QThread):
 
 # Janela principal
 class MainWindow(QMainWindow):
-    def __init__(self, function):
+    def __init__(self, app, function):
         super().__init__()
+        self.app = app
         # Configuração da janela
         self.setGeometry(200, 200, 1000, 500)
         self.setMinimumSize(910, 450)
@@ -692,7 +695,7 @@ class MainWindow(QMainWindow):
         self.function = function
         self.config = ConfigServer(MenuLine)
         self.janelas = QStackedWidget(self)
-        self.start_window = StartWidget(self.style_sheet, self.config)
+        self.start_window = StartWidget(self, self.style_sheet, self.config)
         self.load_window = LoadingWidget(self.style_sheet)
         self.end_window = EndWidget(self.style_sheet, self.config)
         self.setupCommands()
@@ -701,6 +704,19 @@ class MainWindow(QMainWindow):
         self.janelas.addWidget(self.end_window)
         self.setCentralWidget(self.janelas)
         self.show()
+        
+    def barTheme(self,info):
+        if info[1] == "Escuro":
+            palette = self.app.palette()
+            palette.setColor( QPalette.WindowText, Qt.white)
+            
+            self.app.setPalette(palette)
+        else:
+            palette = self.app.palette()
+            palette.setColor( QPalette.WindowText, Qt.black)
+            
+            self.app.setPalette(palette)
+        
         
     def closeEvent(self, event: QCloseEvent):
         if self.janelas.currentWidget() == self.start_window:
@@ -711,7 +727,7 @@ class MainWindow(QMainWindow):
                 dlg.setText("Deseja guardar as alterações feitas para posterior utilização?\nAs alterações não guardadas serão PERDIDAS.")
                 dlg.setStandardButtons(QMessageBox.Save | QMessageBox.Ignore | QMessageBox.Cancel)
                 dlg.setIcon(QMessageBox.Information)
-                dlg.setStyleSheet("QMessageBox{font-size:14px;margin-right:10px;margin-right:3px;}")
+                dlg.setStyleSheet("QMessageBox{font-size:14px;margin-right:10px;margin-right:3px;background:"+self.start_window.primary_variant_color+"} QPushButton{background:"+ self.start_window.widget_color+";color: "+self.start_window.text_color+"}")
                 button = dlg.exec()
                 if button == QMessageBox.Save:
                     self.start_window.save_all()

@@ -6,5 +6,5 @@ import sys
 #Abre a janela e recebe como argumento uma função a ser executada no final da mesma
 def start_window(fun):
     app = QApplication(sys.argv)
-    _win = MainWindow(fun)
+    _win = MainWindow(app,fun)
     sys.exit(app.exec())
