@@ -220,6 +220,7 @@ class StartWidget(QWidget):
         self.ui.bebida_price.setFont(normal_font)
         self.ui.comida_price.setFont(normal_font)
         self.ui.bebida_name.setFont(normal_font)
+        self.ui.comida_name.setFont(normal_font)
         self.ui.choose_menu.setFont(normal_font)
         self.ui.remove_Img.setFont(normal_font)
 

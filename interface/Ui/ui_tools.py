@@ -170,7 +170,7 @@ class MenuLine(QFrame):
     def __init__(self, name, price, parent=None):
         super().__init__(parent)
         self._parent = parent
-        self.setStyleSheet('QFrame{background-color:"transparent";border-bottom:2px solid #888888;}')
+        self.setStyleSheet('QFrame{background-color:"transparent";}')
         #font = QFont()
         #font.setPointSize(15)
         layout = QHBoxLayout(self)
@@ -199,10 +199,10 @@ class MenuLine(QFrame):
         self.deleteLater()
         
     def update_style(self,text_color):
-        self.setStyleSheet('color: '+text_color+';background-color:"transparent";border-bottom:2px solid #888888')
+        self.setStyleSheet('color: '+text_color+';background-color:"transparent";')
         
     def resizeEvent(self, event):
-        normal_font_size = 5  # Tamanho base da fonte
+        normal_font_size = 10  # Tamanho base da fonte
         # Calcula o novo tamanho da fonte com base na largura atual da janela
         new_normal_font_size = int(self.width() / 100) + normal_font_size
         # Configura a nova fonte
