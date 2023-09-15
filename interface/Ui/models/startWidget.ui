@@ -1539,7 +1539,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
                <string notr="true"/>
               </property>
               <property name="text">
-               <string notr="true">v2.2</string>
+               <string notr="true">v3.1</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignCenter</set>
