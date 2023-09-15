@@ -276,32 +276,3 @@ class ImageMenu(QWidget):
         if self.image:
             self.update_image()
         return super().resizeEvent(event)
-
-class QTitleBar(QFrame):
-    def __init__(self, parent: QWidget | None = None) -> None:
-        super().__init__(parent)
-
-        # Defina a altura desejada para a barra de título (por exemplo, 30 pixels).
-        self.setFixedHeight(25)
-
-        sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Maximum)
-        sizePolicy.setHorizontalStretch(0)
-        self.setSizePolicy(sizePolicy)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.sizePolicy().hasHeightForWidth())
-        
-    def mousePressEvent(self, event):
-        if event.button() == Qt.LeftButton:
-            self.dragging = True
-            self.offset = event.pos()
-
-    def mouseMoveEvent(self, event):
-        if self.dragging:
-            window = self.window()
-            if window:
-                window.move(event.globalPos() - self.offset)
-
-    def mouseReleaseEvent(self, event):
-        if event.button() == Qt.LeftButton:
-            self.dragging = False
-            self.offset = None
