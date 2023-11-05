@@ -1,10 +1,9 @@
 import ctypes
-ctypes.windll.user32.SetProcessDPIAware()
-
 from interface import start_window
 import argparse
-from app import *
+from app import run_app
 
+ctypes.windll.user32.SetProcessDPIAware()
 
 if __name__ == "__main__":
     # Criar um objeto ArgumentParser
@@ -25,7 +24,7 @@ if __name__ == "__main__":
         
         config = ConfigServer()
         try:
-            with open(config.config_path+"network_access.json") as na:
+            with open(config.config_path + "network_access.json") as na:
                 info = json.load(na)
         except (FileNotFoundError, json.decoder.JSONDecodeError):
             print("Não existem configurações feitas!")
@@ -42,7 +41,7 @@ if __name__ == "__main__":
                 while config.run_loophole != 2:
                     time.sleep(0.1)
                         
-            os.kill(os.getpid(), signal.SIGINT)   
+            os.kill(os.getpid(), signal.SIGINT)
         
     else:
         start_window(run_app)

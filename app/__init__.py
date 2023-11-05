@@ -1,4 +1,4 @@
-from engineio.async_drivers import gevent
+from engineio.async_drivers import (gevent)
 from app.password import get_secret_key, get_password
 from config.config import ConfigServer
 from flask_socketio import SocketIO
@@ -7,13 +7,15 @@ from flask_caching import Cache
 from datetime import timedelta
 from threading import Thread
 from flask import Flask
-from .loophole import *
+from .loophole import start_loophole
 from PIL import Image
 import os
+
 
 def transform_to_png(image_path):
     im = Image.open(image_path)
     im.save(r"app\static\images\Menu.png")
+
 
 app = Flask(__name__)
 app.config['async_mode'] = 'gevent'
@@ -33,8 +35,9 @@ app.config["URLS"] = {}
 app.config["USERS"] = []
 app.config["PASSWORD"] = ""
 app.config["PASSWORD_TRIES"] = {}
-app.config["MENU_NAME"] = [[],[]]
-app.config["MENU_PRICE"] = [[],[]]
+app.config["MENU_NAME"] = [[], []]
+app.config["MENU_PRICE"] = [[], []]
+
 
 def run_app(config_server: ConfigServer) -> Callable:
     users, menu, _ = config_server.get_info()
@@ -64,7 +67,7 @@ def run_app(config_server: ConfigServer) -> Callable:
     loop = 0
     for i in range(len(config_server.urls)):
         if config_server.type[i] == "loophole":
-            Thread(target=start_loophole,args=(config_server,port,i),daemon=True).start()
+            Thread(target=start_loophole, args=(config_server, port, i), daemon=True).start()
             loop = 1
     if not loop:
         config_server.final = 1
@@ -76,26 +79,30 @@ def run_app(config_server: ConfigServer) -> Callable:
     elif os.path.exists(r"app\static\images\Menu.png"):
         os.remove(r"app\static\images\Menu.png")
         app.config["URLS"]["Menu_Img"] = False
-    else: 
+    else:
         app.config["URLS"]["Menu_Img"] = False
     
     app.config["PASSWORD"] = get_password(domain)
     config_server.password = app.config["PASSWORD"]
-    createUserNamespace("/atualizarProntos",app.config["USERS"])
+    createUserNamespace("/atualizarProntos", app.config["USERS"])
     createListNamespace("/atualizarEspera")
-    return lambda: socketio.run(app,host=host,port=port)
+    return lambda: socketio.run(app, host=host, port=port)
+
 
 from app import routes
 
+
 def createUserNamespace(basic_namespace: str, user_list: List[str]) -> None:
     for user in user_list:
-        socketio.on_namespace(routes.AtualizarPagina(basic_namespace+"/"+user))
+        socketio.on_namespace(routes.AtualizarPagina(basic_namespace + "/" + user))
+
 
 def createListNamespace(basic_namespace: str) -> None:
     if app.config["URLS"]["Cozinha"]:
-        socketio.on_namespace(routes.AtualizarPagina(basic_namespace+"/Cozinha"))
+        socketio.on_namespace(routes.AtualizarPagina(basic_namespace + "/Cozinha"))
     if app.config["URLS"]["Bar"]:
-        socketio.on_namespace(routes.AtualizarPagina(basic_namespace+"/Bar"))
-        
+        socketio.on_namespace(routes.AtualizarPagina(basic_namespace + "/Bar"))
+
+
 app.config["PEDIDOS_ESPERA"] = routes.ListaTodosPedidos_Espera()
 app.config["PEDIDOS_PRONTOS"] = routes.ListaTodosPedidos_Prontos()

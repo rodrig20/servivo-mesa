@@ -1,11 +1,15 @@
-#Class Widgets utilizados na janela
-from .Ui.ui_startWidget import *
-from .Ui.ui_loadWidget import *
-from .Ui.ui_endWidget import *
-from .Ui.ui_tools import *
-from .qt_core import *
+# Class Widgets utilizados na janela
+from .Ui.ui_startWidget import Ui_StartWidget
+from .Ui.ui_endWidget import Ui_EndWindow
+from .Ui.ui_tools import QSwitchButton, ImageMenu, MenuLine, ClickableLabel
+from .qt_core import (QWidget, QVBoxLayout, QRegularExpressionValidator,
+                      QRegularExpression, QSizePolicy, QSpacerItem, QCoreApplication,
+                      QIcon, QFont, QTextCursor, QTextCharFormat, QSize, QPropertyAnimation,
+                      QEasingCurve, QFrame, QLabel, Qt, QTimer, QHBoxLayout, QPushButton,
+                      QImage, QPixmap, QThread, Signal, Slot, QMainWindow, QStackedWidget,
+                      QPalette, QCloseEvent, QMessageBox, QApplication)
 from config.config import ConfigServer
-#Funções secundarias
+# Funções secundarias
 from typing import Literal
 import webbrowser
 import pyperclip
@@ -14,48 +18,49 @@ import json
 import time
 import io
 
-#Widget da janela principal e suas funcionalidades
+
+# Widget da janela principal e suas funcionalidades
 class StartWidget(QWidget):
     def __init__(self, main_window: "MainWindow", style_sheet: str, config: "ConfigServer") -> None:
         super().__init__()
         self.main_window = main_window
-        self.ui = Ui_StartWidget() #Widget em si
-        self.ui.setupUi(self) 
-        #variaveis importantes
+        self.ui = Ui_StartWidget()  # Widget em si
+        self.ui.setupUi(self)
+        # variaveis importantes
         self.serverConfig = config
         self.atual_page = None
         self.sideBar_compressed = 1
-        self.btn_list = (self.ui.Home_sideBar,self.ui.Users_sideBar,self.ui.Menu_sideBar,self.ui.Access_sideBar,self.ui.Network_sideBar,self.ui.Settings_sideBar)
-        self.style_sheet =  style_sheet
+        self.btn_list = (self.ui.Home_sideBar, self.ui.Users_sideBar, self.ui.Menu_sideBar, self.ui.Access_sideBar, self.ui.Network_sideBar, self.ui.Settings_sideBar)
+        self.style_sheet = style_sheet
         self.setupCustomUI()
         self.load_style()
         self.setupCommands()
         self.serverConfig.load_page(self)
         self.changed = False
     
-    #Função responsavel por criar os botões do tipo Switch   
+    # Função responsavel por criar os botões do tipo Switch
     def setupCustomUI(self) -> None:
         # Botões de access
-        self.enable_cozinha = QSwitchButton("Ativar Pedidos para a Cozinha",self)
-        self.enable_bar = QSwitchButton("Ativar Pedidos para a Bar",self)
-        self.enable_QrCode = QSwitchButton("Ativar Pedidos por QrCode",self)
+        self.enable_cozinha = QSwitchButton("Ativar Pedidos para a Cozinha", self)
+        self.enable_bar = QSwitchButton("Ativar Pedidos para a Bar", self)
+        self.enable_QrCode = QSwitchButton("Ativar Pedidos por QrCode", self)
         self.access_layout = QVBoxLayout(self.ui.access_frame)
         self.access_layout.addWidget(self.enable_cozinha)
         self.access_layout.addWidget(self.enable_bar)
         self.access_layout.addWidget(self.enable_QrCode)
         
         # Botões de network
-        self.enable_local = QSwitchButton("Ativar Acesso dentro da Rede",self)
-        self.enable_loophole = QSwitchButton("Ativar Acesso fora da Rede",self)
+        self.enable_local = QSwitchButton("Ativar Acesso dentro da Rede", self)
+        self.enable_loophole = QSwitchButton("Ativar Acesso fora da Rede", self)
         
         self.enable_network_layout = QVBoxLayout(self.ui.enable_network_frame)
         self.enable_network_layout.addWidget(self.enable_local)
         self.enable_network_layout.addWidget(self.enable_loophole)
         self.ui.port_number.setValidator(QRegularExpressionValidator(QRegularExpression("[1-9]\\d*")))
         
-        #Adicionar itens ao menu
+        # Adicionar itens ao menu
         self.price_validator = QRegularExpressionValidator(QRegularExpression(r"^(?:\d+|\d{1,3}(?:,\d{3})+)?(?:[.,]\d+)?$"))
-        #Comida
+        # Comida
         self.ui.comida_price.setValidator(self.price_validator)
         self.comida_box = QVBoxLayout(self.ui.scroll_comida)
         self.comida_box.setObjectName(u"comida_box")
@@ -63,7 +68,7 @@ class StartWidget(QWidget):
         self.ui.comida_list.setWidget(self.ui.scroll_comida)
         self.com_spacer = QSpacerItem(20, 20, QSizePolicy.Minimum, QSizePolicy.Expanding)
         self.comida_box.addItem(self.com_spacer)
-        #Bebida
+        # Bebida
         self.ui.bebida_price.setValidator(self.price_validator)
         self.bebida_box = QVBoxLayout(self.ui.scroll_bebida)
         self.bebida_box.setObjectName(u"bebida_box")
@@ -72,16 +77,16 @@ class StartWidget(QWidget):
         self.beb_spacer = QSpacerItem(20, 20, QSizePolicy.Minimum, QSizePolicy.Expanding)
         self.bebida_box.addItem(self.com_spacer)
         
-        #Menu
+        # Menu
         self.img = ImageMenu()
         self.ui.verticalLayout_17.insertWidget(2, self.img)
     
-    #Função responsavel por definir os comandos relaizados 
+    # Função responsavel por definir os comandos relaizados
     def setupCommands(self) -> None:
         self.change_page(0)
         self.start_width = self.width()
         
-        #SideBar
+        # SideBar
         self.ui.Home_sideBar.clicked.connect(lambda: self.change_page(0))
         self.ui.Users_sideBar.clicked.connect(lambda: self.change_page(1))
         self.ui.Menu_sideBar.clicked.connect(lambda: self.change_page(2))
@@ -89,22 +94,22 @@ class StartWidget(QWidget):
         self.ui.Network_sideBar.clicked.connect(lambda: self.change_page(4))
         self.ui.Settings_sideBar.clicked.connect(lambda: self.change_page(5))
 
-        #Side Bar Toggle
+        # Side Bar Toggle
         self.ui.toggle_sideBar.clicked.connect(self.toggle_button)
         
-        #Add User Name to Valid Users
+        # Add User Name to Valid Users
         self.ui.add_atend.clicked.connect(self.add_user_name)
         
-        #Remove User Name of Valid Users
+        # Remove User Name of Valid Users
         self.ui.remove_atend.clicked.connect(self.remove_user_name)
         
-        #Remove All User Name of Valid Users
+        # Remove All User Name of Valid Users
         self.ui.remove_all_atend.clicked.connect(self.ui.list_users.clear)
 
         self.ui.add_comida.clicked.connect(lambda: self.add_menu_item("Comida"))
         self.ui.add_bebida.clicked.connect(lambda: self.add_menu_item("Bebida"))
         
-        #Remove Item of list
+        # Remove Item of list
         self.ui.remove_comida.clicked.connect(lambda: self.remove_all_menu_items("Comida"))
         self.ui.remove_bebida.clicked.connect(lambda: self.remove_all_menu_items("Bebida"))
         
@@ -113,36 +118,39 @@ class StartWidget(QWidget):
         self.ui.theme_name.currentIndexChanged.connect(self.update_theme)
         self.ui.color_name.currentIndexChanged.connect(self.update_theme)
         
-        #Add image
+        # Add image
         self.ui.choose_menu.clicked.connect(self.change_image)
         
-        #Remove image
+        # Remove image
         self.ui.remove_Img.clicked.connect(self.remove_image)
         
-        #Action Buttons:
-        self.ui.close_btn.clicked.connect(QCoreApplication.instance().quit)
+        # Action Buttons:
+        app = QCoreApplication.instance()
+        if app is not None:
+            self.ui.close_btn.clicked.connect(app.quit)
         self.ui.save_all.clicked.connect(self.save_all)
     
-    #Carrega todos os estilos para a página
-    def load_style(self) -> None:    
-        #le a cor e o tema definido
+    # Carrega todos os estilos para a página
+    def load_style(self) -> None:
+        # le a cor e o tema definido
         try:
-            with open("interface/Ui/app.color", 'r+',encoding="utf-8") as c:
+            with open("interface/Ui/app.color", 'r+', encoding="utf-8") as c:
                 info = c.read().split("; ")
                 self.main_window.barTheme(info)
             
         except FileNotFoundError:
-            with open("interface/Ui/app.color", 'w',encoding="utf-8"): pass
-        # Troca os valores da cor e do tema 
+            with open("interface/Ui/app.color", 'w', encoding="utf-8"):
+                pass
+        # Troca os valores da cor e do tem
         try:
             self.ui.color_name.setCurrentText(info[0])
             self.ui.theme_name.setCurrentText(info[1])
-        except:
+        except Exception:
             self.ui.color_name.setCurrentText(0)
-            self.ui.theme_name.setCurrentText(0)  
-        # define as cores do tema     
+            self.ui.theme_name.setCurrentText(0)
+        # define as cores do tema
         try:
-            with open("interface/themes.json", 'r+',encoding="utf-8") as c:
+            with open("interface/themes.json", 'r+', encoding="utf-8") as c:
                 theme = json.load(c)
             main_theme_color = theme["colors"][self.ui.color_name.currentText().lower()][self.ui.theme_name.currentText().lower()]
             other_theme_options = theme["theme"][self.ui.theme_name.currentText().lower()]
@@ -156,41 +164,42 @@ class StartWidget(QWidget):
             self.backgroundWidget_color = other_theme_options["backgroundWidget"]
             self.sidebarHover_color = other_theme_options["sidebarHover"]
         except FileNotFoundError:
-            with open("interface/themes.json", 'w',encoding="utf-8"): pass
+            with open("interface/themes.json", 'w', encoding="utf-8"):
+                pass
         # Troca esse valor na StyleSheet
-        style = self.style_sheet.replace("var(primary)", self.primary_color).replace("var(primary_variant)",self.primary_variant_color).replace("var(background)",self.background_color).replace("var(text)",self.text_color).replace("var(widget)",self.widget_color).replace("var(sidebar)",self.sidebar_color).replace("var(subwidget)",self.subwidget_color).replace("var(backgroundWidget)",self.backgroundWidget_color).replace("var(sidebarHover)",self.sidebarHover_color)
+        style = self.style_sheet.replace("var(primary)", self.primary_color).replace("var(primary_variant)", self.primary_variant_color).replace("var(background)", self.background_color).replace("var(text)", self.text_color).replace("var(widget)", self.widget_color).replace("var(sidebar)", self.sidebar_color).replace("var(subwidget)", self.subwidget_color).replace("var(backgroundWidget)", self.backgroundWidget_color).replace("var(sidebarHover)", self.sidebarHover_color)
         # Aplicar o estilo à página
         self.ui.mainFrame.setStyleSheet(style)
         self.change_page(self.atual_page)
-        self.enable_cozinha.update_style(self.text_color,self.primary_color)
-        self.enable_bar.update_style(self.text_color,self.primary_color)
-        self.enable_QrCode.update_style(self.text_color,self.primary_color)
-        self.enable_local.update_style(self.text_color,self.primary_color)
-        self.enable_loophole.update_style(self.text_color,self.primary_color)
+        self.enable_cozinha.update_style(self.text_color, self.primary_color)
+        self.enable_bar.update_style(self.text_color, self.primary_color)
+        self.enable_QrCode.update_style(self.text_color, self.primary_color)
+        self.enable_local.update_style(self.text_color, self.primary_color)
+        self.enable_loophole.update_style(self.text_color, self.primary_color)
         # Definir os icons dependendo do tema
-        self.ui.Home_sideBar.setIcon(QIcon(u"interface/Ui/images/"+self.ui.theme_name.currentText().lower()+"/home.png"))
-        self.ui.Users_sideBar.setIcon(QIcon(u"interface/Ui/images/"+self.ui.theme_name.currentText().lower()+"/users.png"))
-        self.ui.Menu_sideBar.setIcon(QIcon(u"interface/Ui/images/"+self.ui.theme_name.currentText().lower()+"/menu.png"))
-        self.ui.Access_sideBar.setIcon(QIcon(u"interface/Ui/images/"+self.ui.theme_name.currentText().lower()+"/access.png"))
-        self.ui.Network_sideBar.setIcon(QIcon(u"interface/Ui/images/"+self.ui.theme_name.currentText().lower()+"/network.png"))
-        self.ui.toggle_sideBar.setIcon(QIcon(u"interface/Ui/images/"+self.ui.theme_name.currentText().lower()+"/list.png"))
-        self.ui.Settings_sideBar.setIcon(QIcon(u"interface/Ui/images/"+self.ui.theme_name.currentText().lower()+"/settings.png"))
+        self.ui.Home_sideBar.setIcon(QIcon(u"interface/Ui/images/" + self.ui.theme_name.currentText().lower() + "/home.png"))
+        self.ui.Users_sideBar.setIcon(QIcon(u"interface/Ui/images/" + self.ui.theme_name.currentText().lower() + "/users.png"))
+        self.ui.Menu_sideBar.setIcon(QIcon(u"interface/Ui/images/" + self.ui.theme_name.currentText().lower() + "/menu.png"))
+        self.ui.Access_sideBar.setIcon(QIcon(u"interface/Ui/images/" + self.ui.theme_name.currentText().lower() + "/access.png"))
+        self.ui.Network_sideBar.setIcon(QIcon(u"interface/Ui/images/" + self.ui.theme_name.currentText().lower() + "/network.png"))
+        self.ui.toggle_sideBar.setIcon(QIcon(u"interface/Ui/images/" + self.ui.theme_name.currentText().lower() + "/list.png"))
+        self.ui.Settings_sideBar.setIcon(QIcon(u"interface/Ui/images/" + self.ui.theme_name.currentText().lower() + "/settings.png"))
         self.ui.mainFrame.update()
     
-    #Mudar o tema
+    # Mudar o tema
     def update_theme(self) -> None:
-        with open("interface/Ui/app.color","w",encoding="utf-8") as c: 
-            c.write(self.ui.color_name.currentText()+"; "+self.ui.theme_name.currentText())
+        with open("interface/Ui/app.color", "w", encoding="utf-8") as c:
+            c.write(self.ui.color_name.currentText() + "; " + self.ui.theme_name.currentText())
         self.load_style()
                  
     def save_all(self) -> None:
-        #Save
+        # Save
         self.serverConfig.save_config(self)
         self.changed = False
     
-    #Função ativa sempre que há redimensionamento  
+    # Função ativa sempre que há redimensionamento
     def resizeEvent(self, event) -> None:
-        ###TITLES
+        # TITLES
         title_font_size = 35  # Tamanho base da fonte
         # Calcula o novo tamanho da fonte com base na largura atual da janela
         new_title_font_size = int(self.width() / 100) + title_font_size
@@ -204,7 +213,7 @@ class StartWidget(QWidget):
         self.ui.network_title.setFont(title_font)
         self.ui.settings_title.setFont(title_font)
         
-        ###NORMAL_TEXT
+        # NORMAL_TEXT
         normal_font_size = 4  # Tamanho base da fonte
         # Calcula o novo tamanho da fonte com base na largura atual da janela
         new_normal_font_size = int(self.width() / 100) + normal_font_size
@@ -226,10 +235,10 @@ class StartWidget(QWidget):
         self.ui.choose_menu.setFont(normal_font)
         self.ui.remove_Img.setFont(normal_font)
 
-        self.ui.bebida_price.setMinimumWidth(round(self.width() * 0.03/2+62))
-        self.ui.comida_price.setMinimumWidth(round(self.width() * 0.03/2+62))
+        self.ui.bebida_price.setMinimumWidth(round(self.width() * 0.03 / 2 + 62))
+        self.ui.comida_price.setMinimumWidth(round(self.width() * 0.03 / 2 + 62))
         
-        ###Resume Text
+        # Resume Text
         cursor = QTextCursor(self.ui.resume.document())
         cursor.beginEditBlock()
         text_font = None
@@ -238,17 +247,16 @@ class StartWidget(QWidget):
             cursor.select(QTextCursor.BlockUnderCursor)
             format = QTextCharFormat()
             font = cursor.charFormat().font()
-            if text_font == None:
+            if text_font is None:
                 text_font = 11
                 text_atual_font = font.pointSize()
-            elif font.pointSize()!= text_atual_font:
+            elif font.pointSize() != text_atual_font:
                 text_font = 18
             else:
                 text_font = 11
             
             # Aplica a escala de tamanho de fonte
-            new_font_size = max(round(self.width()*text_font/self.start_width),11)#font.pointSize()*scale_factor)# Ajuste o valor 0.8 conforme necessário
-
+            new_font_size = max(round(self.width() * text_font / self.start_width), 11)
             
             font.setPointSize(new_font_size)
             format.setFont(font)
@@ -258,8 +266,7 @@ class StartWidget(QWidget):
 
         cursor.endEditBlock()
 
-        
-        ###BIG_TExT
+        # BIG_TExT
         big_font_size = 7  # Tamanho base da fonte
         # Calcula o novo tamanho da fonte com base na largura atual da janela
         new_big_font_size = int(self.width() / 100) + big_font_size
@@ -270,11 +277,11 @@ class StartWidget(QWidget):
         self.ui.comida_list.setFont(big_font)
         self.ui.list_users.setFont(big_font)
         
-        self.enable_bar.setFont(big_font,new_big_font_size)
-        self.enable_cozinha.setFont(big_font,new_big_font_size)
-        self.enable_QrCode.setFont(big_font,new_big_font_size)
-        self.enable_local.setFont(big_font,new_big_font_size)
-        self.enable_loophole.setFont(big_font,new_big_font_size)
+        self.enable_bar.setFont(big_font, new_big_font_size)
+        self.enable_cozinha.setFont(big_font, new_big_font_size)
+        self.enable_QrCode.setFont(big_font, new_big_font_size)
+        self.enable_local.setFont(big_font, new_big_font_size)
+        self.enable_loophole.setFont(big_font, new_big_font_size)
         self.ui.domain_label.setFont(big_font)
         self.ui.port_label.setFont(big_font)
         self.ui.domain_name.setFont(big_font)
@@ -289,68 +296,67 @@ class StartWidget(QWidget):
         self.ui.theme_name.setFont(big_font)
         self.ui.save_all.setFont(big_font)
         
-        height_padding = round(self.width() * 0.02/2)
+        height_padding = round(self.width() * 0.02 / 2)
         for btn in self.btn_list:
-            btn.setMinimumHeight(50+height_padding)
-            btn.setIconSize(QSize(round(self.width() * 0.05/2+40),round(self.width() * 0.01/2+40)))
-            #btn.update()
+            btn.setMinimumHeight(50 + height_padding)
+            btn.setIconSize(QSize(round(self.width() * 0.05 / 2 + 40), round(self.width() * 0.01 / 2 + 40)))
 
         if self.sideBar_compressed:
-            width=round(self.width() * 0.005/2+51)
+            width = round(self.width() * 0.005 / 2 + 51)
         else:
-            width=round(self.width() * 0.015/2+170)
+            width = round(self.width() * 0.015 / 2 + 170)
             
         self.ui.side_bar.setMinimumWidth(width)
 
         # Chama o método da classe base
         super().resizeEvent(event)
     
-    #Função responsavel por mudar de página na sideBar    
-    def change_page(self,page_idx: int) -> None:
-        #Trocar de página
-        if page_idx == None:
+    # Função responsavel por mudar de página na sideBar
+    def change_page(self, page_idx: int) -> None:
+        # Trocar de página
+        if page_idx is None:
             page_idx = 0
         self.ui.pages.setCurrentIndex(page_idx)
         # remover a página anterior
-        if self.atual_page != None:
+        if self.atual_page is not None:
             self.btn_list[self.atual_page].setStyleSheet("")
-        #Ativar estilo da página tuak
-        self.btn_list[page_idx].setStyleSheet("#"+self.btn_list[page_idx].objectName()+"{background-color: qlineargradient(spread:pad, x1:0, y1:0.5, x2:1, y2:0.5, stop:0.0170455 "+self.primary_color+", stop:1 "+self.background_color+"); border-left:3px solid #a1a1a1;border-bottom:1px solid "+self.background_color+";border-top:1px solid "+self.background_color+"; border-right:2px solid "+self.background_color+";}")
+        #  Ativar estilo da página tuak
+        self.btn_list[page_idx].setStyleSheet("#" + self.btn_list[page_idx].objectName() + "{background-color: qlineargradient(spread:pad, x1:0, y1:0.5, x2:1, y2:0.5, stop:0.0170455 " + self.primary_color + ", stop:1 " + self.background_color + "); border-left:3px solid #a1a1a1;border-bottom:1px solid " + self.background_color + ";border-top:1px solid " + self.background_color + "; border-right:2px solid " + self.background_color + ";}")
         self.atual_page = page_idx
-        #atualizar o tamnho dos botões
+        # atualizar o tamnho dos botões
         for btn in self.btn_list:
-            btn.setIconSize(QSize(round(self.width() * 0.05/2+40),round(self.width() * 0.01/2+40)))
+            btn.setIconSize(QSize(round(self.width() * 0.05 / 2 + 40), round(self.width() * 0.01 / 2 + 40)))
     
-    #animar no estilo SideBar
-    def animate_sideBar(self,animation: QPropertyAnimation ,start_size: int,end_size: int, time: int) -> None:
+    # animar no estilo SideBar
+    def animate_sideBar(self, animation: QPropertyAnimation, start_size: int, end_size: int, time: int) -> None:
         animation.setStartValue(start_size)
         animation.setEndValue(end_size)
         animation.setDuration(time)
         animation.setEasingCurve(QEasingCurve.InOutCirc)
         return animation
 
-    #Ativar sideBar
+    # Ativar sideBar
     def toggle_button(self) -> None:
-        #Definir largura inincial e final        
+        # Definir largura inincial e final
         if self.sideBar_compressed:
-            st_width=round(self.width() * 0.005/2+51)
-            ed_width=round(self.width() * 0.015/2+170)
+            st_width = round(self.width() * 0.005 / 2 + 51)
+            ed_width = round(self.width() * 0.015 / 2 + 170)
         else:
-            st_width=round(self.width() * 0.015/2+170)
-            ed_width=round(self.width() * 0.005/2+51)
+            st_width = round(self.width() * 0.015 / 2 + 170)
+            ed_width = round(self.width() * 0.005 / 2 + 51)
         # fazer a animação de todos os componentes
-        self.animation_bar = QPropertyAnimation(self.ui.side_bar,b"minimumWidth")
-        self.animation_bar=self.animate_sideBar(self.animation_bar,st_width,ed_width,200)
-        self.animation_version_frame = QPropertyAnimation(self.ui.version_frame,b"minimumWidth")
-        self.animation_version_frame=self.animate_sideBar(self.animation_version_frame,st_width,ed_width,200)
-        self.animation_version_label = QPropertyAnimation(self.ui.version_label,b"minimumWidth")
-        self.animation_version_label=self.animate_sideBar(self.animation_version_label,st_width,ed_width,200)
+        self.animation_bar = QPropertyAnimation(self.ui.side_bar, b"minimumWidth")
+        self.animation_bar = self.animate_sideBar(self.animation_bar, st_width, ed_width, 200)
+        self.animation_version_frame = QPropertyAnimation(self.ui.version_frame, b"minimumWidth")
+        self.animation_version_frame = self.animate_sideBar(self.animation_version_frame, st_width, ed_width, 200)
+        self.animation_version_label = QPropertyAnimation(self.ui.version_label, b"minimumWidth")
+        self.animation_version_label = self.animate_sideBar(self.animation_version_label, st_width, ed_width, 200)
         self.animation_bar.start()
         self.animation_version_frame.start()
         self.animation_version_label.start()
         self.sideBar_compressed = not self.sideBar_compressed
         
-    #Adiconar o atendente
+    # Adiconar o atendente
     def add_user_name(self) -> None:
         name = self.ui.user_name.text().strip()
         if name != '':
@@ -358,27 +364,28 @@ class StartWidget(QWidget):
             self.ui.user_name.clear()
             self.ui.list_users.addItem(name)
             
-    #remover atendente
+    # remover atendente
     def remove_user_name(self) -> None:
         selected_items = self.ui.list_users.selectedItems()
         for item in selected_items:
             self.changed = True
             self.ui.list_users.takeItem(self.ui.list_users.row(item))
     
-    #Transformar o preço em um float
+    # Transformar o preço em um float
     def transform_price(self, price: str) -> None:
-        price = price.replace(",",".")
+        price = price.replace(",", ".")
         if "." not in price:
-            price+=".00"
+            price += ".00"
         inter, decim = price.split(".")
-        inter = str(int(inter)) #transformar 0n em n
-        while len(decim)<2:
-            decim+="0"
+        inter = str(int(inter))  # transformar 0n em n
+        while len(decim) < 2:
+            decim += "0"
         decim = decim[:2]
         
-        return inter+"."+decim
-    #Adicionar item ao menu    
-    def add_menu_item(self, tipo: Literal["Comida","Bebida"]):
+        return inter + "." + decim
+    
+    # Adicionar item ao menu
+    def add_menu_item(self, tipo: Literal["Comida", "Bebida"]):
         if tipo == "Comida":
             name = self.ui.comida_name.text().strip()
             price = self.ui.comida_price.text().strip()
@@ -388,19 +395,19 @@ class StartWidget(QWidget):
             price = self.ui.bebida_price.text().strip()
             box = self.bebida_box
         if name != '' and price != '':
-            price = self.transform_price(price) 
-            self.changed = True               
-            line = MenuLine(name,price,self)
-            box.insertWidget(0,line)
-            if tipo == "Comida": 
+            price = self.transform_price(price)
+            self.changed = True
+            line = MenuLine(name, price, self)
+            box.insertWidget(0, line)
+            if tipo == "Comida":
                 self.ui.comida_name.setText("")
                 self.ui.comida_price.setText("")
-            else: 
+            else:
                 self.ui.bebida_name.setText("")
                 self.ui.bebida_price.setText("")
     
-    # remover toda o menu     
-    def remove_all_menu_items(self, tipo: Literal["Comida","Bebida"]) -> None:
+    # remover toda o menu
+    def remove_all_menu_items(self, tipo: Literal["Comida", "Bebida"]) -> None:
         if tipo == "Comida":
             area = self.ui.scroll_comida
         else:
@@ -423,27 +430,28 @@ class StartWidget(QWidget):
         self.menu_file = None
         
 
-#Janela de carregamento
+# Janela de carregamento
 class LoadingWidget(QFrame):
-    def __init__(self,style_sheet):
+    def __init__(self, style_sheet):
         super().__init__()
         self.setObjectName(u"mainFrame")
         self.style_sheet = style_sheet
         self.initUI()
         
-    #Carrega todos os estilos para a página
+    # Carrega todos os estilos para a página
     def load_style(self):
         # Ler as cor e tema definido
         try:
-            with open("interface/Ui/app.color", 'r+',encoding="utf-8") as c:
+            with open("interface/Ui/app.color", 'r+', encoding="utf-8") as c:
                 info = c.read().split("; ")
             
         except FileNotFoundError:
-            with open("interface/Ui/app.color", 'w',encoding="utf-8"): pass
+            with open("interface/Ui/app.color", 'w', encoding="utf-8"):
+                pass
         
-        #Criar as estilo    
+        # Criar as estilo
         try:
-            with open("interface/themes.json", 'r+',encoding="utf-8") as c:
+            with open("interface/themes.json", 'r+', encoding="utf-8") as c:
                 theme = json.load(c)
             main_theme_color = theme["colors"][info[0].lower()][info[1].lower()]
             other_theme_options = theme["theme"][info[1].lower()]
@@ -457,12 +465,13 @@ class LoadingWidget(QFrame):
             self.backgroundWidget_color = other_theme_options["backgroundWidget"]
             self.sidebarHover_color = other_theme_options["sidebarHover"]
         except FileNotFoundError:
-            with open("interface/themes.json", 'w',encoding="utf-8"): pass
-        style = self.style_sheet.replace("var(primary)", self.primary_color).replace("var(primary_variant)",self.primary_variant_color).replace("var(background)",self.background_color).replace("var(text)",self.text_color).replace("var(widget)",self.widget_color).replace("var(sidebar)",self.sidebar_color).replace("var(subwidget)",self.subwidget_color).replace("var(backgroundWidget)",self.backgroundWidget_color).replace("var(sidebarHover)",self.sidebarHover_color)
-        #colocar style sheet na página
+            with open("interface/themes.json", 'w', encoding="utf-8"):
+                pass
+        style = self.style_sheet.replace("var(primary)", self.primary_color).replace("var(primary_variant)", self.primary_variant_color).replace("var(background)", self.background_color).replace("var(text)", self.text_color).replace("var(widget)", self.widget_color).replace("var(sidebar)", self.sidebar_color).replace("var(subwidget)", self.subwidget_color).replace("var(backgroundWidget)", self.backgroundWidget_color).replace("var(sidebarHover)", self.sidebarHover_color)
+        # colocar style sheet na página
         self.setStyleSheet(style)
 
-    #Iniciar a UI
+    # Iniciar a UI
     def initUI(self):
         layout = QVBoxLayout()
 
@@ -478,7 +487,7 @@ class LoadingWidget(QFrame):
 
         self.dotCount = 0
     
-    #função chamda sempre que houver redimensionamento    
+    # função chamda sempre que houver redimensionamento
     def resizeEvent(self, event):
         title_font_size = 45  # Tamanho base da fonte
         # Calcula o novo tamanho da fonte com base na largura atual da janela
@@ -489,35 +498,37 @@ class LoadingWidget(QFrame):
         self.label.setFont(title_font)
         return super().resizeEvent(event)
 
-    #atulizar qunatidade de pontos
+    # atulizar qunatidade de pontos
     def updateLabel(self):
         self.dotCount += 1
         dots = "." * (self.dotCount % 4)
         self.label.setText("A carregar" + dots)
 
-#Janela normal
+
+# Janela normal
 class EndWidget(QWidget):
-    def __init__(self,style_sheet,config):
+    def __init__(self, style_sheet, config):
         super().__init__()
         self.config = config
         self.uis = []
-        #self.setObjectName("mainFrame")
-        self.style_sheet =  style_sheet
+        # self.setObjectName("mainFrame")
+        self.style_sheet = style_sheet
         self.start = 0
         
-    #Carrega todos os estilos para a página
+    # Carrega todos os estilos para a página
     def load_style(self):
         # Ler as cor e tema definido
         try:
-            with open("interface/Ui/app.color", 'r+',encoding="utf-8") as c:
+            with open("interface/Ui/app.color", 'r+', encoding="utf-8") as c:
                 info = c.read().split("; ")
             
         except FileNotFoundError:
-            with open("interface/Ui/app.color", 'w',encoding="utf-8"): pass
+            with open("interface/Ui/app.color", 'w', encoding="utf-8"):
+                pass
         
-        #Criar o estilo    
+        # Criar o estilo
         try:
-            with open("interface/themes.json", 'r+',encoding="utf-8") as c:
+            with open("interface/themes.json", 'r+', encoding="utf-8") as c:
                 theme = json.load(c)
             main_theme_color = theme["colors"][info[0].lower()][info[1].lower()]
             other_theme_options = theme["theme"][info[1].lower()]
@@ -531,12 +542,13 @@ class EndWidget(QWidget):
             self.backgroundWidget_color = other_theme_options["backgroundWidget"]
             self.sidebarHover_color = other_theme_options["sidebarHover"]
         except FileNotFoundError:
-            with open("interface/themes.json", 'w',encoding="utf-8"): pass
-        style = self.style_sheet.replace("var(primary)", self.primary_color).replace("var(primary_variant)",self.primary_variant_color).replace("var(background)",self.background_color).replace("var(text)",self.text_color).replace("var(widget)",self.widget_color).replace("var(sidebar)",self.sidebar_color).replace("var(subwidget)",self.subwidget_color).replace("var(backgroundWidget)",self.backgroundWidget_color).replace("var(sidebarHover)",self.sidebarHover_color)
+            with open("interface/themes.json", 'w', encoding="utf-8"):
+                pass
+        style = self.style_sheet.replace("var(primary)", self.primary_color).replace("var(primary_variant)", self.primary_variant_color).replace("var(background)", self.background_color).replace("var(text)", self.text_color).replace("var(widget)", self.widget_color).replace("var(sidebar)", self.sidebar_color).replace("var(subwidget)", self.subwidget_color).replace("var(backgroundWidget)", self.backgroundWidget_color).replace("var(sidebarHover)", self.sidebarHover_color)
 
         self.setStyleSheet(style)
     
-    #Definir  UI
+    # Definir  UI
     def startUI(self):
         layout_main = QVBoxLayout(self)
         layout_main.setSpacing(0)  # Espaçamento entre os elementos
@@ -553,28 +565,30 @@ class EndWidget(QWidget):
         layout_urls = QHBoxLayout(self.frame_main)
         layout_urls.setSpacing(0)
         layout_urls.setContentsMargins(0, 0, 0, 0)
-        #Por cada URL um novo Widget é adicionado
+        # Por cada URL um novo Widget é adicionado
         for u in range(len(self.config.urls)):
             widget = QWidget()  # Criar um widget para adicionar a classe gerada pelo Qt Designer
             ui = Ui_EndWindow()
             
             ui.setupUi(widget)
-            real_url = self.config.getUrl(u) # obter o Url completo
+            real_url = self.config.getUrl(u)  # obter o Url completo
             ui.url.setText(real_url)
             ui.url.setAlignment(Qt.AlignCenter)
             ui.url.update()
             # definir funções
-            ui.copy_url.clicked.connect(lambda _=None,url=real_url: pyperclip.copy(url))
-            ui.open_Link.clicked.connect(lambda _=None,url=real_url: webbrowser.open(url))
-            ui.open_QrCode.clicked.connect(lambda _=None,url=real_url: self.openQr(url))
+            ui.copy_url.clicked.connect(lambda _=None, url=real_url: pyperclip.copy(url))
+            ui.open_Link.clicked.connect(lambda _=None, url=real_url: webbrowser.open(url))
+            ui.open_QrCode.clicked.connect(lambda _=None, url=real_url: self.openQr(url))
             self.uis.append(ui)
             layout_urls.addWidget(widget)
-        #Layout de baixo
+        # Layout de baixo
         layout_bottom = QHBoxLayout()
         layout_bottom.setObjectName("bottom")
         self.fim = QPushButton("Sair")
         self.fim.setObjectName("fim")
-        self.fim.clicked.connect(QCoreApplication.instance().quit)
+        app = QCoreApplication.instance()
+        if app is not None:
+            self.fim.clicked.connect(app.quit)
         self.password = ClickableLabel("Mostrar Password\n")
         self.password.setObjectName("password")
         self.password.clicked.connect(self.esconderPassword)
@@ -595,7 +609,7 @@ class EndWidget(QWidget):
         self.start = 1
         self.resizeEvent(None)
     
-    #esconder/mostrar a password
+    # esconder/mostrar a password
     def esconderPassword(self):
         if self.password.text() == "Mostrar Password\n":
             self.password.setText("Password:\n" + self.config.password)
@@ -603,8 +617,8 @@ class EndWidget(QWidget):
         else:
             self.password.setText("Mostrar Password\n")
     
-    #Abrir QRCode
-    def openQr(self,data):
+    # Abrir QRCode
+    def openQr(self, data):
         # Criar o QR Code
         qr = qrcode.QRCode(version=1, box_size=10, border=4)
         qr.add_data(data)
@@ -636,7 +650,7 @@ class EndWidget(QWidget):
         # Exibir a janela
         self.qrcode_window.show()
 
-    #Função ativada ao haver redimencionamento
+    # Função ativada ao haver redimencionamento
     def resizeEvent(self, event):
         title_font_size = 15  # Tamanho base da fonte
         # Calcula o novo tamanho da fonte com base na largura atual da janela
@@ -652,24 +666,26 @@ class EndWidget(QWidget):
         button_font.setPointSize(new_button_font_size)
         for ui in self.uis:
             ui.url.setFont(title_font)
-            ui.copy_url.setFont(button_font) 
-            ui.open_Link.setFont(button_font) 
+            ui.copy_url.setFont(button_font)
+            ui.open_Link.setFont(button_font)
             ui.open_QrCode.setFont(button_font)
         if self.start:
             self.fim.setFont(title_font)
             self.password.setFont(title_font)
-        if event != None:
+        if event is not None:
             return super().resizeEvent(event)
 
 
-#Class Worker
+# Class Worker
 class Worker(QThread):
     finished = Signal()  # Sinal para indicar que a tarefa foi concluída
-    def __init__(self,function,config):
+    
+    def __init__(self, function, config):
         super().__init__()
         self.function = function
         self.config = config
         self.stop_loophole = 0
+    
     @Slot()
     def run(self):
         # Executa a função
@@ -678,7 +694,7 @@ class Worker(QThread):
             time.sleep(0.5)
         time.sleep(3)
         self.finished.emit()
-        run_app()# iniciar servidor
+        run_app()  # iniciar servidor
     
 
 # Janela principal
@@ -705,19 +721,18 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.janelas)
         self.show()
         
-    def barTheme(self,info):
+    def barTheme(self, info):
         if info[1] == "Escuro":
             palette = self.app.palette()
-            palette.setColor( QPalette.WindowText, Qt.white)
+            palette.setColor(QPalette.WindowText, Qt.white)
             
             self.app.setPalette(palette)
         else:
             palette = self.app.palette()
-            palette.setColor( QPalette.WindowText, Qt.black)
+            palette.setColor(QPalette.WindowText, Qt.black)
             
             self.app.setPalette(palette)
-        
-        
+
     def closeEvent(self, event: QCloseEvent):
         if self.janelas.currentWidget() == self.start_window:
             if self.start_window.changed:
@@ -727,7 +742,7 @@ class MainWindow(QMainWindow):
                 dlg.setText("Deseja guardar as alterações feitas para posterior utilização?\nAs alterações não guardadas serão PERDIDAS.")
                 dlg.setStandardButtons(QMessageBox.Save | QMessageBox.Ignore | QMessageBox.Cancel)
                 dlg.setIcon(QMessageBox.Information)
-                dlg.setStyleSheet("QMessageBox{font-size:14px;margin-right:10px;margin-right:3px;background:"+self.start_window.primary_variant_color+"} QPushButton{background:"+ self.start_window.widget_color+";color: "+self.start_window.text_color+"}")
+                dlg.setStyleSheet("QMessageBox{font-size:14px;margin-right:10px;margin-right:3px;background:" + self.start_window.primary_variant_color + "} QPushButton{background:" + self.start_window.widget_color + ";color: " + self.start_window.text_color + "}")
                 button = dlg.exec()
                 if button == QMessageBox.Save:
                     self.start_window.save_all()
@@ -747,12 +762,12 @@ class MainWindow(QMainWindow):
                     time.sleep(0.1)
             self.worker.terminate()
         else:
-            return super().closeEvent(event)        
+            return super().closeEvent(event)
     
     # Obtém a folha de estilo para a interface a partir de um arquivo
     def getStyleSheet(self):
         with open("interface/Ui/styles.qss", "r") as f:
-            default_style = f.read() 
+            default_style = f.read()
         return default_style
     
     # Configuração de comandos e sinais

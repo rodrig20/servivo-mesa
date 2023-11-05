@@ -8,16 +8,16 @@ class ClickableLabel(QLabel):
         self.clicked.emit()
         super().mousePressEvent(event)
         
-class Switch(QCheckBox) :
+class Switch(QCheckBox):
     def __init__(
         self,
-        width = 45,
-        height = 23,
-        border = 3,
-        bg_color = "#3c4042",
-        circLe_color ="#DDDDDD",
-        active_color = "#8e0793",
-        animation_curve = QEasingCurve.OutBounce
+        width=45,
+        height=23,
+        border=3,
+        bg_color="#3c4042",
+        circLe_color="#DDDDDD",
+        active_color="#8e0793",
+        animation_curve=QEasingCurve.OutBounce
     ):
         QCheckBox.__init__(self)
         self.setFixedSize(width,height)
