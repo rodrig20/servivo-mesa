@@ -111,7 +111,7 @@ class ListaTodosPedidos_Espera:
         nome_pedido = info.getlist('ped[]')
         tipo_pedido = info.getlist('tip[]')
         mesa_pedido = info["mesa"]
-        
+
         # verificar se é um pedido válido
         if mesa_pedido.strip() == '' or (not len(quantidade_pedido) == len(nome_pedido) == len(tipo_pedido)):
             return False
@@ -121,7 +121,8 @@ class ListaTodosPedidos_Espera:
         
         # Criar um pedido e adiconar o mesmo à lista
         self.pedidos.append(PedidoEspera(nome, quantidade_pedido, nome_pedido, tipo_pedido, mesa_pedido))
-        
+        app.config["ESTATISTICAS"].add_pedido(quantidade_pedido, nome_pedido, tipo_pedido)
+            
         return True
     
     # tornar um pedido pronto
@@ -184,6 +185,30 @@ class ListaTodosPedidos_Prontos:
                 pedido[2].pop(num_sub_ped)
                 return
 
+
+class EstatisticasPedidos:
+    def __init__(self) -> None:
+        self.file_output = ""
+        self.preco_total = 0
+    
+    def add_pedido(self, quantidades, nomes, tipos):
+        for quant, nome, tipo in zip(quantidades, nomes, tipos):
+            if tipo == "Cozinha":
+                tipo_idx = 0
+            else:
+                tipo_idx = 1
+            
+            name_idx = app.config["MENU_NAME"][tipo_idx].index(nome)
+            preco_prod = app.config["MENU_PRICE"][tipo_idx][name_idx]
+            preco_pedido = int(quant) * float(preco_prod)
+            self.preco_total += preco_pedido
+            self.file_output += f'[{datetime.now().strftime("%d-%m-%Y %H:%M:%S")}] {int(quant):02} {nome:.<25}{preco_pedido:.>10}\n'
+    
+    def write_file(self, file_path):
+        self.file_output += "-" * 60 + f"\n» Preço Total: {self.preco_total:02}\n"
+        with open(file_path, "w", encoding="utf-8") as f:
+            f.write(self.file_output)
+            
 
 # Colocar ficheiros em cache
 def setCache(folder: str, file: str, hours: float):

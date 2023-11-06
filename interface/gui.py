@@ -7,7 +7,7 @@ from .qt_core import (QWidget, QVBoxLayout, QRegularExpressionValidator,
                       QIcon, QFont, QTextCursor, QTextCharFormat, QSize, QPropertyAnimation,
                       QEasingCurve, QFrame, QLabel, Qt, QTimer, QHBoxLayout, QPushButton,
                       QImage, QPixmap, QThread, Signal, Slot, QMainWindow, QStackedWidget,
-                      QPalette, QCloseEvent, QMessageBox, QApplication)
+                      QPalette, QCloseEvent, QMessageBox, QLineEdit, QFileDialog, QApplication)
 from config.config import ConfigServer
 # Funções secundarias
 from typing import Literal
@@ -42,12 +42,32 @@ class StartWidget(QWidget):
     def setupCustomUI(self) -> None:
         # Botões de access
         self.enable_cozinha = QSwitchButton("Ativar Pedidos para a Cozinha", self)
-        self.enable_bar = QSwitchButton("Ativar Pedidos para a Bar", self)
+        self.enable_bar = QSwitchButton("Ativar Pedidos para o Bar", self)
         self.enable_QrCode = QSwitchButton("Ativar Pedidos por QrCode", self)
+        
+        self.statistics_frame = QFrame()
+        self.statistics_layout = QVBoxLayout(self.statistics_frame)
+        self.statistics_layout.setContentsMargins(0, 5, 5, 0)
+        self.enable_statistics = QSwitchButton("Ativar Estatisticas", self)
+    
+        self.statistics_layout.addWidget(self.enable_statistics)
+        
+        self.statistics_browse_frame = QFrame()
+        self.statistics_browse_layout = QHBoxLayout(self.statistics_browse_frame)
+        self.statistics_button = QPushButton("Escolher")
+        self.statistics_button.setObjectName(u"change_statistics")
+        self.statistics_file_path = QLineEdit()
+        self.statistics_file_path.setReadOnly(True)
+        
+        self.statistics_browse_layout.addWidget(self.statistics_button)
+        self.statistics_browse_layout.addWidget(self.statistics_file_path)
+        self.statistics_layout.addWidget(self.statistics_browse_frame)
+        
         self.access_layout = QVBoxLayout(self.ui.access_frame)
         self.access_layout.addWidget(self.enable_cozinha)
         self.access_layout.addWidget(self.enable_bar)
         self.access_layout.addWidget(self.enable_QrCode)
+        self.access_layout.addWidget(self.statistics_frame)
         
         # Botões de network
         self.enable_local = QSwitchButton("Ativar Acesso dentro da Rede", self)
@@ -124,6 +144,9 @@ class StartWidget(QWidget):
         # Remove image
         self.ui.remove_Img.clicked.connect(self.remove_image)
         
+        # Change estatitisticas path
+        self.statistics_button.clicked.connect(self.change_statistics_file_path)
+        
         # Action Buttons:
         app = QCoreApplication.instance()
         if app is not None:
@@ -174,6 +197,7 @@ class StartWidget(QWidget):
         self.enable_cozinha.update_style(self.text_color, self.primary_color)
         self.enable_bar.update_style(self.text_color, self.primary_color)
         self.enable_QrCode.update_style(self.text_color, self.primary_color)
+        self.enable_statistics.update_style(self.text_color, self.primary_color)
         self.enable_local.update_style(self.text_color, self.primary_color)
         self.enable_loophole.update_style(self.text_color, self.primary_color)
         # Definir os icons dependendo do tema
@@ -234,6 +258,8 @@ class StartWidget(QWidget):
         self.ui.comida_name.setFont(normal_font)
         self.ui.choose_menu.setFont(normal_font)
         self.ui.remove_Img.setFont(normal_font)
+        self.statistics_button.setFont(normal_font)
+        self.statistics_file_path.setFont(normal_font)
 
         self.ui.bebida_price.setMinimumWidth(round(self.width() * 0.03 / 2 + 62))
         self.ui.comida_price.setMinimumWidth(round(self.width() * 0.03 / 2 + 62))
@@ -280,6 +306,7 @@ class StartWidget(QWidget):
         self.enable_bar.setFont(big_font, new_big_font_size)
         self.enable_cozinha.setFont(big_font, new_big_font_size)
         self.enable_QrCode.setFont(big_font, new_big_font_size)
+        self.enable_statistics.setFont(big_font, new_big_font_size)
         self.enable_local.setFont(big_font, new_big_font_size)
         self.enable_loophole.setFont(big_font, new_big_font_size)
         self.ui.domain_label.setFont(big_font)
@@ -416,6 +443,18 @@ class StartWidget(QWidget):
         for item in children:
             self.changed = True
             item.deleteLater()
+            
+    def change_statistics_file_path(self):
+        options = QFileDialog.Options()
+        options |= QFileDialog.ReadOnly
+        file_dialog = QFileDialog()
+        file_dialog.setOptions(options)
+
+        selected_file, _ = file_dialog.getSaveFileName(self, "Selecionar Arquivo para Estatísticas", "", "Arquivos de Texto (*.txt);;Todos os Arquivos (*)")
+
+        if selected_file:
+            self.changed = True
+            self.statistics_file_path.setText(selected_file)
             
     def change_image(self):
         file = self.img.set_image()
@@ -756,6 +795,7 @@ class MainWindow(QMainWindow):
         elif self.janelas.currentWidget() == self.load_window or self.janelas.currentWidget() == self.end_window:
             # Tratamento de fechamento para as outras janelas
             self.hide()
+            self.config.close_app()
             if "loophole" in self.config.type:
                 self.config.run_loophole = 0
                 while self.config.run_loophole != 2:

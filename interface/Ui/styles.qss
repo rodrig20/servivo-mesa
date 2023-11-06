@@ -157,7 +157,7 @@ QTabBar::tab:!selected {
 QTabWidget::pane {border: 1px solid var(primary);top: -1px}
 
 
-#add_atend, #remove_atend, #remove_all_atend,#add_comida, #remove_comida, #add_bebida, #remove_bebida, #choose_menu, #remove_Img {
+#add_atend, #remove_atend, #remove_all_atend,#add_comida, #remove_comida, #add_bebida, #remove_bebida, #choose_menu, #remove_Img, #change_statistics {
 	background-color: var(primary);
 	padding-left:10px;
 	padding-right:10px;
@@ -168,6 +168,8 @@ QTabWidget::pane {border: 1px solid var(primary);top: -1px}
 #menu_image {
     background-color: var(backgroundWidget)
 }
+
+
 
 #save_all{
     margin-left:100px;

@@ -24,7 +24,7 @@ if __name__ == "__main__":
         
         config = ConfigServer()
         try:
-            with open(config.config_path + "network_access.json") as na:
+            with open(config.config_path + "access.json") as na:
                 info = json.load(na)
         except (FileNotFoundError, json.decoder.JSONDecodeError):
             print("Não existem configurações feitas!")

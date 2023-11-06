@@ -9,6 +9,7 @@ from threading import Thread
 from flask import Flask
 from .loophole import start_loophole
 from PIL import Image
+import socket
 import os
 
 
@@ -39,8 +40,18 @@ app.config["MENU_NAME"] = [[], []]
 app.config["MENU_PRICE"] = [[], []]
 
 
+def is_port_in_use(port):
+    try:
+        # Tenta criar um socket na porta
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.bind(("localhost", port))
+        return False  # A porta está disponível
+    except OSError:
+        return True  # A porta está em uso
+
+
 def run_app(config_server: ConfigServer) -> Callable:
-    users, menu, _ = config_server.get_info()
+    users, menu, network, = config_server.get_info()
     
     for user in users:
         app.config["USERS"].append(user[:-1])
@@ -64,6 +75,9 @@ def run_app(config_server: ConfigServer) -> Callable:
     
     host = config_server.host
     port = config_server.port
+    while is_port_in_use(port):
+        port += 1
+        
     loop = 0
     for i in range(len(config_server.urls)):
         if config_server.type[i] == "loophole":
@@ -84,6 +98,10 @@ def run_app(config_server: ConfigServer) -> Callable:
     
     app.config["PASSWORD"] = get_password(domain)
     config_server.password = app.config["PASSWORD"]
+    
+    if (network["enable_statistics"]):
+        config_server.exit_fun = lambda: app.config["ESTATISTICAS"].write_file(network["statistics_file_path"])
+    
     createUserNamespace("/atualizarProntos", app.config["USERS"])
     createListNamespace("/atualizarEspera")
     return lambda: socketio.run(app, host=host, port=port)
@@ -106,3 +124,4 @@ def createListNamespace(basic_namespace: str) -> None:
 
 app.config["PEDIDOS_ESPERA"] = routes.ListaTodosPedidos_Espera()
 app.config["PEDIDOS_PRONTOS"] = routes.ListaTodosPedidos_Prontos()
+app.config["ESTATISTICAS"] = routes.EstatisticasPedidos()

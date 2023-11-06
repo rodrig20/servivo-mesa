@@ -8,8 +8,10 @@ class ConfigServer:
     def __init__(self, widget=None):
         self.final = 0
         self.run_loophole = 1
+        self.statistics = None
         self.config_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "\\config\\"
         self.menuline = widget
+        self.exit_fun = None
         
     def save_config(self, page):
         # Save Users
@@ -39,6 +41,8 @@ class ConfigServer:
         network_access_Config["enable_QrCode"] = page.enable_QrCode.isChecked()
         network_access_Config["enable_local"] = page.enable_local.isChecked()
         network_access_Config["enable_loophole"] = page.enable_loophole.isChecked()
+        network_access_Config["enable_statistics"] = page.enable_statistics.isChecked()
+        network_access_Config["statistics_file_path"] = page.statistics_file_path.text()
         
         domain = page.ui.domain_name.text().strip()
         network_access_Config["domain"] = domain
@@ -46,7 +50,7 @@ class ConfigServer:
         port = page.ui.port_number.text()
         network_access_Config["port"] = port
         
-        with open(self.config_path + "network_access.json", "w", encoding="utf-8") as na:
+        with open(self.config_path + "access.json", "w", encoding="utf-8") as na:
             json.dump(network_access_Config, na, indent=4)
             
         self.prepare_config(network_access_Config)
@@ -107,11 +111,11 @@ class ConfigServer:
         
         # Load Network
         try:
-            with open(self.config_path + "network_access.json", 'r+', encoding="utf-8") as na:
+            with open(self.config_path + "access.json", 'r+', encoding="utf-8") as na:
                 network = json.load(na)
         except (FileNotFoundError, json.decoder.JSONDecodeError):
-            with open(self.config_path + "network_access.json", 'w', encoding="utf-8"):
-                network = {"enable_Cozinha": 1, "enable_Bar": 0, "enable_QrCode": 0, "enable_local": 0, "enable_loophole": 0, "domain": "dominio-de-teste", "port": "8080"}
+            with open(self.config_path + "access.json", 'w', encoding="utf-8"):
+                network = {"enable_Cozinha": 1, "enable_Bar": 0, "enable_QrCode": 0, "enable_local": 0, "enable_loophole": 0, "enable_statistics": 0, "domain": "dominio-de-teste", "port": "8080", "statistics_file_path": os.path.join(os.path.expanduser("~"), "Desktop") + "\\Estatisticas.txt"}
         
         return users, menu, network
         
@@ -143,10 +147,12 @@ class ConfigServer:
         page.enable_QrCode.setChecked(network["enable_QrCode"])
         page.enable_local.setChecked(network["enable_local"])
         page.enable_loophole.setChecked(network["enable_loophole"])
+        page.enable_statistics.setChecked(network["enable_statistics"])
         if network["domain"] != page.ui.domain_name.placeholderText():
             page.ui.domain_name.setText(network["domain"])
         if str(network["port"]) != page.ui.port_number.placeholderText():
             page.ui.port_number.setText(str(network["port"]))
+        page.statistics_file_path.setText(network["statistics_file_path"])
 
     # Obter Full Url
     def getUrl(self, idx):
@@ -164,3 +170,7 @@ class ConfigServer:
             if self.port != 80:
                 url += ":" + str(self.port)
         return url
+
+    def close_app(self):
+        if self.exit_fun is not None:
+            self.exit_fun()
