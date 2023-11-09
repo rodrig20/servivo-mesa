@@ -1,4 +1,5 @@
 from pathlib import Path
+from dotenv import load_dotenv
 import subprocess
 import requests
 import platform
@@ -7,6 +8,7 @@ import time
 import json
 import os
 import io
+
 
 def get_local_storage_file(file_name, directory_name):
     home = str(Path.home())
@@ -28,6 +30,7 @@ def get_access_token():
     except json.JSONDecodeError as e:
         raise Exception(f"There was a problem decoding tokens: {str(e)}")
 
+
 def parsePublicKey(identityFile):
     try:
         privateKey, err = readPrivateKeyFile(identityFile)
@@ -41,7 +44,7 @@ def parsePublicKey(identityFile):
         return publicKey, privateKey, None
 
     except Exception as e:
-        print("ERRO\n",e)
+        print("ERRO\n", e)
         return None, None, e
 
 
@@ -66,8 +69,10 @@ def getPublicKeyFromPrivateKey(privateKey):
     except Exception as e:
         return None, e
 
+
 def user_agent():
     return f"loophole-cli/development-unknown ({platform.system()}/{platform.machine()})"
+
 
 def get_refresh_token():
     tokens_location = get_local_storage_file("tokens.json", "")
@@ -81,6 +86,7 @@ def get_refresh_token():
         return "", f"There was a problem decoding tokens: {e}"
 
     return tokens.get("refresh_token", ""), None
+
 
 def refresh_token():
     grant_type = "refresh_token"
@@ -127,7 +133,8 @@ def refresh_token():
 
     return None
 
-def RegisterSite(publicKeyString, requestedSiteID,token_was_refreshed=False):
+
+def RegisterSite(publicKeyString, requestedSiteID, token_was_refreshed=False):
     apiURL = "api.loophole.cloud"
 
     accessToken = get_access_token()
@@ -154,13 +161,13 @@ def RegisterSite(publicKeyString, requestedSiteID,token_was_refreshed=False):
             try:
                 refresh_token()
                 token_was_refreshed = True
-                return RegisterSite(publicKeyString, requestedSiteID,token_was_refreshed)
+                return RegisterSite(publicKeyString, requestedSiteID, token_was_refreshed)
             except Exception as err:
                 print(err)
                 return None
         else:
             return None
-    return req.ok
+    return 1
 
 
 def PollForToken(device_code, interval):
@@ -214,6 +221,7 @@ def save_token(token):
 
     return None
 
+
 def get_info():
     device_code_url = "https://loophole.eu.auth0.com/oauth/device/code"
     client_id = "9ocnSAnfJSb6C52waL8xcPidCkRhUwBs"
@@ -240,18 +248,21 @@ def make_login(url):
     from selenium.webdriver.common.by import By
     from selenium.webdriver.chrome.service import Service
     from selenium.webdriver.chrome.options import Options
-    from selenium.webdriver.support.ui import WebDriverWait
+    from selenium.webdriver.support.wait import WebDriverWait
     from selenium.webdriver.support import expected_conditions as EC
+    from .auto_update_chromedriver import WebdriverAutoUpdate
+    load_dotenv("./config/.env")
     
-    service = Service(".app\\loophole\\tunnel\\chromeDriver\\chromedriver.exe")
+    # Atualizar o chromedriver
+    chromedriver_folder_path = "./app/loophole/tunnel/chromeDriver"
+    WebdriverAutoUpdate("./app/loophole/tunnel/chromeDriver").main()
     
     # Opções para rodar o navegador sem abrir a janela do navegador
     options = Options()
     options.add_argument("--headless=new")
-    #options.add_argument("--disable-animations")
-
+    
     # Inicie o navegador passando o serviço e as opções como parâmetros
-    driver = webdriver.Chrome(service=service, options=options)
+    driver = webdriver.Chrome(service=Service(chromedriver_folder_path + "/chromedriver.exe"), options=options)
     wait = WebDriverWait(driver, 10)
 
     driver.get(url)
@@ -263,10 +274,10 @@ def make_login(url):
     wait.until(EC.visibility_of_element_located((By.NAME, "email")))
         
     email = driver.find_element(By.NAME, "email")
-    email.send_keys(os.environ.get('USERNAME'))
+    email.send_keys(os.getenv('USERNAME_LOOPHOLE'))
 
     password = driver.find_element(By.NAME, "password")
-    password.send_keys(os.environ.get('PASSWORD'))
+    password.send_keys(os.getenv('PASSWORD_LOOPHOLE'))
 
     submit = driver.find_element(By.NAME, "submit")
     submit.click()
@@ -274,41 +285,46 @@ def make_login(url):
     wait.until(EC.url_contains("https://loophole.eu.auth0.com/device/success"))
 
     driver.quit()
-    
+
+
 def login_loophole():
     json_info = get_info()
     make_login(json_info["verification_uri_complete"])
-    token, _ = PollForToken(json_info["device_code"],0.1)
+    token, _ = PollForToken(json_info["device_code"], 0.1)
     save_token(token)
+
 
 def isLogged():
     return os.path.exists(os.path.join(f"C:\\Users\\{os.getlogin()}", ".loophole", "tokens.json"))
 
-def enable_tunnel(domain,port,config):
-    process = subprocess.Popen(["app\\loophole\\tunnel\\loophole.exe", "http", str(port), "--hostname", domain],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,creationflags=subprocess.CREATE_NO_WINDOW)
+
+def enable_tunnel(domain, port, config):
+    process = subprocess.Popen(["app\\loophole\\tunnel\\loophole.exe", "http", str(port), "--hostname", domain], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, creationflags=subprocess.CREATE_NO_WINDOW)
     while config.run_loophole:
         time.sleep(1)
     process.terminate()
     config.run_loophole = 2
 
-def validDomain(domain):
-    file = os.path.join(f"C:\\Users\\{os.getlogin()}", ".loophole", ".ssh","id_rsa")
-    publicKey,_,_ = parsePublicKey(file)
-    return RegisterSite(publicKey,domain)
 
-def start_loophole(config,port,i):
+def validDomain(domain):
+    file = os.path.join(f"C:\\Users\\{os.getlogin()}", ".loophole", ".ssh", "id_rsa")
+    publicKey, _, _ = parsePublicKey(file)
+    return RegisterSite(publicKey, domain)
+
+
+def start_loophole(config, port, i):
     if not isLogged():
         login_loophole()
     start = 1
     while not validDomain(config.urls[i]):
         if start:
-            config.urls[i] = (config.urls[i]+"_0")
+            config.urls[i] = (config.urls[i] + "_0")
         else:
             if int(config.urls[i][-1]) == 9:
-                config.urls[i] = (config.urls[i]+"0")
+                config.urls[i] = (config.urls[i] + "0")
             else:
-                config.urls[i] = (config.urls[i][:-1]+str(int(config.urls[i][-1])+1))
+                config.urls[i] = (config.urls[i][:-1] + str(int(config.urls[i][-1]) + 1))
         start = 0
     config.final = 1
 
-    enable_tunnel(config.urls[i],port,config)
+    enable_tunnel(config.urls[i], port, config)

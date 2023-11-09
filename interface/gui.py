@@ -801,6 +801,7 @@ class MainWindow(QMainWindow):
                 while self.config.run_loophole != 2:
                     time.sleep(0.1)
             self.worker.terminate()
+            return super().closeEvent(event)
         else:
             return super().closeEvent(event)
     
