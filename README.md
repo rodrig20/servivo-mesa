@@ -1,6 +1,6 @@
 # Aplicação de Serviço às Mesas
 
-Esta é uma aplicação web Flask desenvolvida para simplificar o serviço às mesas por pequenos grupos, permitindo que os clientes façam pedidos, gerem códigos QR para seus pedidos e permitindo que a equipq do estabelecimento visualize e atenda os pedidos. A aplicação também oferece uma interface de login para gerenciar o acesso.
+Esta é uma aplicação web Flask desenvolvida para simplificar o serviço às mesas por pequenos grupos, permitindo que os clientes façam pedidos, gerem códigos QR para seus pedidos e permitindo que a equipa do estabelecimento visualize e atenda os pedidos. A aplicação também oferece uma interface de login para gerenciar o acesso.
 
 ## Funcionalidades Principais
 
