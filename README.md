@@ -1,6 +1,6 @@
 # Aplicação de Serviço às Mesas
 
-Esta é uma aplicação web Flask desenvolvida para simplificar o serviço às mesas por pequenos grupos, permitindo que os clientes façam pedidos, gerem códigos QR para seus pedidos e permitindo que a equipe do estabelecimento visualize e atenda os pedidos. A aplicação também oferece uma interface de login para gerenciar o acesso.
+Esta é uma aplicação web Flask desenvolvida para simplificar o serviço às mesas por pequenos grupos, permitindo que os clientes façam pedidos, gerem códigos QR para seus pedidos e permitindo que a equipq do estabelecimento visualize e atenda os pedidos. A aplicação também oferece uma interface de login para gerenciar o acesso.
 
 ## Funcionalidades Principais
 
@@ -112,7 +112,7 @@ Lembre-se de que o processo de criação de executáveis pode variar dependendo 
 
 Caso deseje criar executáveis para outros sistemas operacionais ou configurar opções específicas do `pyinstaller`, pode ajustar o arquivo `to_exe.py` de acordo com suas necessidades.
 
-**Nota:** Lembre-se de que a criação de executáveis pode envolver considerações de segurança e de compatibilidade entre diferentes sistemas. Certifique-se de revisar a documentação do `pyinstaller` para mais informações e diretrizes sobre criação de executáveis.
+**Nota:** Lembre-se de que a criação de executáveis pode envolver considerações de segurança e de compatibilidade entre diferentes sistemas. Certifique-se de rever a documentação do `pyinstaller` para mais informações e diretrizes sobre criação de executáveis.
 
 ## Contribuindo
 
