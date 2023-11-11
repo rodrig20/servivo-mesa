@@ -6,3 +6,4 @@ executavel/
 config/access.json
 config/menu.json
 config/users.txt
+app/loophole/tunnel/chromeDriver/
