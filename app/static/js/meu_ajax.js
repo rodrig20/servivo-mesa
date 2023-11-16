@@ -133,7 +133,7 @@ function scanQR(){
     window.location.replace($SCRIPT_ROOT + '/scanQR');
 }
 
-function pedidoPronto(botao,pedidos){
+function pedidoPronto(botao,pedidos,SID){
     var numero_pedido = Number($(botao).closest('table').attr('id'));
     var numero_sub_pedido = Number($(botao).closest('tr').attr('id'));
 
@@ -197,7 +197,7 @@ function pedidoPronto(botao,pedidos){
     }else{
         apagarRow(tabelaExistente,0);
     }
-    const json_send = {numero_pedido:numero_pedido,numero_sub_pedido:numero_sub_pedido-1};
+    const json_send = {numero_pedido:numero_pedido,numero_sub_pedido:numero_sub_pedido-1,SID:SID};
 
     const options = {
         method: 'PUT',
@@ -222,7 +222,7 @@ function pedidoPronto(botao,pedidos){
     
 }
 
-function recriarDivEspera(pedidos) {
+function recriarDivEspera(pedidos, view_only, SID) {
     const elementoPai = document.getElementById('main');
     const novaDiv = document.createElement('div');
     novaDiv.id = 'bigdiv';
@@ -291,15 +291,18 @@ function recriarDivEspera(pedidos) {
   
               const td = document.createElement('td');
               td.id = 'linhaPed';
-  
               const input = document.createElement('input');
-              input.className = 'check';
-              input.type = 'button';
-              input.id = 'estaPronto';
-              input.value = '\u2714';
-              input.onclick = function () {
-                pedidoPronto(this,pedidos);
-              };
+              if (!view_only){
+                input.className = 'check';
+                input.type = 'button';
+                input.id = 'estaPronto';
+                input.value = '\u2714';
+                input.onclick = function () {
+                    pedidoPronto(this,pedidos,SID);
+                    console.log("DENTRO: "+SID)
+                    //update_func(SID);
+                };
+              }
   
               const label1 = document.createElement('label');
               label1.style.fontSize = '35px';
@@ -313,8 +316,9 @@ function recriarDivEspera(pedidos) {
               const label3 = document.createElement('label');
               label3.style.fontSize = '35px';
               label3.innerHTML = part[p][2][i];
-  
-              td.appendChild(input);
+              if (!view_only) {
+                td.appendChild(input);
+              }
               td.appendChild(label1);
               td.appendChild(label2);
               td.appendChild(label3);

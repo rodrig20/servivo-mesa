@@ -38,19 +38,17 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.1/socket.io.js" integrity="sha512-xbQU0+iHqhVt7VIXi6vBJKPh3IQBF5B84sSHdjKiSccyX/1ZI7Vnkt2/8y8uruj63/DVmCxfUNohPNruthTEQA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
         <script>
             var pedidos = JSON.parse('{{ pedidos|tojson|safe }}');
+            var view_only = {{ view_only|lower }};
             try{
-                var socket = io.connect('/atualizarEspera/{{tipo}}');
+                var socket = io('/atualizarEspera/{{tipo}}');
                 socket.on('reloadPedidos', function(data) {
                     var pedidos = data["pedidos"];
-                    recriarDivEspera(pedidos)
+                    recriarDivEspera(pedidos, view_only, socket.id)
                 });
                 socket.on('connect', function() {
-                    recriarDivEspera(pedidos)
+                    recriarDivEspera(pedidos, view_only, socket.id)
                 });
-            } catch {}
-            window.onload = function (){
-                recriarDivEspera(pedidos)
-            }
+            } catch {cosole.log("Não foi possivel estabelecer o socket");}
         </script>
         <link rel="icon" type="image/x-icon" href="/static/images/favicon.ico">
     </head>

@@ -271,8 +271,9 @@ def handle_updateProntos(nome: str):
 
 # enviar as informações dos pedidos de um certo tipo para os respetivos pontos
 @socketio.on('updateEspera')
-def handle_updateEspera(tipo: str):
-    emit('reloadPedidos', {"pedidos": app.config["PEDIDOS_ESPERA"].createList(tipo)}, broadcast=True, namespace="/atualizarEspera/" + tipo)
+def handle_updateEspera(tipo, sid=None):
+    # Fazer a emissão
+    emit('reloadPedidos', {"pedidos": app.config["PEDIDOS_ESPERA"].createList(tipo)}, broadcast=True, skip_sid=sid, namespace="/atualizarEspera/" + tipo)
 
 
 # rota para enviar os ficheiros estaticos (js, style, images)
@@ -371,20 +372,24 @@ def pedidoAutomatico():
 @login_required(True)
 def listaCeB():
     tipo = request.path.replace("/lista/", '')
+    view_only = request.args.get('viewonly') == "1"
+    
     # retornar html
     if request.method == "GET":
-        return render_template("pedidosEspera.html", pedidos=app.config["PEDIDOS_ESPERA"].createList(tipo), tipo=tipo)
+        return render_template("pedidosEspera.html", pedidos=app.config["PEDIDOS_ESPERA"].createList(tipo), tipo=tipo, view_only=view_only)
     
-    elif request.method == "PUT":
+    elif request.method == "PUT" and not view_only:
         # colocar o pedido como pronto
-        dados = request.get_json()
+        dados: dict = request.get_json()
         numero_pedido = dados.get('numero_pedido')
         numero_sub_pedido = dados.get('numero_sub_pedido')
         app.config["PEDIDOS_ESPERA"].tornarPronto(numero_pedido, numero_sub_pedido, tipo)
         handle_updateProntos(session["username"])
+        handle_updateEspera(tipo, dados.get('SID'))
         return ''
 
 
+# rota responsavel por mostar o menu
 @app.route('/menu', methods=['GET'])
 @route_activated_factory("Menu_Img")
 def menu():
