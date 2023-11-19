@@ -186,26 +186,35 @@ class ListaTodosPedidos_Prontos:
                 return
 
 
+# Cria um ficheiro com estatisticas no final da execução
 class EstatisticasPedidos:
     def __init__(self) -> None:
         self.file_output = ""
         self.preco_total = 0
     
+    # Adicionar um pedido à contagem das estatisticas
     def add_pedido(self, quantidades, nomes, tipos):
+        # Percorrer cada linha do pedido
         for quant, nome, tipo in zip(quantidades, nomes, tipos):
             if tipo == "Cozinha":
                 tipo_idx = 0
             else:
                 tipo_idx = 1
             
+            # Comparar preço e nome
             name_idx = app.config["MENU_NAME"][tipo_idx].index(nome)
             preco_prod = app.config["MENU_PRICE"][tipo_idx][name_idx]
+            # Obter o prço da linha e juntalo ao preço total
             preco_pedido = int(quant) * float(preco_prod)
             self.preco_total += preco_pedido
-            self.file_output += f'[{datetime.now().strftime("%d-%m-%Y %H:%M:%S")}] {int(quant):02} {nome:.<25}{preco_pedido:.>10}\n'
+            # Adicionar a linha do pedido à string final
+            self.file_output += f'[{datetime.now().strftime("%H:%M:%S")}] {int(quant):02} {nome:.<25}{preco_pedido:.>10}\n'
     
+    # Escrever no ficheiro toda a informação
     def write_file(self, file_path):
+        # Acresecentar as informações finais
         self.file_output += "-" * 60 + f"\n» Preço Total: {self.preco_total:02}\n"
+        # Abrir o ficheiro e escrever
         with open(file_path, "w", encoding="utf-8") as f:
             f.write(self.file_output)
             
