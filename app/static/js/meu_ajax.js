@@ -60,29 +60,51 @@ function validarInteiro(input) {
 }
 
 function enviar_pedido(){
+    var enviar_button = document.getElementById('send');
+    enviar_button.disabled = true;
     var quantidades = document.querySelectorAll('input.quantity');
     var quant = [];
-    for (let i = 0; i < quantidades.length; i++) { 
-        quant.push(quantidades[i].value);
+    for (let i = 0; i < quantidades.length; i++) {
+        console.log("Q " + quantidades[i].value +" "+ typeof(quantidades[i].value))
+        if (quantidades[i].value != "") {
+            quant.push(quantidades[i].value);
+        }
     }
 
     var elements = document.getElementsByClassName("pedido")
     var ped = [];
     for (let i=0; i<elements.length;i++){
-        ped.push(elements[i].options[elements[i].selectedIndex].text);
+        if (elements[i].options[elements[i].selectedIndex].text != ""){
+            ped.push(elements[i].options[elements[i].selectedIndex].text);
+        }
     }
     var tipos = document.getElementsByClassName("tipo")
     var tip = [];
     for (let i = 0; i < tipos.length; i++) {
-        tip.push(tipos[i].value);
+        if (tipos[i].value != ""){
+            tip.push(tipos[i].value);
+        }
     }
-    
     if (quant.length==ped.length && ped.length == tip.length){
         if (nome){
-            var mesa = (document.getElementById("mesa").value).replace(/^\s+|\s+$/g, '')
+            var mesa_html = document.getElementById("mesa")
+            var mesa = (mesa_html.value).replace(/^\s+|\s+$/g, '')
             if (mesa != ''){
+                var pedidoContainer = document.getElementById('pedidoContainer');
+                pedidoContainer.style.display = 'none';
+                document.body.style.display = 'flex';
+                document.body.style.alignItems = 'center';
+                document.body.style.justifyContent = 'center';
+                document.body.style.height = '100vh';
+                document.body.style.margin = '0';
+                var loaderContainer = document.getElementById('loaderContainer');
+                loaderContainer.style.display = 'block'; // Mostra a janela de loading
+
                 json_send = {quant: quant, ped: ped, tip:tip, mesa:mesa};
                 $.post($SCRIPT_ROOT, json_send, redirect,'json');
+            } else {
+                mesa_html.style.border = "2px solid red";
+                enviar_button.disabled = false;
             }
         } else {
             for(let i=0;i<tip.length;i++){
@@ -99,6 +121,8 @@ function enviar_pedido(){
 
             window.location.replace($SCRIPT_ROOT + '/QrCode?pedido=' + compressedString);
         }
+    } else {
+        enviar_button.disabled = false;
     }
 };
 

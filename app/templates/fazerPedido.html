@@ -20,6 +20,26 @@
                 border-radius: 10px;
             }
 
+            .loader-container {
+                text-align: center;
+                display: none; /* Inicialmente esconde a janela de loading */
+            }
+
+            .loader {
+                border: 8px solid #f3f3f3; /* Light grey */
+                border-top: 8px solid #3498db; /* Blue */
+                border-radius: 50%;
+                width: 50px;
+                height: 50px;
+                animation: spin 1s linear infinite;
+                margin: 20px auto;
+            }
+
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+
         </style>
         <script type=text/javascript src="/static/js/jquery.js"> </script>
         <script type=text/javascript src="/static/js/meu_ajax.js"> </script>
@@ -57,59 +77,65 @@
 
     </head>
     <body>
-        {% if nome is defined %}
-            <h1>Pedidos de {{ nome }}: <span id="preco">0.00</span>€</h1>
-             <button class="button" id="logout">Logout</button>
-        {% else %}
-            <h1>Pedidos: <span id="preco">0.00</span>€</h1>
-        {% endif %}
-        
+        <div class="pedido-container" id="pedidoContainer">
+            {% if nome is defined %}
+                <h1>Pedidos de {{ nome }}: <span id="preco">0.00</span>€</h1>
+                <button class="button" id="logout">Logout</button>
+            {% else %}
+                <h1>Pedidos: <span id="preco">0.00</span>€</h1>
+            {% endif %}
+            
 
-        <table id="titulo" style="width:100%;display:none;">
-            <tr>
-                <th style="width:5ch;color: #374e4f; font-size: 50px; padding-left: 20px;">
-                    <div class="align-label">
-                        <label>Qtd.</label>
-                    </div>
-                </th>
-                <th style="width:45%;color: #374e4f; font-size: 50px; padding-left: 50px;">
-                    <div class="align-label">
-                        <label>Pedidos</label>
-                    </div>
-                </th>
-                    <th style="color: #374e4f; font-size: 40px; padding: 12px 20px;">
+            <table id="titulo" style="width:100%;display:none;">
+                <tr>
+                    <th style="width:5ch;color: #374e4f; font-size: 50px; padding-left: 20px;">
                         <div class="align-label">
-                            {% if nome is defined%}
-                                <input id="mesa" type="text" placeholder="Mesa">
-                            {% endif %}
+                            <label>Qtd.</label>
                         </div>
                     </th>
-            </tr>
-        </table>
-
-        <div style="overflow-x:auto;">
-            <table id="tabela">
+                    <th style="width:45%;color: #374e4f; font-size: 50px; padding-left: 50px;">
+                        <div class="align-label">
+                            <label>Pedidos</label>
+                        </div>
+                    </th>
+                        <th style="color: #374e4f; font-size: 40px; padding: 12px 20px;">
+                            <div class="align-label">
+                                {% if nome is defined%}
+                                    <input id="mesa" type="text" placeholder="Mesa">
+                                {% endif %}
+                            </div>
+                        </th>
+                </tr>
             </table>
-        </div>
-        <br>
-        {%if urls_ativos["Cozinha"]%}
-            <input class="button" type="button" style='background: #1ea831;' id="add" onclick="addRow(opcoes_Menu,preco_Menu,'Cozinha')" value="Adicionar Comida">
-        {%endif%}
-        {%if urls_ativos["Bar"]%}
-            <input class="button" type="button" style='background: #2d2091;' id="add" onclick="addRow(opcoes_Menu,preco_Menu,'Bar')" value="Adicionar Bebida">
-        {%endif%}
-        <br><br>
-        {% if nome is defined%}
-            <input class="button" type="submit" id="send" value="Enviar">
-            <input class="button" type="submit" id="verPedidos" value="Ver Pedidos">
-            {%if urls_ativos["QrCode"]%}
-                <input class="button" type="submit" id="scanQR" value="QRCODE">
+
+            <div style="overflow-x:auto;">
+                <table id="tabela">
+                </table>
+            </div>
+            <br>
+            {%if urls_ativos["Cozinha"]%}
+                <input class="button" type="button" style='background: #1ea831;' id="add" onclick="addRow(opcoes_Menu,preco_Menu,'Cozinha')" value="Adicionar Comida">
+            {%endif%}
+            {%if urls_ativos["Bar"]%}
+                <input class="button" type="button" style='background: #2d2091;' id="add" onclick="addRow(opcoes_Menu,preco_Menu,'Bar')" value="Adicionar Bebida">
+            {%endif%}
+            <br><br>
+            {% if nome is defined%}
+                <input class="button" type="submit" id="send" value="Enviar">
+                <input class="button" type="submit" id="verPedidos" value="Ver Pedidos">
+                {%if urls_ativos["QrCode"]%}
+                    <input class="button" type="submit" id="scanQR" value="QRCODE">
+                {% endif %}
+            {% else %}
+                <input class="button" type="submit" id="send" value="Criar QrCode">
             {% endif %}
-        {% else %}
-            <input class="button" type="submit" id="send" value="Criar QrCode">
-        {% endif %}
-        {%if urls_ativos["Menu_Img"]%}
-            <input class="button" type="submit" id="menu" value="Ver Menu">
-        {%endif%}
+            {%if urls_ativos["Menu_Img"]%}
+                <input class="button" type="submit" id="menu" value="Ver Menu">
+            {%endif%}
+        </div>
+        <div class="loader-container" id="loaderContainer">
+            <div class="loader"></div>
+            <p style="font-size:50px">A Enviar...</p>
+        </div>
     </body>
 </html>
