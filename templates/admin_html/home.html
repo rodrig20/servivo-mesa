@@ -1,0 +1,60 @@
+<style>
+    .table-scroll {
+        max-height: calc(100vh - 160px)
+    }
+</style>
+<div id="home" class="content-section bg-light active" style="padding-bottom: 10px;">
+    <h1 id="homeTitle" class="text-center mb-4">Lista de Pedidos</h1>
+
+    <div id="confirmModal" class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirmar Remoção</h5>
+                </div>
+                <div class="modal-body">
+                    <p>Ao continuar todos os dados serão perdidos</p>
+                </div>
+                <div class="modal-footer">
+                    <button onclick="removeAllHistory()" type="button" class="btn btn-primary" data-bs-dismiss="modal">Confirmar</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="scroolDiv" class="table-scroll table-responsive">
+        <table class="table table-striped">
+            <thead class="sticky-header">
+                <tr>
+                    <th>Pedido</th>
+                    <th>Preço</th>
+                    <th>Hora</th>
+                </tr>
+            </thead>
+            <tbody id="pedidoTabela">
+                <!-- Pedidos serão inseridos aqui pelo JavaScript -->
+            </tbody>
+            <tfoot class="sticky-footer">
+                <tr>
+                    <td>Quantidade de Pedidos: <span id="quantidadePedidos">0</span></td>
+                    <td>Total de Dinheiro Feito: <span id="totalDinheiro">0.00</span>€</td>
+                    <td>
+                        <!-- Contêiner flexível para os botões -->
+                        <div class="d-flex flex-wrap align-items-center w-100">
+                            <button onclick="downloadExcel()" type="button"
+                                class="btn btn-success btn-sm w-100 w-md-50 me-md-1 mb-1 text-nowrap">
+                                <span class="d-none d-sm    -inline"><i class="bi bi-file-earmark-spreadsheet"></i></span>
+                                Download
+                            </button>
+                            <button type="button" data-bs-toggle="modal" data-bs-target="#confirmModal"
+                                class="btn btn-outline-danger btn-sm w-100 w-md-50 mb-1 text-nowrap">
+                                <span class="d-none d-sm-inline"><i class="bi bi-x-lg"></i></span> Apagar
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>

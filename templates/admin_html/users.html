@@ -1,0 +1,27 @@
+<div id="users" class="content-section">
+    <h1 class="text-center mb-4">Atendentes</h1>
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <form id="atendentes-form" onsubmit="return handleFormAtendenteSubmit(event)">
+                        <div class="input-group mb-3">
+                            <input type="text" class="form-control shadow-none" id="atendentes-input"
+                                placeholder="Adicionar Atendente" required>
+                            <button class="btn btn-primary" type="submit">
+                                Adicionar
+                            </button>
+                        </div>
+                    </form>
+                    <div class="d-flex">
+                        <button id="saveAtendentesChanges" class="btn btn-success w-100 me-2" onclick="saveAtendentesListChanges()">Guardar Alterações</button>
+                        <button id="deleteAtendentesChanges" class="btn btn-danger w-100" onclick="deleteAtendentesListChanges()">Excluir Alterações</button>
+                    </div>
+                    <ul class="list-group" id="atendentes-list">
+                        <!-- Atendentes will be added here dynamically -->
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

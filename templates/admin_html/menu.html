@@ -1,0 +1,35 @@
+<div id="menu" class="content-section bg-light">
+    <h1 class="text-center mb-4">Menu</h1>
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <form id="menu-form" onsubmit="return handleFormMenuSubmit(event)">
+                        <div class="form-group">
+                            <div class="row">
+                                <div class="col-12">
+                                    <input type="text" class="form-control shadow-none mb-3" id="menu-input"
+                                        placeholder="Adicionar Opção" required>
+                                </div>
+                            </div>
+                            <div class="input-group mb-3">
+                                <input type="number" class="form-control shadow-none" id="menu-price-input"
+                                    placeholder="Preço" required step="0.01">
+                                <button class="btn btn-primary" type="submit">Adicionar</button>
+                            </div>
+                        </div>
+                    </form>
+                    <div class="d-flex">
+                        <button id="saveMenuChanges" class="btn btn-success w-100 me-2"
+                            onclick="saveMenuListChanges()">Guardar Alterações</button>
+                        <button id="deleteMenuChanges" class="btn btn-danger w-100"
+                            onclick="deleteMenuListChanges()">Excluir Alterações</button>
+                    </div>
+                    <ul class="list-group" id="menu-list">
+                        <!-- Itens do menu serão adicionados dinamicamente aqui -->
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

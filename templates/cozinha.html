@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="pt" class="full">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pedidos da Cozinha</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/static/assets/favicon.ico" />
+    <!-- CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link href="/static/css/my_styles.css" rel="stylesheet" />
+    <!-- JS-->
+    <script src="/static/js/scripts.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.1.3/socket.io.js" defer></script>
+    <script>
+        // Estrutura para armazenar os pedidos
+        var pedidos = [];
+        var first = true;
+        var socket
+        document.addEventListener("DOMContentLoaded", function () {
+            socket = io();
+            socket.on('update_cozinha', (data) => {
+                if (first)
+                    pedidos = data.data
+                else
+                    pedidos.push(data.data)
+                first = false
+                renderizarPedidosEspera()
+            });
+            socket.emit('cozinha_connect')
+        });
+    </script>
+</head>
+
+<body class="full">
+    <div class="container-fluid full">
+        <h1 class="text-center">Cozinha</h1>
+        <div class="table-scroll">
+            <table class="table">
+                <tbody id="pedidoTableBody">
+                    <!-- Pedidos serão adicionados aqui -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+
+</html>

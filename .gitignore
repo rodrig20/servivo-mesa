@@ -1,9 +1,3 @@
-__pycache__/
-loophole_login.txt
-app/static/images/Menu.png
-servico_venv/
-executavel/
-config/access.json
-config/menu.json
-config/users.txt
-app/loophole/tunnel/chromeDriver/
+.venv/
+data/
+**/__pycache__/

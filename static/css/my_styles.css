@@ -1,0 +1,215 @@
+body {
+    background-color: #f4f4f4;
+}
+
+.container-login {
+    margin-top: 20px;
+    max-width: 600px;
+}
+
+.menu-item {
+    padding: 15px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s;
+}
+
+.menu-item:hover {
+    transform: scale(1.02);
+}
+
+.order-summary {
+    padding: 15px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.send-order {
+    width: 100%;
+}
+
+.sauce-label {
+    margin-right: 10px;
+}
+
+.loading-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.8);
+    /* Fundo branco com opacidade */
+    z-index: 1040;
+    /* Acima de outros elementos */
+    display: none;
+    /* Escondido por padrão */
+    justify-content: center;
+    align-items: center;
+}
+
+.spinner-border {
+    width: 3rem;
+    height: 3rem;
+}
+
+
+.table {
+    /*margin: 20px 0;*/
+    margin-bottom: 0;
+    margin-left: 0;
+    margin-right: 0;
+    width: 100%;
+    table-layout: fixed;
+    /* Define um layout fixo para a tabela */
+    border-style: hidden;
+}
+
+.table td {
+    width: 50%;
+    background-color: transparent;
+    /* Define a largura de cada coluna como 50% */
+    border: 1px solid #dee2e6;
+}
+
+.table-scroll {
+    flex: 1;
+    /* Faz a tabela ocupar todo o espaço restante */
+    overflow-y: scroll;
+    /* Permite scroll vertical se necessário */
+}
+
+/* custom scrollbar */
+::-webkit-scrollbar {
+    width: 15px;
+}
+
+::-webkit-scrollbar-track {
+    background-color: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #ababab;
+    border-radius: 15px;
+    border: 6px solid transparent;
+    background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: #7f7f7f;
+}
+
+
+.container-fluid {
+    display: flex;
+    flex-direction: column;
+    /* Alinha os filhos na coluna */
+    height: 100%;
+    /* Faz o contêiner ocupar toda a altura da página */
+}
+
+.full {
+    padding-left: 0;
+    padding-right: 0;
+    height: 100%;
+    /* Defina a altura do html e body */
+    margin-bottom: 0;
+    margin-left: 0;
+    margin-right: 0;
+}
+
+.sticky-header {
+    position: sticky;
+    /* Fixa a posição do cabeçalho */
+    top: 0;
+    /* Fixa no topo da tabela quando rola */
+    background-color: #f4f4f4;
+    /* Cor de fundo para o cabeçalho */
+    z-index: 1;
+    /* Para garantir que o cabeçalho esteja acima do conteúdo */
+    padding: 10px;
+    /* Espaçamento */
+    /*border-bottom: 1px solid #dee2e6; /* Linha inferior para separar */
+}
+
+.sticky-footer {
+    position: sticky;
+    bottom: 0;
+    background-color: #f4f4f4;
+    /* Cor de fundo do rodapé */
+    z-index: 1;
+    /* Garante que o rodapé fique acima do conteúdo */
+}
+
+.pedido {
+    position: relative;
+    padding: 10px;
+    background-color: #ffffff;
+    margin-bottom: 5px;
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+}
+
+.remove-btn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background-color: #dc3545;
+    border: none;
+    color: white;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+.remove-btn:hover {
+    background-color: #c82333;
+}
+
+.button-group {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-outline-secondary.show-ready-order {
+    border-color: yellow;
+    color: yellow;
+}
+
+.btn-outline-secondary.show-ready-order:hover {
+    background-color: yellow;
+    color: white;
+}
+
+.btn-outline-no-shadow:focus {
+    box-shadow: none !important;
+}
+
+
+.back-button {
+    position: absolute;
+    left: 10px;
+    text-decoration: none;
+    /* Remove underline */
+}
+
+/* Conteúdo de toda a página, com rolagem horizontal e snap */
+.content-container {
+    padding-top: 56px;
+}
+
+/* Estilo para as seções de conteúdo */
+.content-section {
+    width: 100%;
+    padding: 20px;
+    display: none;
+    overflow: auto;
+    height: calc(100vh - 56px);
+}
+
+.content-section.active {
+    display: block;
+}
